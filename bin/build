@@ -1,0 +1,33 @@
+#!/bin/sh
+# rules/ の本文から、写しを作る。規則の本文は rules/ だけで書き換える。
+#   skills/session-status/references/writing-to-user.md … スキルだけ入れた環境で読む写し
+#   AGENTS.snippet.md                                   … Claude Code 以外の道具に貼る本文
+# bin/build --check は、写しが rules/ と食い違っていれば失敗する（書き換えない）。
+set -eu
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+TMP="$(mktemp -d)"
+trap 'rm -r -- "$TMP"' EXIT
+
+cp "$ROOT/rules/writing-to-user.md" "$TMP/writing-to-user.md"
+{
+    printf '<!-- wakariyasu: https://github.com/kulikala/wakariyasu -->\n'
+    printf '<!-- rules/ から bin/build で作った写し。ここを直さず、rules/ を直す。 -->\n\n'
+    cat "$ROOT/rules/writing-to-user.md"
+    printf '\n'
+    cat "$ROOT/rules/session-status.md"
+} > "$TMP/AGENTS.snippet.md"
+
+if [ "${1:-}" = "--check" ]; then
+    ok=0
+    cmp -s "$TMP/writing-to-user.md" "$ROOT/skills/session-status/references/writing-to-user.md" \
+        || { echo "食い違い: skills/session-status/references/writing-to-user.md" >&2; ok=1; }
+    cmp -s "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md" \
+        || { echo "食い違い: AGENTS.snippet.md" >&2; ok=1; }
+    [ "$ok" = 0 ] && echo "写しは rules/ と一致している"
+    exit "$ok"
+fi
+
+cp "$TMP/writing-to-user.md" "$ROOT/skills/session-status/references/writing-to-user.md"
+cp "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md"
+echo "写しを作った: skills/session-status/references/writing-to-user.md, AGENTS.snippet.md"

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wakariyasu",
+  "description": "Claude Code marketplace for wakariyasu",
+  "owner": {
+    "name": "kulikala"
+  },
+  "plugins": [
+    {
+      "name": "wakariyasu",
+      "description": "経緯を追っていない人が読んで分かる返答を書かせる、日本語向けの規則と状況報告スキル",
+      "version": "0.1.0",
+      "author": {
+        "name": "kulikala"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/kulikala/wakariyasu",
+      "repository": "https://github.com/kulikala/wakariyasu",
+      "license": "MIT"
+    },
+    {
+      "name": "yomiyasu",
+      "description": "AIが生成した日本語を、意味と条件を保って読みやすく整えるスキル（nanaism/yomiyasu）",
+      "source": {
+        "source": "github",
+        "repo": "nanaism/yomiyasu"
+      },
+      "homepage": "https://github.com/nanaism/yomiyasu",
+      "license": "MIT"
+    }
+  ]
+}

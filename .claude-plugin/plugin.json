@@ -3,7 +3,6 @@
   "description": "経緯を追っていない人が読んで分かる返答を書かせる、日本語向けの規則と状況報告スキル",
   "version": "0.1.0",
   "skills": "./skills/",
-  "dependencies": ["yomiyasu"],
   "author": {
     "name": "kulikala"
   },

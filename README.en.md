@@ -60,7 +60,13 @@ To fix a style, add a line to CLAUDE.md, such as 「数字は算用数字で書�
 
 [yomiyasu](https://github.com/nanaism/yomiyasu) is a skill by a different author (nanaism). It fixes unnatural metaphors, mismatched subjects and predicates, and promotional wording in AI-written Japanese. wakariyasu fits the words and structure to the reader; yomiyasu then smooths the sentences themselves.
 
-Installing yomiyasu is optional but recommended. If yomiyasu is installed, wakariyasu has the agent run long replies and documents through it before handing them over, and tell yomiyasu what kind of text it is (reply, PR, README and so on).
+Installing yomiyasu is optional but recommended. To have the agent use it, install yomiyasu and add this line to CLAUDE.md:
+
+```text
+3段落以上の返答は、送る前に yomiyasu で整える。
+```
+
+(It means "Polish replies of three or more paragraphs with yomiyasu before sending them.") yomiyasu runs only when it is asked for by name or by an instruction file such as CLAUDE.md, so wakariyasu's rules alone may not trigger it. With the line in place, the agent runs long replies and documents through yomiyasu before handing them over, and tells it what kind of text it is (reply, PR, README and so on).
 
 wakariyasu also works without yomiyasu. The agent then checks its own text for overlong sentences, subjects far from their predicates, empty words such as "groundbreaking", and sentences that only announce what comes next ("The following points are important."), and fixes them.
 

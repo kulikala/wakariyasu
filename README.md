@@ -56,7 +56,13 @@ wakariyasu はエージェントへの指示文でできていて、指示文に
 
 [yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu）は、AI が書いた日本語の、不自然な比喩・主語と述語のずれ・宣伝のような言い回しを整えるスキルです。wakariyasu とは別の作者のものです。wakariyasu が語と構成を読み手に合わせ、yomiyasu が文そのものを整える、という分担になります。
 
-yomiyasu は入れなくても構いませんが、入れることを勧めます。入れておくと、wakariyasu は、長い返答や文書を渡す前に、エージェントに yomiyasu で整えさせます。そのとき、文章の種類（返答・PR・README など）も yomiyasu に伝えさせます。
+yomiyasu は入れなくても構いませんが、入れることを勧めます。yomiyasu を使わせるには、yomiyasu を入れたうえで、CLAUDE.md に次の1行を書いてください。
+
+```text
+3段落以上の返答は、送る前に yomiyasu で整える。
+```
+
+yomiyasu は、名前を出して頼まれたときか、CLAUDE.md などの指示で求められたときにだけ動きます。wakariyasu の規則だけでは、yomiyasu が呼ばれないことがあります。1行を書いておくと、エージェントは長い返答や文書を渡す前に yomiyasu で整え、そのとき文章の種類（返答・PR・README など）も伝えます。
 
 yomiyasu を入れていなくても、wakariyasu は動きます。そのときは、長すぎる文、離れすぎた主語と述語、「画期的な」のような中身の無い飾りの語、「次の点が重要です」のような予告だけの文を、エージェント自身に確かめさせて直させます。
 

@@ -2,9 +2,9 @@
 
 [日本語](README.md)
 
-**wakariyasu is for people who work with AI agents in Japanese.** It changes how the agent writes Japanese, not English. If your agent writes in English, wakariyasu will not help you.
+wakariyasu is a Claude Code plugin that makes an AI agent write Japanese that someone who has not followed the work can understand. It covers both the agent's reports and questions to you, and the documents the agent writes, such as READMEs, specs and commit messages. Its skills also work in other agents such as Codex and Cursor. The name comes from the Japanese わかりやすい (wakariyasui), "easy to understand."
 
-wakariyasu is a Claude Code plugin that makes an AI agent write Japanese that someone who has not followed the work can understand. It covers both the agent's reports and questions to you, and the documents the agent writes, such as READMEs, specs and commit messages. The name comes from the Japanese わかりやすい (wakariyasui), "easy to understand."
+**wakariyasu only affects Japanese output.** Its guidance deals with problems typical of Japanese text, such as omitted subjects, pointing words (これ, それ) whose referent is unclear, and style choices that only exist in Japanese. If your agent writes in English, wakariyasu will not help you.
 
 ## The problem it solves
 
@@ -37,14 +37,14 @@ The phrases are what you would type in Japanese. Any wording with the same meani
 |---|---|---|---|
 | Any reply | (always applies) | rule `writing-to-user` | The agent uses words and structure that a reader without the history can follow |
 | You want to know where things stand | 「現状は？」 (where are we?), 「残タスクは？」 (what's left?) | skill `session-status` | The agent reports the goal, each task with its state, and the decisions it needs from you, in a fixed format |
-| You did not understand a reply | 「分かりやすく」 (clearer, please), 「つまり？」 (so, in short?), 「〜とは？」 (what is …?) | skill `explain-clearly` | The agent restates its last reply or an unclear term. Asking for it briefly gets a shorter answer; asking for it "so a child could understand" gets more background |
+| You did not understand a reply | 「分かりやすく」 (clearer, please), 「つまり？」 (so, in short?), 「〜とは？」 (what is …?) | skill `explain-clearly` | The agent restates its last reply or an unclear term. Ask for a brief version and you get a shorter answer; ask for it explained "so a child could understand" and you get more background |
 | The agent writes a document | (always applies) | rule `writing-documents` | The agent writes READMEs, specs, SKILL.md files, commit messages and the like so that each one makes sense on its own |
 | Removing meta narrative | 「メタ記述を除いて」 (remove the meta narrative) | skill `remove-meta-narrative` | The agent finds sentences in which a document talks about itself or about how it was made, such as "This chapter explains…" or "Following the review comments…", and rewrites them |
-| Before sharing a document | 「公開前に見て」 (check it before publishing) | skill `review-for-readers` | The agent gives only the document to a separate agent (a subagent) that knows nothing of the work, and fixes whatever that reader stumbled on |
+| Before sharing a document | 「公開前に見て」 (check it before publishing) | skill `review-for-readers` | The agent gives only the document to a separate agent (a subagent) that knows nothing of the work, and fixes whatever that reader stumbled on. Where subagents are not available, the agent rereads the document itself and says so |
 
 There is one more rule, `polishing`. It covers how to tidy Japanese text before handing it over, and how to choose the writing style described below.
 
-The three rules add about 3,600 Japanese characters to each session. `review-for-readers` starts a subagent, which costs extra time and tokens.
+The three rules add about 3,600 Japanese characters (a few thousand tokens) to each session. `review-for-readers` starts a subagent, which costs extra time and tokens.
 
 ## Writing style
 
@@ -60,7 +60,7 @@ To fix a style, add a line to CLAUDE.md, such as 「数字は算用数字で書�
 
 [yomiyasu](https://github.com/nanaism/yomiyasu) is a skill by a different author (nanaism). It fixes unnatural metaphors, mismatched subjects and predicates, and promotional wording in AI-written Japanese. wakariyasu fits the words and structure to the reader; yomiyasu then smooths the sentences themselves.
 
-If yomiyasu is installed, wakariyasu has the agent run long replies and documents through it before handing them over, and tell yomiyasu what kind of text it is (reply, PR, README and so on).
+Installing yomiyasu is optional but recommended. If yomiyasu is installed, wakariyasu has the agent run long replies and documents through it before handing them over, and tell yomiyasu what kind of text it is (reply, PR, README and so on).
 
 wakariyasu also works without yomiyasu. The agent then checks its own text for overlong sentences, subjects far from their predicates, empty words such as "groundbreaking", and sentences that only announce what comes next ("The following points are important."), and fixes them.
 
@@ -68,7 +68,7 @@ wakariyasu also works without yomiyasu. The agent then checks its own text for o
 
 ### As a Claude Code plugin (recommended)
 
-In Claude Code, run the two commands below. The first registers this repository as a marketplace (a source of plugins). The second installs wakariyasu from it.
+In Claude Code, run the two commands below. The first registers this repository as a marketplace (a source of plugins). The second installs the plugin named wakariyasu from the marketplace named wakariyasu (the form is `plugin@marketplace`).
 
 ```text
 /plugin marketplace add kulikala/wakariyasu
@@ -93,9 +93,9 @@ Install the skills with the `gh skill` command of the GitHub CLI (a preview feat
 gh skill install kulikala/wakariyasu --all --scope user --agent codex
 ```
 
-`--all` installs all four skills. `--scope user` installs them in your home directory so they work in every folder. Set `--agent` to your agent (`codex`, `cursor`, `github-copilot` and so on).
+`--all` installs all four skills (session-status, explain-clearly, remove-meta-narrative and review-for-readers). `--scope user` installs them in your home directory so they work in every folder. Set `--agent` to your agent (`codex`, `cursor`, `github-copilot` and so on).
 
-For the rules, paste the contents of [`AGENTS.snippet.md`](AGENTS.snippet.md), which joins the three rules into one text, into a file your agent reads every session, such as AGENTS.md.
+For the rules, paste the contents of [`AGENTS.snippet.md`](AGENTS.snippet.md), which joins the three rules into one text, into the instruction file your agent reads every session, such as AGENTS.md for Codex, or your agent's custom instructions.
 
 If you install only the skills and skip the rules, nothing applies to everyday replies or to documents the agent writes. The skills run only when you ask or when the agent picks them, and then each skill reads its own copy of the rules it needs.
 

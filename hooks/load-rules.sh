@@ -3,7 +3,7 @@
 # Claude Code のプラグインは規則のファイルを読み込まないため、フックの出力で渡す。
 set -eu
 
-for f in "${CLAUDE_PLUGIN_ROOT}"/rules/*.md; do
-    cat "$f"
+for r in writing-to-user writing-documents polishing; do
+    cat "${CLAUDE_PLUGIN_ROOT}/rules/$r.md"
     printf '\n'
 done

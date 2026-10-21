@@ -10,14 +10,21 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -r -- "$TMP"' EXIT
 
-# スキル名 と、そのスキルに写す本文（rules/ か references/ からの相対パス）
+# スキル名 と、そのスキルに写す本文。規則同士が互いを指すので、どのスキルにも全部を写す
 COPIES='
 session-status rules/writing-to-user.md
+session-status rules/writing-documents.md
 session-status rules/polishing.md
+session-status references/styles.md
 explain-clearly rules/writing-to-user.md
+explain-clearly rules/writing-documents.md
 explain-clearly rules/polishing.md
 explain-clearly references/styles.md
+remove-meta-narrative rules/writing-to-user.md
 remove-meta-narrative rules/writing-documents.md
+remove-meta-narrative rules/polishing.md
+remove-meta-narrative references/styles.md
+review-for-readers rules/writing-to-user.md
 review-for-readers rules/writing-documents.md
 review-for-readers rules/polishing.md
 review-for-readers references/styles.md

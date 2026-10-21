@@ -44,7 +44,7 @@ The phrases are what you would type in Japanese. Any wording with the same meani
 
 There is one more rule, `polishing`. It covers how to tidy Japanese text before handing it over, and how to choose the writing style described below.
 
-The three rules add about 3,600 Japanese characters (a few thousand tokens) to each session. `review-for-readers` starts a subagent, which costs extra time and tokens.
+The three rules add about 3,700 Japanese characters (a few thousand tokens) to each session. `review-for-readers` starts a subagent, which costs extra time and tokens.
 
 ## Writing style
 

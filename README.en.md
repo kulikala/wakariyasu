@@ -2,67 +2,71 @@
 
 [日本語](README.md)
 
-wakariyasu is a Claude Code plugin for people who work with AI agents in Japanese. It makes the agent write Japanese that someone who has not followed the work can understand. Its skills also work in other agents such as Codex and Cursor.
+**wakariyasu is for people who work with AI agents in Japanese.** It changes how the agent writes Japanese, not English. If your agent writes in English, wakariyasu will not help you.
 
-**wakariyasu is for Japanese text only.** Its rules and skills are written in Japanese, and they shape Japanese output. If your agent writes in English, wakariyasu will not help you.
-
-The name is the Japanese わかりやすい (wakariyasui), "easy to understand."
+wakariyasu is a Claude Code plugin that makes an AI agent write Japanese that someone who has not followed the work can understand. It covers both the agent's reports and questions to you, and the documents the agent writes, such as READMEs, specs and commit messages. The name comes from the Japanese わかりやすい (wakariyasui), "easy to understand."
 
 ## The problem it solves
 
-When an agent works on a long task, its reports and questions tend to use labels it coined along the way and assumptions it settled on mid-task. Someone reading the report later has to ask, "So what actually happened?"
+When an agent works on a long task, its reports tend to use labels it coined along the way and assumptions it settled on mid-task. Someone reading the report later has to ask, "So what actually happened?"
 
-For example, a report like this (translated from Japanese):
+Here is a report at the end of a web-app fix, translated from Japanese.
 
-> Went with option B, injecting via the hook, and dropped the dependencies.
+Without wakariyasu:
 
-becomes, with wakariyasu:
+> Went with option A and moved the cache to v2. Only that error is left.
 
-> The rules are now loaded at session start by the plugin's hook (a script that runs automatically at set points). I removed the declared dependency on yomiyasu, because with the declaration in place, wakariyasu fails to load at all in environments where yomiyasu is not installed.
+With wakariyasu:
 
-wakariyasu applies this both to the agent's replies to you and to the documents the agent writes, such as READMEs, specs and commit messages.
+> The product list page was slow because it read product data from the database on every view. It now keeps that data for five minutes. The page now loads in 0.4 seconds instead of 2.1. One bug is left: the page layout breaks for products that are out of stock.
+
+The first report only makes sense to someone who watched the work ("option A", "v2", "that error"). The second says what was done, what changed and what is left, on its own.
 
 ## Rules and skills
 
-wakariyasu has two kinds of parts.
+wakariyasu is made of instructions for the agent, written in Markdown. There are two kinds.
 
-- **Rules** are writing guidelines. Claude Code loads them at the start of every session, and they apply to every reply and document. You do not need to ask for them.
-- **Skills** are procedures for specific situations. The agent uses one when you ask with phrases like those in the table below, or when it judges that it is reporting status or handing over a document.
+- **Rules** are writing guidelines. In Claude Code they are loaded at the start of every session, through a hook (a script Claude Code runs automatically at set points), and the agent follows them in every reply and document. You do not need to ask.
+- **Skills** are step-by-step procedures for specific situations. The agent uses one when you ask with phrases like those in the table below, and also picks one on its own when it writes a status report or finishes a document to hand over.
 
 ## What each part does
 
+The phrases are what you would type in Japanese. Any wording with the same meaning works.
+
 | Situation | What you might say | Part | What it does |
 |---|---|---|---|
-| Any reply | (always applies) | rule `writing-to-user` | Makes the agent use words and structure that a reader without the history can follow |
-| You want to know where things stand | 「現状は？」 (where are we?), 「残タスクは？」 (what's left?) | skill `session-status` | Makes the agent report the goal, each task with its state, and the decisions it needs from you, in a fixed format |
-| You did not understand a reply | 「分かりやすく」 (clearer, please), 「つまり？」 (so, in short?), 「〜とは？」 (what is …?) | skill `explain-clearly` | Makes the agent restate its last reply or an unclear term. "Briefly" gets a shorter answer; "so a child could understand" gets more background |
-| The agent writes a document | (always applies) | rule `writing-documents` | Makes the agent write READMEs, specs, SKILL.md files, commit messages and the like so that each one makes sense on its own |
-| Removing meta narrative | 「メタ記述を除いて」 (remove the meta narrative) | skill `remove-meta-narrative` | Finds sentences in which a document talks about itself or about how it was made, such as "This chapter explains…" or "Following the review comments…", and rewrites them |
-| Before sharing a document | 「公開前に見て」 (check it before publishing) | skill `review-for-readers` | Has the agent start a subagent, give it only the document with none of the history, and fix whatever that reader stumbled on |
+| Any reply | (always applies) | rule `writing-to-user` | The agent uses words and structure that a reader without the history can follow |
+| You want to know where things stand | 「現状は？」 (where are we?), 「残タスクは？」 (what's left?) | skill `session-status` | The agent reports the goal, each task with its state, and the decisions it needs from you, in a fixed format |
+| You did not understand a reply | 「分かりやすく」 (clearer, please), 「つまり？」 (so, in short?), 「〜とは？」 (what is …?) | skill `explain-clearly` | The agent restates its last reply or an unclear term. Asking for it briefly gets a shorter answer; asking for it "so a child could understand" gets more background |
+| The agent writes a document | (always applies) | rule `writing-documents` | The agent writes READMEs, specs, SKILL.md files, commit messages and the like so that each one makes sense on its own |
+| Removing meta narrative | 「メタ記述を除いて」 (remove the meta narrative) | skill `remove-meta-narrative` | The agent finds sentences in which a document talks about itself or about how it was made, such as "This chapter explains…" or "Following the review comments…", and rewrites them |
+| Before sharing a document | 「公開前に見て」 (check it before publishing) | skill `review-for-readers` | The agent gives only the document to a separate agent (a subagent) that knows nothing of the work, and fixes whatever that reader stumbled on |
 
-Two more rules: `polishing` covers how to tidy Japanese text before handing it over and how to choose its writing style, and `session-status` says when to use the `session-status` skill.
+There is one more rule, `polishing`. It covers how to tidy Japanese text before handing it over, and how to choose the writing style described below.
+
+The three rules add about 3,600 Japanese characters to each session. `review-for-readers` starts a subagent, which costs extra time and tokens.
 
 ## Writing style
 
-Some style choices in Japanese depend on the kind of text: kana versus kanji for certain words, how numbers are written, ending a line with a bare noun phrase (体言止め, common in bullet points and commit messages), and plain versus polite verb endings. wakariyasu does not fix these. It has the agent choose them in this order:
+Some style choices in Japanese depend on the kind of text: kana or kanji for certain words, how numbers are written, ending a line with a bare noun phrase (体言止め, common in bullet points and commit messages), and plain or polite verb endings. wakariyasu does not fix these. It has the agent choose them in this order:
 
-1. Your instructions, including those in CLAUDE.md or AGENTS.md
+1. Your instructions, including those in CLAUDE.md (Claude Code's project instruction file) or AGENTS.md (the same kind of file for other agents)
 2. The style already used in the same document or repository
-3. A default for each kind of text, listed in [`references/styles.md`](references/styles.md)
+3. wakariyasu's default for each kind of text, listed in [`references/styles.md`](references/styles.md)
 
 To fix a style, add a line to CLAUDE.md, such as 「数字は算用数字で書く」 ("write numbers as Arabic numerals").
 
 ## Working with yomiyasu
 
-[yomiyasu](https://github.com/nanaism/yomiyasu) (by nanaism, a separate project) is a skill that fixes unnatural metaphors, mismatched subjects and predicates, and similar problems in AI-written Japanese.
+[yomiyasu](https://github.com/nanaism/yomiyasu) is a skill by a different author (nanaism). It fixes unnatural metaphors, mismatched subjects and predicates, and promotional wording in AI-written Japanese. wakariyasu fits the words and structure to the reader; yomiyasu then smooths the sentences themselves.
 
-If yomiyasu is installed in your agent, wakariyasu has the agent run long replies and documents through it before handing them over, and tell yomiyasu what kind of text it is.
+If yomiyasu is installed, wakariyasu has the agent run long replies and documents through it before handing them over, and tell yomiyasu what kind of text it is (reply, PR, README and so on).
 
-wakariyasu also works without yomiyasu. The agent then checks for overlong sentences, subjects far from their predicates, empty decorative words, and sentences that only announce what comes next, and fixes them itself.
+wakariyasu also works without yomiyasu. The agent then checks its own text for overlong sentences, subjects far from their predicates, empty words such as "groundbreaking", and sentences that only announce what comes next ("The following points are important."), and fixes them.
 
 ## Installing
 
-### As a Claude Code plugin
+### As a Claude Code plugin (recommended)
 
 In Claude Code, run the two commands below. The first registers this repository as a marketplace (a source of plugins). The second installs wakariyasu from it.
 
@@ -71,7 +75,7 @@ In Claude Code, run the two commands below. The first registers this repository 
 /plugin install wakariyasu@wakariyasu
 ```
 
-This installs both the rules and the skills. yomiyasu is available from the same marketplace:
+This installs both the rules and the skills. The same marketplace also lists yomiyasu, which is fetched from its own repository:
 
 ```text
 /plugin install yomiyasu@wakariyasu
@@ -79,26 +83,26 @@ This installs both the rules and the skills. yomiyasu is available from the same
 
 To check that it works, ask 「現状は？」 in a new session. A report with headings such as 「現在のゴール」 (current goal) and 「タスク」 (tasks) means wakariyasu is active.
 
-### Skills only, for any agent
+### In other agents
 
-Use the `gh skill` command of the GitHub CLI (a preview feature):
+For Codex, Cursor, GitHub Copilot and others, install the skills and the rules separately.
+
+Install the skills with the `gh skill` command of the GitHub CLI (a preview feature):
 
 ```sh
-gh skill install kulikala/wakariyasu --all --scope user --agent claude-code
+gh skill install kulikala/wakariyasu --all --scope user --agent codex
 ```
 
-Set `--agent` to your agent (`codex`, `cursor`, `github-copilot` and so on). `--scope user` installs into your home directory so the skills work in every folder.
+`--all` installs all four skills. `--scope user` installs them in your home directory so they work in every folder. Set `--agent` to your agent (`codex`, `cursor`, `github-copilot` and so on).
 
-With only the skills installed, the rules are not loaded at session start. Each skill still carries its own copy of the rules it needs and reads it when it runs.
+For the rules, paste the contents of [`AGENTS.snippet.md`](AGENTS.snippet.md), which joins the three rules into one text, into a file your agent reads every session, such as AGENTS.md.
 
-### The rules in agents other than Claude Code
-
-[`AGENTS.snippet.md`](AGENTS.snippet.md) contains all four rules as one text. Paste it into a file your agent reads every session, such as AGENTS.md.
+If you install only the skills and skip the rules, nothing applies to everyday replies or to documents the agent writes. The skills run only when you ask or when the agent picks them, and then each skill reads its own copy of the rules it needs.
 
 ## For contributors
 
 ```text
-rules/                  the four rules
+rules/                  the rules (writing-to-user, writing-documents, polishing)
 references/styles.md    style defaults for each kind of text
 skills/                 the skills (session-status, explain-clearly, remove-meta-narrative, review-for-readers)
 hooks/                  the hook that loads the rules at session start when installed as a plugin

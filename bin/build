@@ -22,7 +22,7 @@ review-for-readers rules/writing-documents.md
 review-for-readers rules/polishing.md
 review-for-readers references/styles.md
 '
-RULES='writing-to-user writing-documents polishing session-status'
+RULES='writing-to-user writing-documents polishing'
 
 {
     printf '<!-- wakariyasu: https://github.com/kulikala/wakariyasu -->\n'

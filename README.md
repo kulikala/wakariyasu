@@ -56,13 +56,12 @@ wakariyasu はエージェントへの指示文でできていて、指示文に
 
 エージェントは、書いた日本語をまず wakariyasu の規則で整えます。整える項目の一部は、[yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu。別の作者による日本語の推敲スキル）の検査を参考にしています。yomiyasu が入っている環境では、README や手順書のように人に渡す文書を仕上げるときに、yomiyasu も呼び出します。yomiyasu が無くても、wakariyasu は動きます。
 
-yomiyasu も一緒に入れるときは、下の「入れ方」で wakariyasu を入れたあとに、次を打ちます。wakariyasu の入手先には yomiyasu も載せてあり、中身は yomiyasu のリポジトリから入ります。
+yomiyasu は wakariyasu とは別のプラグインです。一緒に入れるときは、作者のリポジトリの案内どおりに入れます。Claude Code では次の2つです。
 
 ```text
-/plugin install yomiyasu@wakariyasu
+/plugin marketplace add nanaism/yomiyasu
+/plugin install yomiyasu@yomiyasu
 ```
-
-Claude Code 以外のエージェントでは、yomiyasu のリポジトリの案内に沿って入れてください。
 
 ## 入れ方
 

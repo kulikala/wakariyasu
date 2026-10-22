@@ -60,13 +60,12 @@ To fix a style, add a line to CLAUDE.md, such as 「数字は算用数字で書�
 
 The agent first polishes the Japanese it writes, following wakariyasu's rules. Some of the checks in those rules are based on those of [yomiyasu](https://github.com/nanaism/yomiyasu) (nanaism/yomiyasu, a Japanese polishing skill by a different author). Where yomiyasu is installed, the agent also calls it when finishing documents that people will read, such as READMEs and manuals. wakariyasu works without yomiyasu.
 
-To install yomiyasu as well, install wakariyasu as described under "Installing" below, then run the command below. The wakariyasu marketplace also lists yomiyasu, and its contents come from the yomiyasu repository.
+yomiyasu is a separate plugin from wakariyasu. To use both, install yomiyasu as its author's repository describes. In Claude Code, that is:
 
 ```text
-/plugin install yomiyasu@wakariyasu
+/plugin marketplace add nanaism/yomiyasu
+/plugin install yomiyasu@yomiyasu
 ```
-
-In agents other than Claude Code, install yomiyasu as described in its repository.
 
 ## Installing
 

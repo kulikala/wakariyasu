@@ -9,7 +9,7 @@
     {
       "name": "wakariyasu",
       "description": "AI エージェントが書く日本語を、作業の経緯を知らない人が読んでも分かるようにする規則とスキル",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "author": {
         "name": "kulikala"
       },
@@ -17,16 +17,6 @@
       "category": "productivity",
       "homepage": "https://github.com/kulikala/wakariyasu",
       "repository": "https://github.com/kulikala/wakariyasu",
-      "license": "MIT"
-    },
-    {
-      "name": "yomiyasu",
-      "description": "AIが生成した日本語を、意味と条件を保って読みやすく整えるスキル（nanaism/yomiyasu）",
-      "source": {
-        "source": "github",
-        "repo": "nanaism/yomiyasu"
-      },
-      "homepage": "https://github.com/nanaism/yomiyasu",
       "license": "MIT"
     }
   ]

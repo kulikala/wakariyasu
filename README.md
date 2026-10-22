@@ -1,6 +1,6 @@
 # wakariyasu
 
-[English](README.en.md)
+wakariyasu is a Claude Code plugin that adds rules and skills to an AI agent so that the Japanese it writes can be understood by someone who has not followed its work. This applies to the agent's reports and questions to the user, and to the documents the agent writes, such as READMEs, specs and commit messages.
 
 wakariyasu は、AI エージェントが書く日本語を、作業の経緯を知らない人が読んでも分かるようにする、Claude Code のプラグインです。エージェントがユーザーに返す報告や質問と、エージェントが書く文書（README・仕様書・コミットメッセージなど）の両方に効きます。
 

@@ -1,0 +1,64 @@
+#!/bin/sh
+# リポジトリの決まりを検査する。モデルは呼ばず、sh と標準のコマンドだけで動く。
+# 失敗した項目を標準エラーに出し、1つでも失敗すれば終了コード 1 を返す。
+set -u
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT" || exit 1
+fail=0
+ng() { echo "NG: $*" >&2; fail=1; }
+
+# 1. スキルの中の写しと AGENTS.snippet.md が、rules/ と references/ の本文と一致している
+bin/build --check >/dev/null || ng "写しが本文と食い違っている（bin/build を実行する）"
+
+# 2. 版が plugin.json・marketplace.json・CHANGELOG.md でそろっている
+version_of() { sed -n 's/^ *"version": "\([^"]*\)".*/\1/p' "$1"; }
+v_plugin="$(version_of .claude-plugin/plugin.json)"
+v_market="$(version_of .claude-plugin/marketplace.json)"
+[ -n "$v_plugin" ] || ng "plugin.json に version が無い"
+[ "$v_plugin" = "$v_market" ] || ng "版が食い違っている: plugin.json $v_plugin / marketplace.json $v_market"
+grep -q "^## \[$v_plugin\]" CHANGELOG.md || ng "CHANGELOG.md に $v_plugin の節が無い"
+
+# 3. 入手先に載せるのは wakariyasu だけ
+n="$(grep -c '"source":' .claude-plugin/marketplace.json)"
+[ "$n" = 1 ] || ng "marketplace.json に wakariyasu 以外のプラグインが載っている"
+
+# 4. スキルごとに、フォルダ名と同じ name と、description がある
+for d in skills/*/; do
+    s="${d%/}"; name="${s#skills/}"
+    head -1 "$s/SKILL.md" | grep -qx -- '---' || ng "$s/SKILL.md が frontmatter で始まっていない"
+    grep -qx "name: $name" "$s/SKILL.md" || ng "$s/SKILL.md の name がフォルダ名 $name と違う"
+    grep -q '^description: .' "$s/SKILL.md" || ng "$s/SKILL.md に description が無い"
+done
+
+# 5. フックが規則3本と表記の表を出す
+out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh が失敗した"
+for r in writing-to-user writing-documents polishing; do
+    printf '%s\n' "$out" | grep -qxF "$(head -1 "rules/$r.md")" || ng "フックの出力に rules/$r.md が無い"
+done
+printf '%s\n' "$out" | grep -qxF "$(head -1 references/styles.md)" || ng "フックの出力に references/styles.md が無い"
+
+# 6. スキルと規則が指す規則の見出し（「…」に沿って）が、規則の本文にある
+grep -ho '`polishing` の「[^」]*」' rules/*.md skills/*/SKILL.md | sed 's/.*「\(.*\)」/\1/' | sort -u | while read -r h; do
+    grep -q "^#.* $h\$" rules/polishing.md || { echo "NG: rules/polishing.md に見出し「$h」が無い" >&2; exit 1; }
+done || fail=1
+
+# 7. README から指すリポジトリ内のファイルがある
+grep -o '](\([^)#:]*\))' README.md | sed 's/^](//; s/)$//' | while read -r p; do
+    [ -e "$p" ] || { echo "NG: README.md が指す $p が無い" >&2; exit 1; }
+done || fail=1
+
+# 8. .editorconfig の決まり（UTF-8 は git が扱う。ここでは改行・空白を見る）
+git ls-files | while read -r f; do
+    [ -s "$f" ] || continue
+    [ -z "$(tail -c1 "$f")" ] || echo "NG: 末尾に改行が無い: $f" >&2
+    if grep -q "$(printf '\r')" "$f"; then echo "NG: CR がある: $f" >&2; fi
+    if grep -q "$(printf '\t')" "$f"; then echo "NG: タブがある: $f" >&2; fi
+    case "$f" in
+        *.md) ;;
+        *) if grep -q '[[:blank:]]$' "$f"; then echo "NG: 行末に空白がある: $f" >&2; fi ;;
+    esac
+done 2>&1 | grep . >&2 && fail=1
+
+[ "$fail" = 0 ] && echo "検査はすべて通った"
+exit "$fail"

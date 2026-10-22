@@ -2,7 +2,7 @@
 # rules/ と references/ の本文から、スキルごとの写しと AGENTS.snippet.md を作る。
 # 本文は rules/ と references/ だけで書き換える。
 #   skills/<名>/references/*.md … スキルだけを入れた環境で、スキルが読む写し
-#   AGENTS.snippet.md          … Claude Code 以外の道具に貼る規則の本文
+#   AGENTS.snippet.md          … Claude Code 以外の道具に貼る規則と表記の表の本文
 # bin/build --check は、写しが本文と食い違っていれば失敗する（書き換えない）。
 set -eu
 
@@ -38,6 +38,8 @@ RULES='writing-to-user writing-documents polishing'
         printf '\n'
         cat "$ROOT/rules/$r.md"
     done
+    printf '\n'
+    cat "$ROOT/references/styles.md"
 } > "$TMP/AGENTS.snippet.md"
 
 ok=0

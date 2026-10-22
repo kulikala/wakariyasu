@@ -65,4 +65,4 @@ description: 「現状は？」「現在のステータスは？」「今何し�
 
 ## 送る前に
 
-書いた報告を、規則 `polishing` に沿って整える。使えるスキルの中に yomiyasu があれば、yomiyasu スキルを呼び出し、報告の本文と文章の種類（mail）を渡して整える。状態欄の絵文字と表の構造は残すように伝える。yomiyasu が無ければ、`references/polishing.md` の「yomiyasu が無いときは自分で整える」に沿って整える。
+書いた報告を、規則 `polishing` の「まず自分で整える」に沿って整える。規則が読み込まれていなければ `references/polishing.md` を読む。表の構造も残す。

@@ -44,7 +44,7 @@ The phrases are what you would type in Japanese. Any wording with the same meani
 
 There is one more rule, `polishing`. It covers how to tidy Japanese text before handing it over, and how to choose the writing style described below.
 
-The three rules add about 3,700 Japanese characters (a few thousand tokens) to each session. `review-for-readers` starts a subagent, which costs extra time and tokens.
+The three rules add about 4,000 Japanese characters (a few thousand tokens) to each session. `review-for-readers` starts a subagent, which costs extra time and tokens.
 
 ## Writing style
 
@@ -60,15 +60,17 @@ To fix a style, add a line to CLAUDE.md, such as 「数字は算用数字で書�
 
 [yomiyasu](https://github.com/nanaism/yomiyasu) is a skill by a different author (nanaism). It fixes unnatural metaphors, mismatched subjects and predicates, and promotional wording in AI-written Japanese. wakariyasu fits the words and structure to the reader; yomiyasu then smooths the sentences themselves.
 
-Installing yomiyasu is optional but recommended. To have the agent use it, install yomiyasu and add this line to CLAUDE.md:
+The agent first polishes every text itself, following wakariyasu's rules. It checks for overlong sentences, subjects far from their predicates, empty words such as "groundbreaking", sentences that only announce what comes next, lead-in phrases such as 「結論から言うと」 ("to put the conclusion first"), and commas that only add a pause. Some of these checks are based on yomiyasu's checks. wakariyasu works with these checks alone, without yomiyasu.
+
+If yomiyasu is installed, the agent also runs documents that people will read, such as READMEs and manuals, through yomiyasu after polishing them itself, and tells yomiyasu what kind of text it is (README, manual and so on). It does not call yomiyasu for replies to the user. In about 30 trials with Sonnet and Opus, calling yomiyasu on a reply made it about three times as expensive and twice as slow, and changed only a few commas and similar details.
+
+yomiyasu runs only when it is asked for by name or by an instruction file such as CLAUDE.md, so wakariyasu's rules alone may not trigger it. To make sure every document goes through yomiyasu, add this line to CLAUDE.md (the instruction file Claude Code reads; AGENTS.md or similar in other agents):
 
 ```text
-3段落以上の返答は、送る前に yomiyasu で整える。
+人に渡す文書は、仕上げる前に yomiyasu で整える。
 ```
 
-(It means "Polish replies of three or more paragraphs with yomiyasu before sending them.") yomiyasu runs only when it is asked for by name or by an instruction file such as CLAUDE.md, so wakariyasu's rules alone may not trigger it. With the line in place, the agent runs long replies and documents through yomiyasu before handing them over, and tells it what kind of text it is (reply, PR, README and so on).
-
-wakariyasu also works without yomiyasu. The agent then checks its own text for overlong sentences, subjects far from their predicates, empty words such as "groundbreaking", and sentences that only announce what comes next ("The following points are important."), and fixes them.
+(It means "Polish documents for other people with yomiyasu before finishing them.")
 
 ## Installing
 

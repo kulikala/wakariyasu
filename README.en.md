@@ -58,19 +58,15 @@ To fix a style, add a line to CLAUDE.md, such as 「数字は算用数字で書�
 
 ## Working with yomiyasu
 
-[yomiyasu](https://github.com/nanaism/yomiyasu) is a skill by a different author (nanaism). It fixes unnatural metaphors, mismatched subjects and predicates, and promotional wording in AI-written Japanese. wakariyasu fits the words and structure to the reader; yomiyasu then smooths the sentences themselves.
+The agent first polishes the Japanese it writes, following wakariyasu's rules. Some of the checks in those rules are based on those of [yomiyasu](https://github.com/nanaism/yomiyasu) (nanaism/yomiyasu, a Japanese polishing skill by a different author). Where yomiyasu is installed, the agent also calls it when finishing documents that people will read, such as READMEs and manuals. wakariyasu works without yomiyasu.
 
-The agent first polishes every text itself, following wakariyasu's rules. It checks for overlong sentences, subjects far from their predicates, empty words such as "groundbreaking", sentences that only announce what comes next, lead-in phrases such as 「結論から言うと」 ("to put the conclusion first"), and commas that only add a pause. Some of these checks are based on yomiyasu's checks. wakariyasu works with these checks alone, without yomiyasu.
-
-If yomiyasu is installed, the agent also runs documents that people will read, such as READMEs and manuals, through yomiyasu after polishing them itself, and tells yomiyasu what kind of text it is (README, manual and so on). It does not call yomiyasu for replies to the user. In about 30 trials with Sonnet and Opus, calling yomiyasu on a reply made it about three times as expensive and twice as slow, and changed only a few commas and similar details.
-
-yomiyasu runs only when it is asked for by name or by an instruction file such as CLAUDE.md, so wakariyasu's rules alone may not trigger it. To make sure every document goes through yomiyasu, add this line to CLAUDE.md (the instruction file Claude Code reads; AGENTS.md or similar in other agents):
+To install yomiyasu as well, install wakariyasu as described under "Installing" below, then run the command below. The wakariyasu marketplace also lists yomiyasu, and its contents come from the yomiyasu repository.
 
 ```text
-人に渡す文書は、仕上げる前に yomiyasu で整える。
+/plugin install yomiyasu@wakariyasu
 ```
 
-(It means "Polish documents for other people with yomiyasu before finishing them.")
+In agents other than Claude Code, install yomiyasu as described in its repository.
 
 ## Installing
 
@@ -83,11 +79,7 @@ In Claude Code, run the two commands below. The first registers this repository 
 /plugin install wakariyasu@wakariyasu
 ```
 
-This installs both the rules and the skills. The same marketplace also lists yomiyasu, which is fetched from its own repository:
-
-```text
-/plugin install yomiyasu@wakariyasu
-```
+This installs both the rules and the skills.
 
 To check that it works, ask 「現状は？」 in a new session. A report with headings such as 「現在のゴール」 (current goal) and 「タスク」 (tasks) means wakariyasu is active.
 

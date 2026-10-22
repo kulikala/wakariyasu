@@ -54,17 +54,15 @@ wakariyasu はエージェントへの指示文でできていて、指示文に
 
 ## yomiyasu との組み合わせ
 
-[yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu）は、AI が書いた日本語の、不自然な比喩・主語と述語のずれ・宣伝のような言い回しを整えるスキルです。wakariyasu とは別の作者のものです。wakariyasu が語と構成を読み手に合わせ、yomiyasu が文そのものを整える、という分担になります。
+エージェントは、書いた日本語をまず wakariyasu の規則で整えます。整える項目の一部は、[yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu。別の作者による日本語の推敲スキル）の検査を参考にしています。yomiyasu が入っている環境では、README や手順書のように人に渡す文書を仕上げるときに、yomiyasu も呼び出します。yomiyasu が無くても、wakariyasu は動きます。
 
-エージェントはどの文章もまず wakariyasu の規則で自分で整えます。長すぎる文、離れすぎた主語と述語、「画期的な」のような中身の無い飾りの語、予告だけの文、前置きの句、間を取るだけの読点などを確かめて直します。この確かめる項目の一部は、yomiyasu の検査項目を参考にしています。yomiyasu を入れていなくても、wakariyasu はこれだけで動きます。
-
-yomiyasu が入っていれば、README や手順書のように人に渡す文書を書き上げたときに、自分で整えたあとで yomiyasu にも通します。そのとき、文章の種類（README・手順書など）も渡します。ユーザーへの返答では yomiyasu を呼びません。Sonnet と Opus で約30回試したところ、返答で yomiyasu を呼ぶと1回あたりの費用が約3倍、時間が約2倍になり、直った箇所は読点などの数か所にとどまりました。
-
-yomiyasu は名前を出して頼まれたときか、CLAUDE.md などの指示で求められたときにだけ動きます。そのため、wakariyasu の規則だけでは呼ばれないことがあります。文書のたびに確実に通したいときは、CLAUDE.md（Claude Code が読む指示のファイル。ほかのエージェントでは AGENTS.md など）に次の1行を書いてください。
+yomiyasu も一緒に入れるときは、下の「入れ方」で wakariyasu を入れたあとに、次を打ちます。wakariyasu の入手先には yomiyasu も載せてあり、中身は yomiyasu のリポジトリから入ります。
 
 ```text
-人に渡す文書は、仕上げる前に yomiyasu で整える。
+/plugin install yomiyasu@wakariyasu
 ```
+
+Claude Code 以外のエージェントでは、yomiyasu のリポジトリの案内に沿って入れてください。
 
 ## 入れ方
 
@@ -77,11 +75,7 @@ Claude Code の中で、次の2つを打ちます。1つ目はこのリポジト
 /plugin install wakariyasu@wakariyasu
 ```
 
-規則とスキルの両方が入ります。この入手先には yomiyasu も載せてあり、中身は yomiyasu のリポジトリから入ります。
-
-```text
-/plugin install yomiyasu@wakariyasu
-```
+規則とスキルの両方が入ります。
 
 入ったかどうかは新しいセッションで「現状は？」と聞いて確かめられます。「現在のゴール」「タスク」などの見出しのついた報告が返ってくれば、入っています。
 

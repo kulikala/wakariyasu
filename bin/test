@@ -31,12 +31,14 @@ for d in skills/*/; do
     grep -q '^description: .' "$s/SKILL.md" || ng "$s/SKILL.md に description が無い"
 done
 
-# 5. フックが規則3本と表記の表を出す
+# 5. フックが規則3本とリファレンスを出す
 out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh が失敗した"
 for r in writing-to-user writing-documents polishing; do
     printf '%s\n' "$out" | grep -qxF "$(head -1 "rules/$r.md")" || ng "フックの出力に rules/$r.md が無い"
 done
-printf '%s\n' "$out" | grep -qxF "$(head -1 references/styles.md)" || ng "フックの出力に references/styles.md が無い"
+for f in references/*.md; do
+    printf '%s\n' "$out" | grep -qxF "$(head -1 "$f")" || ng "フックの出力に $f が無い"
+done
 
 # 6. スキルと規則が指す規則の見出し（「…」に沿って）が、規則の本文にある
 grep -ho '`polishing` の「[^」]*」' rules/*.md skills/*/SKILL.md | sed 's/.*「\(.*\)」/\1/' | sort -u | while read -r h; do

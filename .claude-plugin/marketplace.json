@@ -9,7 +9,7 @@
     {
       "name": "wakariyasu",
       "description": "AI エージェントが書く日本語を、作業の経緯を知らない人が読んでも分かるようにする規則とスキル",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "kulikala"
       },

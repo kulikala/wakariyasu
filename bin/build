@@ -2,7 +2,7 @@
 # rules/ と references/ の本文から、スキルごとの写しと AGENTS.snippet.md を作る。
 # 本文は rules/ と references/ だけで書き換える。
 #   skills/<名>/references/*.md … スキルだけを入れた環境で、スキルが読む写し
-#   AGENTS.snippet.md          … Claude Code 以外の道具に貼る規則と表記の表の本文
+#   AGENTS.snippet.md          … Claude Code 以外の道具に貼る規則とリファレンスの本文
 # bin/build --check は、写しが本文と食い違っていれば失敗する（書き換えない）。
 set -eu
 
@@ -16,18 +16,26 @@ session-status rules/writing-to-user.md
 session-status rules/writing-documents.md
 session-status rules/polishing.md
 session-status references/styles.md
+session-status references/asking.md
+session-status references/writing-instructions.md
 explain-clearly rules/writing-to-user.md
 explain-clearly rules/writing-documents.md
 explain-clearly rules/polishing.md
 explain-clearly references/styles.md
+explain-clearly references/asking.md
+explain-clearly references/writing-instructions.md
 remove-meta-narrative rules/writing-to-user.md
 remove-meta-narrative rules/writing-documents.md
 remove-meta-narrative rules/polishing.md
 remove-meta-narrative references/styles.md
+remove-meta-narrative references/asking.md
+remove-meta-narrative references/writing-instructions.md
 review-for-readers rules/writing-to-user.md
 review-for-readers rules/writing-documents.md
 review-for-readers rules/polishing.md
 review-for-readers references/styles.md
+review-for-readers references/asking.md
+review-for-readers references/writing-instructions.md
 '
 RULES='writing-to-user writing-documents polishing'
 
@@ -38,8 +46,10 @@ RULES='writing-to-user writing-documents polishing'
         printf '\n'
         cat "$ROOT/rules/$r.md"
     done
-    printf '\n'
-    cat "$ROOT/references/styles.md"
+    for f in styles asking writing-instructions; do
+        printf '\n'
+        cat "$ROOT/references/$f.md"
+    done
 } > "$TMP/AGENTS.snippet.md"
 
 ok=0

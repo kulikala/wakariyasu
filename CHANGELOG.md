@@ -3,6 +3,24 @@
 版の番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従います。
 規則やスキルの書き方が変わり、エージェントの振る舞いが変わる変更は、マイナー版を上げます。
 
+## [0.4.0] - 2026-10-25
+
+### 変更
+
+- 規則 `writing-to-user` の判断の問いかけを、リファレンス「判断の問いかけの書き方」（`references/asking.md`）に沿う書き方にした。
+  問いごとに、セッションの通し番号の見出し、ユーザーが決める理由、お勧めの度合いの高い順の案の表を書く。
+  案の記号には A・B・C… と、二択の Y・N を使える。
+- 規則 `writing-to-user` から、問う前に答えの案を出し、調べれば分かることは聞かずに調べる、という項目を外した。
+  いつ問うかは決めず、問いの書き方だけを決める。
+- スキル `session-status` の「判断を求めていること」を、同じリファレンスの形にした。
+- 規則 `writing-documents` から、スキル・規則・プロンプトを書くときに、リファレンス
+  「エージェント向けの指示文の書き方」（`references/writing-instructions.md`）を読むようにした。
+
+### 追加
+
+- リファレンス `references/asking.md` と `references/writing-instructions.md`。
+  フック・各スキルの写し・`AGENTS.snippet.md` にも入れた。
+
 ## [0.3.0] - 2026-10-23
 
 ### 変更
@@ -60,6 +78,7 @@
 - セッションの始めに規則を読み込ませるフック。
 - Claude Code 以外のエージェントに貼る `AGENTS.snippet.md`。
 
+[0.4.0]: https://github.com/kulikala/wakariyasu/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/kulikala/wakariyasu/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/kulikala/wakariyasu/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/kulikala/wakariyasu/compare/v0.2.1...v0.2.2

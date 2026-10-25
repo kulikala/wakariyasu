@@ -6,9 +6,9 @@
 .claude-plugin/plugin.json       プラグインの定義（名前・版・スキルの場所）
 .claude-plugin/marketplace.json  プラグインの入手先（マーケットプレイス）の定義
 rules/                           規則の本文（writing-to-user・writing-documents・polishing）
-references/styles.md             日本語の表記の、文章の種類ごとの既定
+references/                      リファレンスの本文（日本語の表記・判断の問いかけ・指示文の書き方）
 skills/<名前>/SKILL.md           スキルの本文
-skills/<名前>/references/        規則と表記の表の写し（bin/build が作る）
+skills/<名前>/references/        規則とリファレンスの写し（bin/build が作る）
 hooks/                           セッションの始めに規則を読み込ませるフック
 AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（bin/build が作る）
 bin/build                        rules/ と references/ の本文を、スキルの中と AGENTS.snippet.md に写す
@@ -22,7 +22,7 @@ CHANGELOG.md                     版ごとの変更
 
 ## 本文を直す
 
-規則と表記の表は、`rules/` と `references/` だけで直します。スキルの中の `references/` と
+規則とリファレンスは、`rules/` と `references/` だけで直します。スキルの中の `references/` と
 `AGENTS.snippet.md` は写しなので、直接は直しません。直したら `bin/build` で写しを作り直します。
 
 ```sh
@@ -49,7 +49,7 @@ bin/test
 - 版が `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
 - 入手先（`marketplace.json`）に載っているプラグインが1つだけ。
 - スキルごとに、`SKILL.md` が frontmatter で始まり、フォルダ名と同じ `name` と、`description` がある。
-- フックの出力に、規則3本と表記の表それぞれの見出しの行がある。
+- フックの出力に、規則3本と `references/` のリファレンスそれぞれの見出しの行がある。
 - 規則とスキルが「規則 `polishing` の「…」」と指す見出しが、`rules/polishing.md` にある。
 - README が指すリポジトリ内のファイルがある。
 - 改行と空白が `.editorconfig` の決まりに合っている（git に登録済みのファイルが対象）。

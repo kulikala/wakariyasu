@@ -28,6 +28,8 @@ README・仕様書・設計書・手順書・規則・SKILL.md・プロンプト
 - スキル・規則・プロンプトのように、エージェントが読んで動く文書は、wakariyasu の
   「エージェント向けの指示文の書き方」にも沿う。この書き方がセッションに読み込まれていなければ、
   wakariyasu のどのスキルにもある `references/writing-instructions.md` を読む。
+- README は、wakariyasu の「README の書き方」にも沿う。この書き方がセッションに読み込まれていなければ、
+  wakariyasu のどのスキルにもある `references/readme.md` を読む。
 
 ## 書き終えたら
 

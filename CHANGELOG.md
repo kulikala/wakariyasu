@@ -3,6 +3,15 @@
 版の番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従います。
 規則やスキルの書き方が変わり、エージェントの振る舞いが変わる変更は、マイナー版を上げます。
 
+## [0.5.0] - 2026-10-26
+
+### 追加
+
+- リファレンス「README の書き方」（`references/readme.md`）を加えた。日本語の README を、人が保守している
+  日本語の README と同じ章の名前・組み立て・言葉で書くための方針で、機能の区分を先に示すこと、対応環境の対応表、
+  ディスク容量と別途必要なソフトウェアの表の列、OS ごとのインストールの節、翻訳調の言い回しの言い換えを含む。
+- 規則 `writing-documents` から、README を書くときに、このリファレンスを読むようにした。
+
 ## [0.4.0] - 2026-10-25
 
 ### 変更
@@ -78,6 +87,7 @@
 - セッションの始めに規則を読み込ませるフック。
 - Claude Code 以外のエージェントに貼る `AGENTS.snippet.md`。
 
+[0.5.0]: https://github.com/kulikala/wakariyasu/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/kulikala/wakariyasu/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/kulikala/wakariyasu/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/kulikala/wakariyasu/compare/v0.2.2...v0.2.3

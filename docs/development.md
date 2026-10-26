@@ -6,7 +6,7 @@
 .claude-plugin/plugin.json       プラグインの定義（名前・版・スキルの場所）
 .claude-plugin/marketplace.json  プラグインの入手先（マーケットプレイス）の定義
 rules/                           規則の本文（writing-to-user・writing-documents・polishing）
-references/                      リファレンスの本文（日本語の表記・判断の問いかけ・指示文の書き方）
+references/                      リファレンスの本文（日本語の表記・判断の問いかけ・指示文の書き方・README の書き方）
 skills/<名前>/SKILL.md           スキルの本文
 skills/<名前>/references/        規則とリファレンスの写し（bin/build が作る）
 hooks/                           セッションの始めに規則を読み込ませるフック

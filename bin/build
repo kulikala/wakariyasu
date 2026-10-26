@@ -18,24 +18,28 @@ session-status rules/polishing.md
 session-status references/styles.md
 session-status references/asking.md
 session-status references/writing-instructions.md
+session-status references/readme.md
 explain-clearly rules/writing-to-user.md
 explain-clearly rules/writing-documents.md
 explain-clearly rules/polishing.md
 explain-clearly references/styles.md
 explain-clearly references/asking.md
 explain-clearly references/writing-instructions.md
+explain-clearly references/readme.md
 remove-meta-narrative rules/writing-to-user.md
 remove-meta-narrative rules/writing-documents.md
 remove-meta-narrative rules/polishing.md
 remove-meta-narrative references/styles.md
 remove-meta-narrative references/asking.md
 remove-meta-narrative references/writing-instructions.md
+remove-meta-narrative references/readme.md
 review-for-readers rules/writing-to-user.md
 review-for-readers rules/writing-documents.md
 review-for-readers rules/polishing.md
 review-for-readers references/styles.md
 review-for-readers references/asking.md
 review-for-readers references/writing-instructions.md
+review-for-readers references/readme.md
 '
 RULES='writing-to-user writing-documents polishing'
 
@@ -46,7 +50,7 @@ RULES='writing-to-user writing-documents polishing'
         printf '\n'
         cat "$ROOT/rules/$r.md"
     done
-    for f in styles asking writing-instructions; do
+    for f in styles asking writing-instructions readme; do
         printf '\n'
         cat "$ROOT/references/$f.md"
     done

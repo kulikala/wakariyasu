@@ -7,7 +7,7 @@ for r in writing-to-user writing-documents polishing; do
     cat "${CLAUDE_PLUGIN_ROOT}/rules/$r.md"
     printf '\n'
 done
-for f in styles asking writing-instructions; do
+for f in styles asking writing-instructions readme; do
     cat "${CLAUDE_PLUGIN_ROOT}/references/$f.md"
     printf '\n'
 done

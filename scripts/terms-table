@@ -1,0 +1,10 @@
+#!/bin/sh
+# references/terms.tsv の前の2列を、Markdown の表にして出す。フックと bin/build が使う。
+set -eu
+
+DIR=$(cd "$(dirname "$0")/.." && pwd)
+printf '# 日本語では使わない言い回し\n\n'
+printf '日本語の文章では、次の言い回しを使わずに、代わりの語で書く。翻訳調の語や作業の中で生まれた造語が混ざると、\n'
+printf '読み手は意味を取り違え、文書を信頼しにくくなる。括弧の中は、使わない意味を示す。\n\n'
+printf '| 言い回し | 代わりに使う語 |\n|---|---|\n'
+awk -F '\t' '$0 !~ /^#/ && NF >= 2 { printf "| %s | %s |\n", $1, $2 }' "$DIR/references/terms.tsv"

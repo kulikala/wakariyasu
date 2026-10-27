@@ -1,0 +1,39 @@
+#!/bin/sh
+# 日本語の文章から、日本語では使わない言い回しを探す。
+# 使い方: check-terms [ファイル...]   ファイルを省くか - を渡すと標準入力を読む。
+# 見つかった行を「ファイル:行: 語 → 言い換え」の形で出し、1件でもあれば終了コード 1 で終わる。
+set -eu
+
+DIR=$(cd "$(dirname "$0")/.." && pwd)
+TERMS="$DIR/references/terms.tsv"
+for l in C.UTF-8 en_US.UTF-8 ja_JP.UTF-8; do
+    if locale -a 2>/dev/null | grep -qx "$l"; then LC_ALL=$l; export LC_ALL; break; fi
+done
+
+TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
+TAB=$(printf '\t')
+found=0
+
+[ $# -eq 0 ] && set -- -
+for f in "$@"; do
+    name=$f
+    [ "$f" = - ] && name='(標準入力)'
+    # コードブロックの行は空にし、インラインのコードと「」の中身を消す。行の数は変えない。
+    cat -- "$f" | awk '/^[ \t]*```/ { f = !f; print ""; next } f { print ""; next } { print }' |
+        sed -E -e 's/`[^`]*`/CODE/g' -e 's/「[^」]*」/「」/g' >"$TMP/body"
+    while IFS="$TAB" read -r term say hit skip; do
+        case $term in '' | '#'*) continue ;; esac
+        if [ "$skip" != - ]; then
+            sed -E "s/($skip)//g" "$TMP/body"
+        else
+            cat "$TMP/body"
+        fi | grep -nE -o -- "$hit" >"$TMP/hits" || continue
+        found=1
+        while IFS=: read -r n w; do
+            w=$(printf '%s' "$w" | sed 's/CODE/`…`/')
+            printf '%s:%s: %s → %s\n' "$name" "$n" "$w" "$say"
+        done <"$TMP/hits"
+    done <"$TERMS"
+done
+exit $found

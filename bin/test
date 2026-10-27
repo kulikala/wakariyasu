@@ -40,6 +40,8 @@ for f in references/*.md; do
     printf '%s\n' "$out" | grep -qxF "$(head -1 "$f")" || ng "フックの出力に $f が無い"
 done
 
+printf '%s\n' "$out" | grep -qx '# 日本語では使わない言い回し' || ng "フックの出力に、日本語では使わない言い回しの表が無い"
+
 # 6. スキルと規則が指す規則の見出し（「…」に沿って）が、規則の本文にある
 grep -ho '`polishing` の「[^」]*」' rules/*.md skills/*/SKILL.md | sed 's/.*「\(.*\)」/\1/' | sort -u | while read -r h; do
     grep -q "^#.* $h\$" rules/polishing.md || { echo "NG: rules/polishing.md に見出し「$h」が無い" >&2; exit 1; }
@@ -55,12 +57,26 @@ git ls-files | while read -r f; do
     [ -s "$f" ] || continue
     [ -z "$(tail -c1 "$f")" ] || echo "NG: 末尾に改行が無い: $f" >&2
     if grep -q "$(printf '\r')" "$f"; then echo "NG: CR がある: $f" >&2; fi
-    if grep -q "$(printf '\t')" "$f"; then echo "NG: タブがある: $f" >&2; fi
+    case "$f" in
+        *.tsv) ;;
+        *) if grep -q "$(printf '\t')" "$f"; then echo "NG: タブがある: $f" >&2; fi ;;
+    esac
     case "$f" in
         *.md) ;;
         *) if grep -q '[[:blank:]]$' "$f"; then echo "NG: 行末に空白がある: $f" >&2; fi ;;
     esac
 done 2>&1 | grep . >&2 && fail=1
+
+# 9. 使わない言い回しの検査が、試験の例のとおりに当たる・当たらない
+grep -v '^#' tests/terms-cases.txt | while IFS= read -r l; do
+    want=${l%% *}; body=${l#* }
+    if printf '%s\n' "$body" | sh scripts/check-terms >/dev/null; then got=×; else got=○; fi
+    [ "$want" = "$got" ] || { echo "NG: 使わない言い回しの検査が試験の例と違う（$want のはずが $got）: $body" >&2; exit 1; }
+done || fail=1
+
+# 10. wakariyasu 自身の本文に、使わない言い回しが無い（変更履歴は過去の版の記録なので除く）
+sh scripts/check-terms rules/*.md references/*.md skills/*/SKILL.md README.md docs/*.md >&2 ||
+    ng "本文に日本語では使わない言い回しがある（上の行を直す）"
 
 [ "$fail" = 0 ] && echo "検査はすべて通った"
 exit "$fail"

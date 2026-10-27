@@ -11,3 +11,5 @@ for f in styles asking writing-instructions readme; do
     cat "${CLAUDE_PLUGIN_ROOT}/references/$f.md"
     printf '\n'
 done
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/terms-table"
+printf '\nファイルに書いた文書の検査: sh "%s/scripts/check-terms" <ファイル>\n' "${CLAUDE_PLUGIN_ROOT}"

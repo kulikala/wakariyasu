@@ -6,8 +6,9 @@ set -eu
 
 DIR=$(cd "$(dirname "$0")/.." && pwd)
 TERMS="$DIR/references/terms.tsv"
-for l in C.UTF-8 en_US.UTF-8 ja_JP.UTF-8; do
-    if locale -a 2>/dev/null | grep -qx "$l"; then LC_ALL=$l; export LC_ALL; break; fi
+# 日本語の文字の範囲を正規表現で扱うため、UTF-8 のロケールで動かす（名前の綴りは OS ごとに違う）
+for l in C.UTF-8 C.utf8 en_US.UTF-8 en_US.utf8 ja_JP.UTF-8 ja_JP.utf8; do
+    if [ "$(LC_ALL=$l locale charmap 2>/dev/null)" = UTF-8 ]; then LC_ALL=$l; export LC_ALL; break; fi
 done
 
 TMP=$(mktemp -d)

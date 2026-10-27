@@ -3,6 +3,13 @@
 バージョンの番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従います。
 規則やスキルの書き方が変わり、エージェントの振る舞いが変わる変更は、マイナーバージョンを上げます。
 
+## [0.5.1] - 2026-10-27
+
+### 変更
+
+- `scripts/check-terms` が、Linux の UTF-8 のロケール（`C.utf8` などの綴り）でも動くようにした。
+  ロケールが見つからないと、日本語の文字の範囲を正規表現で扱えず、検査が失敗していた。
+
 ## [0.5.0] - 2026-10-27
 
 ### 追加
@@ -96,6 +103,7 @@
 - セッションの始めに規則を読み込ませるフック。
 - Claude Code 以外のエージェントに貼る `AGENTS.snippet.md`。
 
+[0.5.1]: https://github.com/kulikala/wakariyasu/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kulikala/wakariyasu/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/kulikala/wakariyasu/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/kulikala/wakariyasu/compare/v0.2.3...v0.3.0

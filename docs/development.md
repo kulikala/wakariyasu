@@ -9,29 +9,29 @@ rules/                           規則の本文（writing-to-user・writing-doc
 references/                      リファレンスの本文（日本語の表記・判断の問いかけ・指示文の書き方・README の書き方）と、
                                  日本語では使わない言い回しの一覧（terms.tsv）
 skills/<名前>/SKILL.md           スキルの本文
-skills/<名前>/references/        規則・リファレンス・一覧のコピー（bin/build が作る）
-skills/<名前>/scripts/           check-terms のコピー（bin/build が作る）
+skills/<名前>/references/        規則・リファレンス・一覧のコピー（dev/build が作る）
+skills/<名前>/scripts/           check-terms のコピー（dev/build が作る）
 scripts/check-terms              日本語では使わない言い回しを文書から探す
 scripts/terms-table              一覧を、フックと AGENTS.snippet.md に入れる表にする
 tests/terms-cases.txt            check-terms が当たる例と当たらない例
 hooks/                           セッションの始めに規則を読み込ませるフック
-AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（bin/build が作る）
-bin/build                        rules/・references/・scripts/ の本文を、スキルの中と AGENTS.snippet.md にコピーする
-bin/test                         リポジトリの決まりを検査する
+AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（dev/build が作る）
+dev/build                        rules/・references/・scripts/ の本文を、スキルの中と AGENTS.snippet.md にコピーする
+dev/test                         リポジトリの決まりを検査する
 evals/                           スキルが呼ばれるかを測る claude plugin eval のケース
 docs/                            この手引き
 CHANGELOG.md                     バージョンごとの変更
 ```
 
-フック・`bin/build`・`scripts/` は `sh` と標準のコマンドだけで動きます。`bin/test` は、それに加えて `git` を使います。Python などのほかの処理系は要りません。
+フック・`dev/build`・`scripts/` は `sh` と標準のコマンドだけで動きます。`dev/test` は、それに加えて `git` を使います。Python などのほかの処理系は要りません。
 
 ## 本文を直す
 
 規則とリファレンスは、`rules/` と `references/` だけで直します。スキルの中の `references/` と
-`AGENTS.snippet.md` はコピーなので、直接は直しません。直したら `bin/build` でコピーを作り直します。
+`AGENTS.snippet.md` はコピーなので、直接は直しません。直したら `dev/build` でコピーを作り直します。
 
 ```sh
-bin/build
+dev/build
 ```
 
 規則とスキルの本文は、2つの層に分けて書きます。
@@ -45,10 +45,10 @@ bin/build
 ## 検査する
 
 ```sh
-bin/test
+dev/test
 ```
 
-`bin/test` はモデルを呼ばずに、次を確かめます。GitHub Actions も push と pull request のたびに同じ検査を実行します。
+`dev/test` はモデルを呼ばずに、次を確かめます。GitHub Actions も push と pull request のたびに同じ検査を実行します。
 
 - スキルの中のコピーと `AGENTS.snippet.md` が本文と一致している。
 - バージョンが `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
@@ -59,6 +59,7 @@ bin/test
 - README が指すリポジトリ内のファイルがある。
 - `check-terms` が `tests/terms-cases.txt` の例のとおりに当たり、当たらない。
 - 規則・リファレンス・SKILL.md・README・手引きに、日本語では使わない言い回しが無い。
+- 最上位に `bin/` が無い。`bin/` があると、claude.ai と Cowork はプラグイン全体を受け付けない。開発用のスクリプトは `dev/` に置く。
 - 改行と空白が `.editorconfig` の決まりに合っている（git に登録済みのファイルが対象）。
 
 プラグインの定義の書式は Claude Code の検査でも確かめます。
@@ -93,7 +94,7 @@ claude plugin eval . --model sonnet --allow-tools Write Edit --no-publish --max-
 1. `CHANGELOG.md` に新しいバージョンの節を書く。エージェントの振る舞いが変わる変更はマイナーバージョン、
    README や検査だけの変更はパッチバージョンを上げる。
 2. `.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を同じ値にする。
-3. `bin/test` と `claude plugin validate .` を通す。
+3. `dev/test` と `claude plugin validate .` を通す。
 4. コミットし、そのコミットに `v0.3.0` の形のタグを付けて push する。GitHub で同じタグのリリースを出し、
    本文に `CHANGELOG.md` のそのバージョンの節を載せる。
 

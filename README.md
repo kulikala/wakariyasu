@@ -1,8 +1,8 @@
 # wakariyasu
 
-wakariyasu is a Claude Code plugin that adds rules and skills to an AI agent so that the Japanese it writes can be understood by someone who has not followed its work. This applies to the agent's reports and questions to the user, and to the documents the agent writes, such as READMEs, specs and commit messages.
+wakariyasu is a plugin for Claude Code and the Claude apps that adds rules and skills to an AI agent so that the Japanese it writes can be understood by someone who has not followed its work. This applies to the agent's reports and questions to the user, and to the documents the agent writes, such as READMEs, specs and commit messages.
 
-wakariyasu は、AI エージェントが書く日本語を、作業の経緯を知らない人が読んでも分かるようにする、Claude Code のプラグインです。エージェントがユーザーに返す報告や質問と、エージェントが書く文書（README・仕様書・コミットメッセージなど）の両方に効きます。
+wakariyasu は、AI エージェントが書く日本語を、作業の経緯を知らない人が読んでも分かるようにする、Claude Code と Claude のアプリで使えるプラグインです。エージェントがユーザーに返す報告や質問と、エージェントが書く文書（README・仕様書・コミットメッセージなど）の両方に効きます。
 
 エージェントに長い作業を任せると、報告や質問が、作業の途中でエージェントが付けた呼び名や、途中で決めた前提のまま書かれがちです。報告を読む人は「結局どういうこと？」と聞き返すことになります。wakariyasu はエージェントへの指示文を足して、経緯を知らない読み手に通じる形で書かせます。
 
@@ -69,16 +69,26 @@ yomiyasu は wakariyasu とは別のプラグインです。一緒に入れる�
 
 ### Claude Code に、プラグインとして入れる（お勧め）
 
-Claude Code の中で、次の2つを打ちます。1つ目はこのリポジトリをプラグインの入手先（マーケットプレイス）として登録します。2つ目はそこから wakariyasu を入れます（`wakariyasu@wakariyasu` は「プラグイン名@入手先の名前」です）。
+Claude Code の中で、次の2つを実行します。1つ目はこのリポジトリをプラグインの入手先（マーケットプレイス）として登録します。2つ目はそこから wakariyasu を入れます（`wakariyasu@wakariyasu` は「プラグイン名@入手先の名前」です）。
 
 ```text
 /plugin marketplace add kulikala/wakariyasu
 /plugin install wakariyasu@wakariyasu
 ```
 
-規則とスキルの両方が入ります。
+Claude Code には、規則とスキルの両方が入ります。
 
 スキルが入ったかどうかは、新しいセッションで「現状は？」と聞いて確かめられます。「現在のゴール」「タスク」などの見出しのついた報告が返ってくれば、入っています。規則とリファレンスは、プラグインのフックがセッションの始めに読み込みます。
+
+### Claude のアプリ（Web・デスクトップ・スマホ）と Cowork に入れる
+
+claude.ai（Web）かデスクトップアプリで **Customize > Plugins** を開き、**Add > Add marketplace** に `kulikala/wakariyasu` を入力して、wakariyasu を入れます。プラグインは claude.ai のアカウントに入るので、入れる操作は Web かデスクトップアプリで1回行えば、同じアカウントでログインしたスマホのアプリでも使えます。Cowork でも、この操作で入れたプラグインが使えます。
+
+チャットで使えるのは、上の「使う場面」の表にある4本のスキル（session-status・explain-clearly・remove-meta-narrative・review-for-readers）です。入ったかどうかは、チャットで「現状は？」と聞いて、見出しのついた報告が返ってくるかで確かめられます。
+
+チャットはプラグインのフック（セッションの始めに規則を読み込ませる仕組み）を読み込まないので、規則は自動では効きません。表の「いつもの返答」と「文書を書かせる」の場面にも効かせたいときは、[`AGENTS.snippet.md`](AGENTS.snippet.md) の全文を、Web かデスクトップアプリの設定（左下の名前 > Settings）にある「Your Claude」>「Instructions」か、claude.ai のプロジェクトの指示に貼ります。指示の欄に入りきらなければ、ファイルの最初の見出し「ユーザーへの返答は、経緯を追っていない人が読んで分かるように書く」から次の見出しの前までを貼ります。この部分だけでも、「いつもの返答」の場面には効きます。
+
+Cowork（デスクトップアプリで、作業をまとめて任せる機能）は、チャットと違ってプラグインのフックも読み込むので、Claude Code と同じく規則とスキルの両方が入ります。
 
 ### ほかのエージェントで使う
 
@@ -98,7 +108,7 @@ gh skill install kulikala/wakariyasu --all --scope user --agent codex
 
 ## このリポジトリを直す人へ
 
-フォルダの構成、規則を直したあとの手順、検査（`bin/test`）、スキルが呼ばれるかを測る eval、バージョンの上げ方は、[開発の手引き](docs/development.md) にあります。バージョンごとの変更は [CHANGELOG.md](CHANGELOG.md) にあります。
+フォルダの構成、規則を直したあとの手順、検査（`dev/test`）、スキルが呼ばれるかを測る eval、バージョンの上げ方は、[開発の手引き](docs/development.md) にあります。バージョンごとの変更は [CHANGELOG.md](CHANGELOG.md) にあります。
 
 ## ライセンス
 

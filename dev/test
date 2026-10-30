@@ -9,7 +9,7 @@ fail=0
 ng() { echo "NG: $*" >&2; fail=1; }
 
 # 1. スキルの中の写しと AGENTS.snippet.md が、rules/ と references/ の本文と一致している
-bin/build --check >/dev/null || ng "写しが本文と食い違っている（bin/build を実行する）"
+dev/build --check >/dev/null || ng "写しが本文と食い違っている（dev/build を実行する）"
 
 # 2. 版が plugin.json・marketplace.json・CHANGELOG.md でそろっている
 version_of() { sed -n 's/^ *"version": "\([^"]*\)".*/\1/p' "$1"; }
@@ -77,6 +77,9 @@ done || fail=1
 # 10. wakariyasu 自身の本文に、使わない言い回しが無い（変更履歴は過去の版の記録なので除く）
 sh scripts/check-terms rules/*.md references/*.md skills/*/SKILL.md README.md docs/*.md >&2 ||
     ng "本文に日本語では使わない言い回しがある（上の行を直す）"
+
+# 11. 最上位に bin/ が無い（あると claude.ai と Cowork がプラグインを受け付けない）
+[ ! -e bin ] || ng "最上位に bin/ がある（claude.ai と Cowork で入れられなくなる）"
 
 [ "$fail" = 0 ] && echo "検査はすべて通った"
 exit "$fail"

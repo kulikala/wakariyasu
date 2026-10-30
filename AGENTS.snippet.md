@@ -1,5 +1,5 @@
 <!-- wakariyasu: https://github.com/kulikala/wakariyasu -->
-<!-- rules/ から bin/build で作った写し。ここを直さず、rules/ を直す。 -->
+<!-- rules/ から dev/build で作った写し。ここを直さず、rules/ を直す。 -->
 
 # ユーザーへの返答は、経緯を追っていない人が読んで分かるように書く
 

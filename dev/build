@@ -4,7 +4,7 @@
 #   skills/<名>/references/*   … スキルだけを入れた環境で、スキルが読む写し
 #   skills/<名>/scripts/*      … 同じく、スキルから使う検査のスクリプト
 #   AGENTS.snippet.md          … Claude Code 以外の道具に貼る規則とリファレンスの本文
-# bin/build --check は、写しが本文と食い違っていれば失敗する（書き換えない）。
+# dev/build --check は、写しが本文と食い違っていれば失敗する（書き換えない）。
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -54,7 +54,7 @@ RULES='writing-to-user writing-documents polishing'
 
 {
     printf '<!-- wakariyasu: https://github.com/kulikala/wakariyasu -->\n'
-    printf '<!-- rules/ から bin/build で作った写し。ここを直さず、rules/ を直す。 -->\n'
+    printf '<!-- rules/ から dev/build で作った写し。ここを直さず、rules/ を直す。 -->\n'
     for r in $RULES; do
         printf '\n'
         cat "$ROOT/rules/$r.md"

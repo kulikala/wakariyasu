@@ -12,7 +12,7 @@ indent_size = 2
 # 行末の2つの空白は Markdown の改行になるので、消さない
 trim_trailing_whitespace = false
 
-[{bin/*,*.sh}]
+[{dev/*,*.sh}]
 indent_size = 4
 
 [*.tsv]

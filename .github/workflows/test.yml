@@ -11,4 +11,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: リポジトリの決まりを検査する
-        run: sh bin/test
+        run: sh dev/test

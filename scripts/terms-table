@@ -1,5 +1,5 @@
 #!/bin/sh
-# references/terms.tsv の前の2列を、Markdown の表にして出す。フックと bin/build が使う。
+# references/terms.tsv の前の2列を、Markdown の表にして出す。フックと dev/build が使う。
 set -eu
 
 DIR=$(cd "$(dirname "$0")/.." && pwd)

@@ -84,7 +84,7 @@ Claude Code には、規則とスキルの両方が入ります。
 
 claude.ai（Web）かデスクトップアプリで **Customize > Plugins** を開き、**Add > Add marketplace** に `kulikala/wakariyasu` を入力して、wakariyasu を入れます。プラグインは claude.ai のアカウントに入るので、入れる操作は Web かデスクトップアプリで1回行えば、同じアカウントでログインしたスマホのアプリでも使えます。Cowork でも、この操作で入れたプラグインが使えます。
 
-チャットで使えるのは、上の「使う場面」の表にある4本のスキル（session-status・explain-clearly・remove-meta-narrative・review-for-readers）です。入ったかどうかは、チャットで「現状は？」と聞いて、見出しのついた報告が返ってくるかで確かめられます。
+チャットで使えるのは、上の「使う場面」の表にある4本のスキル（session-status・explain-clearly・remove-meta-narrative・review-for-readers）です。入ったかどうかはチャットで「現状は？」と聞いて、見出しのついた報告が返ってくるかで確かめられます。
 
 チャットはプラグインのフック（セッションの始めに規則を読み込ませる仕組み）を読み込まないので、規則は自動では効きません。表の「いつもの返答」と「文書を書かせる」の場面にも効かせたいときは、[`AGENTS.snippet.md`](AGENTS.snippet.md) の全文を、Web かデスクトップアプリの設定（左下の名前 > Settings）にある「Your Claude」>「Instructions」か、claude.ai のプロジェクトの指示に貼ります。指示の欄に入りきらなければ、ファイルの最初の見出し「ユーザーへの返答は、経緯を追っていない人が読んで分かるように書く」から次の見出しの前までを貼ります。この部分だけでも、「いつもの返答」の場面には効きます。
 

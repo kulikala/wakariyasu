@@ -95,7 +95,7 @@ claude plugin eval . --model sonnet --allow-tools Write Edit --no-publish --max-
    README や検査だけの変更はパッチバージョンを上げる。
 2. `.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を同じ値にする。
 3. `dev/test` と `claude plugin validate .` を通す。
-4. コミットし、そのコミットに `v0.3.0` の形のタグを付けて push する。GitHub で同じタグのリリースを出し、
+4. コミットし、そのコミットに `v0.3.0` の形のタグを付けて push する。GitHub で同じタグのリリースを作り、
    本文に `CHANGELOG.md` のそのバージョンの節を載せる。
 
 入れてある人は `/plugin marketplace update wakariyasu` のあとに

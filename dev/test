@@ -42,9 +42,13 @@ done
 
 printf '%s\n' "$out" | grep -qx '# 日本語では使わない言い回し' || ng "フックの出力に、日本語では使わない言い回しの表が無い"
 
-# 6. スキルと規則が指す規則の見出し（「…」に沿って）が、規則の本文にある
-grep -ho '`polishing` の「[^」]*」' rules/*.md skills/*/SKILL.md | sed 's/.*「\(.*\)」/\1/' | sort -u | while read -r h; do
-    grep -q "^#.* $h\$" rules/polishing.md || { echo "NG: rules/polishing.md に見出し「$h」が無い" >&2; exit 1; }
+# 6. 規則・リファレンス・スキルが「（`x.md`）の「…」の節」と指す節の見出しが、指された規則かリファレンスにある
+grep -ho '`[a-z-]*\.md`）の「[^」]*」の節' rules/*.md references/*.md skills/*/SKILL.md | sort -u | while read -r ref; do
+    f=$(printf '%s' "$ref" | sed 's/^`\([^`]*\)`.*/\1/')
+    h=$(printf '%s' "$ref" | sed 's/.*）の「\(.*\)」の節$/\1/')
+    t=rules/$f; [ -e "$t" ] || t=references/$f
+    [ -e "$t" ] || { echo "NG: $f が rules/ にも references/ にも無い" >&2; exit 1; }
+    grep -q "^#.* $h\$" "$t" || { echo "NG: $t に見出し「$h」が無い" >&2; exit 1; }
 done || fail=1
 
 # 7. README から指すリポジトリ内のファイルがある

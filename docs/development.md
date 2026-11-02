@@ -19,11 +19,11 @@ AGENTS.snippet.md                Claude Code 以外のエージェントに貼�
 dev/build                        rules/・references/・scripts/ の本文を、スキルの中と AGENTS.snippet.md にコピーする
 dev/test                         リポジトリの決まりを検査する
 evals/                           スキルが呼ばれるかを測る claude plugin eval のケース
-docs/                            この手引き
+docs/                            開発の手引き
 CHANGELOG.md                     バージョンごとの変更
 ```
 
-フック・`dev/build`・`scripts/` は `sh` と標準のコマンドだけで動きます。`dev/test` は、それに加えて `git` を使います。Python などのほかの処理系は要りません。
+フック・`dev/build`・`scripts/` は `sh` と標準のコマンドだけで動きます。`dev/test` は、さらに `git` を使います。Python などのほかの処理系は要りません。
 
 ## 本文を直す
 
@@ -54,8 +54,8 @@ dev/test
 - バージョンが `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
 - 入手先（`marketplace.json`）に載っているプラグインが1つだけ。
 - スキルごとに、`SKILL.md` が frontmatter で始まり、フォルダ名と同じ `name` と、`description` がある。
-- フックの出力に、規則3本と `references/` のリファレンスそれぞれの見出しの行と、日本語では使わない言い回しの表がある。
-- 規則とスキルが「規則 `polishing` の「…」」と指す見出しが、`rules/polishing.md` にある。
+- フックの出力に、規則3本と `references/` の各リファレンスの見出しの行と、日本語では使わない言い回しの表がある。
+- 規則・リファレンス・スキルが、別の規則やリファレンスの節を名指しする参照で指す節の見出しが、指された規則かリファレンスにある。
 - README が指すリポジトリ内のファイルがある。
 - `check-terms` が `tests/terms-cases.txt` の例のとおりに当たり、当たらない。
 - 規則・リファレンス・SKILL.md・README・手引きに、日本語では使わない言い回しが無い。
@@ -95,8 +95,8 @@ claude plugin eval . --model sonnet --allow-tools Write Edit --no-publish --max-
    README や検査だけの変更はパッチバージョンを上げる。
 2. `.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を同じ値にする。
 3. `dev/test` と `claude plugin validate .` を通す。
-4. コミットし、そのコミットに `v0.3.0` の形のタグを付けて push する。GitHub で同じタグのリリースを作り、
-   本文に `CHANGELOG.md` のそのバージョンの節を載せる。
+4. コミットし、コミットに `v0.3.0` の形のタグを付けて push する。GitHub で同じタグのリリースを作り、
+   本文に `CHANGELOG.md` の新しいバージョンの節を載せる。
 
 入れてある人は `/plugin marketplace update wakariyasu` のあとに
 `/plugin update wakariyasu@wakariyasu` を実行すると、新しいバージョンに替わります。Claude Code は

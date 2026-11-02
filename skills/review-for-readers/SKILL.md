@@ -47,7 +47,7 @@ description: 人に渡す・送る・公開する文書（README・仕様書・�
 読み手が理解を妨げる箇所を挙げなくなるまで繰り返す。目安は2〜3回。
 
 日本語の文書で、読み手が挙げなくなったら、使えるスキルの中に yomiyasu があれば yomiyasu スキルを呼び出し、文書と
-文章の種類を渡して整える。種類の名前は、「日本語の表記の選び方」（`styles.md`）の表の「種類」の列にある。セッションに読み込まれていなければ、review-for-readers スキルのフォルダにある `references/styles.md` を読む。
+文章の種類を渡して整える。種類は README・技術記事なら article、手順書なら manual、規則・仕様書なら formal のような名前で、「日本語の表記の選び方」（`styles.md`）の表の「種類」の列にある。セッションに読み込まれていなければ、review-for-readers スキルのフォルダにある `references/styles.md` を読む。
 
 ## 4. 報告する
 

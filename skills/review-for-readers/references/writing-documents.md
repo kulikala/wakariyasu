@@ -31,10 +31,10 @@ README・仕様書・設計書・手順書・規則・SKILL.md・プロンプト
 - 数には確かさを添える。測った値か見積もりか、何を含まないかを書く。
 - スキル・規則・プロンプトのように、エージェントが読んで動く文書は、
   「エージェント向けの指示文の書き方」（`writing-instructions.md`）にも沿う。
-  セッションに読み込まれていなければ、wakariyasu のスキルのフォルダにある `references/writing-instructions.md` を読む。
+  セッションに読み込まれていなければ、wakariyasu のプラグインのフォルダにある `references/writing-instructions.md` を読む（各スキルのフォルダの `references/` にも同じ本文のコピーがある）。
 - リポジトリの最上位に置き、ツールを外部に公開する README（ツールが何であり、どうセットアップすれば使えるかを
   伝える文書）を書く・直すときは、「README の書き方」（`readme.md`）にも沿う。
-  セッションに読み込まれていなければ、wakariyasu のスキルのフォルダにある `references/readme.md` を読む。
+  セッションに読み込まれていなければ、wakariyasu のプラグインのフォルダにある `references/readme.md` を読む（各スキルのフォルダの `references/` にも同じ本文のコピーがある）。
 
 ## 書き終えたら
 
@@ -43,7 +43,7 @@ README・仕様書・設計書・手順書・規則・SKILL.md・プロンプト
 1. `remove-meta-narrative` スキルで、作業の経緯や文書自身を語る文を探して直す。
 2. 人に渡す・公開する文書は、`review-for-readers` スキルで、経緯を知らない読み手の目で読み直す。
 3. 規則「書いた文章は、渡す前に整える」（`polishing.md`）に沿って自分で整える。
-   セッションに読み込まれていなければ、wakariyasu のスキルのフォルダにある `references/polishing.md` を読む。
+   セッションに読み込まれていなければ、wakariyasu のプラグインのフォルダにある `rules/polishing.md` を読む（各スキルのフォルダの `references/` にも同じ本文のコピーがある）。
 4. 人に渡す日本語の文書は、使えるスキルの中に yomiyasu があれば、yomiyasu スキルを呼び出し、
    文書と文章の種類を渡す。
 

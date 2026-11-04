@@ -1,7 +1,7 @@
 #!/bin/sh
 # セッションの開始・再開・/clear・/compact のたびに、規則と、返答のたびに使うリファレンスの本文を読み込ませる。
 # Claude Code のプラグインは規則のファイルを読み込まないため、フックの出力で渡す。
-# README の書き方と指示文の書き方は、その文書を書くときだけ使うので読み込ませず、場所だけを伝える。
+# README の書き方と指示文の書き方は、README や指示文を書くときだけ使うので読み込ませず、場所だけを伝える。
 set -eu
 
 for r in writing-to-user writing-documents polishing; do

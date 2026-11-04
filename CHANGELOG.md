@@ -5,13 +5,17 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-04
+
 ### 追加
 
 - 文脈で確かめる言い回しの一覧に、機械の処理を人の動作や場所にたとえた語（「拾う」「通る」「効く」「響く」「入口」「受け口」「渡し先」）を足した。
 
 ### 変更
 
-- 規則 `writing-to-user` の節の見出しを「ユーザーに通じる用語と言い回しを選んで記述する」にし、一度出した語で呼んだものは同じ語で呼び続けることと、動作を名詞にまとめて誰が何をするかを消さないことを足した。
+- 規則 `writing-to-user` の節の見出しを「ユーザーに通じる用語と言い回しを選んで記述する」にし、同じ対象を呼ぶ語を変えないことと、
+  動作を名詞にまとめて誰が何をするかを消さないことを足した。結論を短くまとめるときも条件を落とさないことを足した。
+- 規則 `polishing` で、比喩・飾りの語・宣伝のような言い回しは、消しても読み手の理解が変わらなければ消すようにした。
 - README の「入れる前と後」に、判断の問いかけと文書の例を足し、報告の例で何が変わるかを表にした。
 - README に、yomiyasu を参考にしたことを書いた節「参考にしたもの」を足した。
 
@@ -162,6 +166,9 @@
 - セッションの始めに規則を読み込ませるフック。
 - Claude Code 以外のエージェントに貼る `AGENTS.snippet.md`。
 
+[0.7.0]: https://github.com/kulikala/wakariyasu/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/kulikala/wakariyasu/compare/v0.5.2...v0.6.0
+[0.5.2]: https://github.com/kulikala/wakariyasu/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/kulikala/wakariyasu/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kulikala/wakariyasu/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/kulikala/wakariyasu/compare/v0.3.0...v0.4.0

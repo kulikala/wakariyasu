@@ -14,6 +14,9 @@ for f in styles asking; do
 done
 sh "${CLAUDE_PLUGIN_ROOT}/scripts/terms-table"
 printf '\n# wakariyasu のファイルの場所\n\n'
-printf -- '- 規則: %s/rules/\n' "${CLAUDE_PLUGIN_ROOT}"
-printf -- '- リファレンスと言い回しの一覧: %s/references/（readme.md と writing-instructions.md は読み込んでいないので、書くときに読む）\n' "${CLAUDE_PLUGIN_ROOT}"
+printf 'フックの出力に入っているのは、規則3本・styles.md・asking.md・言い回しの2つの一覧（terms.tsv・terms-caution.tsv）。\n'
+printf '規則やリファレンスに「読み込まれていなければ〜を読む」とあっても、フックの出力に入っているものは読み直さなくてよい。\n\n'
+printf -- '- 規則（writing-to-user.md・writing-documents.md・polishing.md）: %s/rules/\n' "${CLAUDE_PLUGIN_ROOT}"
+printf -- '- リファレンスと言い回しの一覧: %s/references/\n' "${CLAUDE_PLUGIN_ROOT}"
+printf -- '- フックの出力に入っていないリファレンス: readme.md は README を書く・直すとき、writing-instructions.md はスキル・規則・プロンプトを書くときに、references/ から読む\n'
 printf -- '- ファイルに書いた文書の検査: sh "%s/scripts/check-terms" <ファイル>\n' "${CLAUDE_PLUGIN_ROOT}"

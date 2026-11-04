@@ -59,7 +59,7 @@ wakariyasu はエージェントへの指示文でできていて、指示文に
 
 ## yomiyasu との組み合わせ
 
-エージェントは、書いた日本語をまず wakariyasu の規則で整えます。整える項目の一部は、[yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu。別の作者による日本語の推敲スキル）の検査を参考にしています。yomiyasu が入っている環境では、README や手順書のように人に渡す文書を仕上げるときに、yomiyasu も呼び出します。yomiyasu が無くても、wakariyasu は動きます。
+wakariyasu の規則が見るのは、経緯を知らない人に通じる語と内容です。yomiyasu は不自然な比喩や主語と述語の食い違いのような、日本語の文の書き方を細かく直します。エージェントは書いた日本語をまず wakariyasu の規則で整えます。[yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu。別の作者による日本語の推敲スキル）が入っている環境では、README や手順書のように人に渡す文書を仕上げるときに、エージェントが頼まれなくても yomiyasu スキルを呼び出します。呼び出す場面は規則 [`rules/polishing.md`](rules/polishing.md) に書いてあります。ユーザーへの返答では呼び出しません。yomiyasu が無くても、wakariyasu は動きます。
 
 yomiyasu は wakariyasu とは別のプラグインです。一緒に入れるときは、作者のリポジトリの案内どおりに入れます。Claude Code では次の2つです。
 
@@ -112,6 +112,17 @@ gh skill install kulikala/wakariyasu --all --scope user --agent codex
 ## wakariyasu を直す人へ
 
 フォルダの構成、規則を直したあとの手順、リポジトリの検査（`dev/test`）、スキルが呼ばれるかを測る試験（eval）、バージョンの上げ方は、[開発の手引き](docs/development.md) にあります。バージョンごとの変更は [CHANGELOG.md](CHANGELOG.md) にあります。
+
+## 参考にしたもの
+
+wakariyasu の規則の一部は、日本語の推敲スキル [yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu、MIT ライセンス）を参考にしています。
+
+| wakariyasu の箇所 | yomiyasu から取り入れたこと |
+|---|---|
+| 文章を渡す前に整える規則 [`rules/polishing.md`](rules/polishing.md) の節「どの言語でも確かめること」 | 推敲で確かめる項目の考え方を取り入れた。たとえば、「次の点が重要です」のような予告だけの文は、続く中身の文と1文にまとめる。同じ文末が続いたら、文のつなぎ方を変える |
+| 表記の選び方の表 [`references/styles.md`](references/styles.md) の文章の種類 | 文章の種類の名前（`article`・`manual`・`formal` など）は、yomiyasu の文書の種類と同じ名前にしてある。エージェントが yomiyasu を呼び出すとき、種類の名前を変えずに yomiyasu に渡せる |
+| [`references/styles.md`](references/styles.md) の節「読み手」 | 文書を読む人の詳しさを yomiyasu と同じ名前の3つ（expert：同じ分野の人、informed：分野は違うが技術や業務に詳しい人、general：専門の知識が無い人）に分ける分け方を取り入れた |
+| 返答の書き方の規則 [`rules/writing-to-user.md`](rules/writing-to-user.md) の節「書くことを選ぶ」 | エージェントが確かめた事実に無いこと（原因・予定・影響）を書き足さない、という原則を取り入れた |
 
 ## ライセンス
 

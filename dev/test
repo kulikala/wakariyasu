@@ -87,7 +87,7 @@ done || fail=1
 # 9b. 文脈で確かめる言い回しの検査が、試験の例のとおりに出る・出ない。終了コードは 0 のまま
 grep -v '^#' tests/caution-cases.txt | while IFS= read -r l; do
     want=${l%% *}; body=${l#* }
-    if printf '%s\n' "$body" | sh scripts/check-terms | grep -q '（文脈で確かめる）$'; then got=○; else got=×; fi
+    if printf '%s\n' "$body" | sh scripts/check-terms | grep -c '（文脈で確かめる）$' >/dev/null; then got=○; else got=×; fi
     [ "$want" = "$got" ] || { echo "NG: 文脈で確かめる言い回しの検査が試験の例と違う（$want のはずが $got）: $body" >&2; exit 1; }
     printf '%s\n' "$body" | sh scripts/check-terms >/dev/null ||
         { echo "NG: 文脈で確かめる言い回しだけの文で、終了コードが 0 でない: $body" >&2; exit 1; }

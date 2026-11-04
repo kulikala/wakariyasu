@@ -21,6 +21,7 @@ session-status references/asking.md
 session-status references/writing-instructions.md
 session-status references/readme.md
 session-status references/terms.tsv
+session-status references/terms-caution.tsv
 session-status scripts/check-terms
 explain-clearly rules/writing-to-user.md
 explain-clearly rules/writing-documents.md
@@ -30,6 +31,7 @@ explain-clearly references/asking.md
 explain-clearly references/writing-instructions.md
 explain-clearly references/readme.md
 explain-clearly references/terms.tsv
+explain-clearly references/terms-caution.tsv
 explain-clearly scripts/check-terms
 remove-meta-narrative rules/writing-to-user.md
 remove-meta-narrative rules/writing-documents.md
@@ -39,6 +41,7 @@ remove-meta-narrative references/asking.md
 remove-meta-narrative references/writing-instructions.md
 remove-meta-narrative references/readme.md
 remove-meta-narrative references/terms.tsv
+remove-meta-narrative references/terms-caution.tsv
 remove-meta-narrative scripts/check-terms
 review-for-readers rules/writing-to-user.md
 review-for-readers rules/writing-documents.md
@@ -48,6 +51,7 @@ review-for-readers references/asking.md
 review-for-readers references/writing-instructions.md
 review-for-readers references/readme.md
 review-for-readers references/terms.tsv
+review-for-readers references/terms-caution.tsv
 review-for-readers scripts/check-terms
 '
 RULES='writing-to-user writing-documents polishing'

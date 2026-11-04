@@ -1,5 +1,5 @@
 #!/bin/sh
-# references/terms.tsv の前の2列を、Markdown の表にして出す。フックと dev/build が使う。
+# references/terms.tsv と terms-caution.tsv の前の2列を、Markdown の表にして出す。フックと dev/build が使う。
 set -eu
 
 DIR=$(cd "$(dirname "$0")/.." && pwd)
@@ -8,3 +8,8 @@ printf '日本語の文章では、次の言い回しを使わずに、代わり
 printf '読み手は意味を取り違え、文書を信頼しにくくなる。括弧の中は、使わない意味を示す。\n\n'
 printf '| 言い回し | 代わりに使う語 |\n|---|---|\n'
 awk -F '\t' '$0 !~ /^#/ && NF >= 2 { printf "| %s | %s |\n", $1, $2 }' "$DIR/references/terms.tsv"
+printf '\n# 文脈によっては別の語のほうが自然な言い回し\n\n'
+printf '次の言い回しは誤りではないが、技術文書では日本語の書き手が別の語を選ぶ場面がある。文脈を見て、候補の語のほうが\n'
+printf '自然なら替える。括弧の中は、候補の語に替える意味を示す。\n\n'
+printf '| 言い回し | 候補の語 |\n|---|---|\n'
+awk -F '\t' '$0 !~ /^#/ && NF >= 2 { printf "| %s | %s |\n", $1, $2 }' "$DIR/references/terms-caution.tsv"

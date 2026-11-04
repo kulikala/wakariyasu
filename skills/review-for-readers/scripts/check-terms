@@ -1,15 +1,25 @@
 #!/bin/sh
-# 日本語の文章から、日本語では使わない言い回しを探す。
-# 使い方: check-terms [ファイル...]   ファイルを省くか - を渡すと標準入力を読む。
-# 見つかった行を「ファイル:行: 語 → 言い換え」の形で出し、1件でもあれば終了コード 1 で終わる。
+# 日本語の文章から、日本語では使わない言い回しと、文脈によっては別の語のほうが自然な言い回しを探す。
+# 使い方: check-terms [--no-caution] [ファイル...]   ファイルを省くか - を渡すと標準入力を読む。
+# 見つかった行を「ファイル:行: 語 → 言い換え」の形で出す。文脈で確かめる言い回しには「（文脈で確かめる）」を付ける。
+# 日本語では使わない言い回しが1件でもあれば終了コード 1 で終わる。文脈で確かめる言い回しは終了コードに数えない。
+# --no-caution を付けると、文脈で確かめる言い回しを探さない。
 set -eu
 
 DIR=$(cd "$(dirname "$0")/.." && pwd)
 TERMS="$DIR/references/terms.tsv"
+CAUTION="$DIR/references/terms-caution.tsv"
 # 日本語の文字の範囲を正規表現で扱うため、UTF-8 のロケールで動かす（名前の綴りは OS ごとに違う）
 for l in C.UTF-8 C.utf8 en_US.UTF-8 en_US.utf8 ja_JP.UTF-8 ja_JP.utf8; do
     if [ "$(LC_ALL=$l locale charmap 2>/dev/null)" = UTF-8 ]; then LC_ALL=$l; export LC_ALL; break; fi
 done
+
+lists="$TERMS"
+if [ "${1:-}" = --no-caution ]; then
+    shift
+elif [ -e "$CAUTION" ]; then
+    lists="$TERMS $CAUTION"
+fi
 
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
@@ -23,18 +33,22 @@ for f in "$@"; do
     # コードブロックの行は空にし、インラインのコードと「」の中身を消す。行の数は変えない。
     cat -- "$f" | awk '/^[ \t]*```/ { f = !f; print ""; next } f { print ""; next } { print }' |
         sed -E -e 's/`[^`]*`/CODE/g' -e 's/「[^」]*」/「」/g' >"$TMP/body"
-    while IFS="$TAB" read -r term say hit skip; do
-        case $term in '' | '#'*) continue ;; esac
-        if [ "$skip" != - ]; then
-            sed -E "s/($skip)//g" "$TMP/body"
-        else
-            cat "$TMP/body"
-        fi | grep -nE -o -- "$hit" >"$TMP/hits" || continue
-        found=1
-        while IFS=: read -r n w; do
-            w=$(printf '%s' "$w" | sed 's/CODE/`…`/')
-            printf '%s:%s: %s → %s\n' "$name" "$n" "$w" "$say"
-        done <"$TMP/hits"
-    done <"$TERMS"
+    for list in $lists; do
+        note=
+        [ "$list" = "$CAUTION" ] && note='（文脈で確かめる）'
+        while IFS="$TAB" read -r term say hit skip; do
+            case $term in '' | '#'*) continue ;; esac
+            if [ "$skip" != - ]; then
+                sed -E "s/($skip)//g" "$TMP/body"
+            else
+                cat "$TMP/body"
+            fi | grep -nE -o -- "$hit" >"$TMP/hits" || continue
+            [ -n "$note" ] || found=1
+            while IFS=: read -r n w; do
+                w=$(printf '%s' "$w" | sed 's/CODE/`…`/')
+                printf '%s:%s: %s → %s%s\n' "$name" "$n" "$w" "$say" "$note"
+            done <"$TMP/hits"
+        done <"$list"
+    done
 done
 exit $found

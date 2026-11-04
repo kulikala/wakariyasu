@@ -41,6 +41,8 @@ for f in references/*.md; do
 done
 
 printf '%s\n' "$out" | grep -qx '# 日本語では使わない言い回し' || ng "フックの出力に、日本語では使わない言い回しの表が無い"
+printf '%s\n' "$out" | grep -qx '# 文脈によっては別の語のほうが自然な言い回し' ||
+    ng "フックの出力に、文脈によっては別の語のほうが自然な言い回しの表が無い"
 
 # 6. 規則・リファレンス・スキルが「（`x.md`）の「…」の節」と指す節の見出しが、指された規則かリファレンスにある
 grep -ho '`[a-z-]*\.md`）の「[^」]*」の節' rules/*.md references/*.md skills/*/SKILL.md | sort -u | while read -r ref; do
@@ -78,8 +80,17 @@ grep -v '^#' tests/terms-cases.txt | while IFS= read -r l; do
     [ "$want" = "$got" ] || { echo "NG: 使わない言い回しの検査が試験の例と違う（$want のはずが $got）: $body" >&2; exit 1; }
 done || fail=1
 
+# 9b. 文脈で確かめる言い回しの検査が、試験の例のとおりに出る・出ない。終了コードは 0 のまま
+grep -v '^#' tests/caution-cases.txt | while IFS= read -r l; do
+    want=${l%% *}; body=${l#* }
+    if printf '%s\n' "$body" | sh scripts/check-terms | grep -q '（文脈で確かめる）$'; then got=○; else got=×; fi
+    [ "$want" = "$got" ] || { echo "NG: 文脈で確かめる言い回しの検査が試験の例と違う（$want のはずが $got）: $body" >&2; exit 1; }
+    printf '%s\n' "$body" | sh scripts/check-terms >/dev/null ||
+        { echo "NG: 文脈で確かめる言い回しだけの文で、終了コードが 0 でない: $body" >&2; exit 1; }
+done || fail=1
+
 # 10. wakariyasu 自身の本文に、使わない言い回しが無い（変更履歴は過去の版の記録なので除く）
-sh scripts/check-terms rules/*.md references/*.md skills/*/SKILL.md README.md docs/*.md >&2 ||
+sh scripts/check-terms --no-caution rules/*.md references/*.md skills/*/SKILL.md README.md docs/*.md >&2 ||
     ng "本文に日本語では使わない言い回しがある（上の行を直す）"
 
 # 11. 最上位に bin/ が無い（あると claude.ai と Cowork がプラグインを受け付けない）

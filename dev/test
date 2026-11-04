@@ -1,5 +1,5 @@
 #!/bin/sh
-# リポジトリの決まりを検査する。モデルは呼ばず、sh と標準のコマンドだけで動く。
+# リポジトリのルールを検査する。モデルは呼ばず、sh と標準のコマンドだけで動く。
 # 失敗した項目を標準エラーに出し、1つでも失敗すれば終了コード 1 を返す。
 set -u
 
@@ -58,7 +58,7 @@ grep -o '](\([^)#:]*\))' README.md | sed 's/^](//; s/)$//' | while read -r p; do
     [ -e "$p" ] || { echo "NG: README.md が指す $p が無い" >&2; exit 1; }
 done || fail=1
 
-# 8. .editorconfig の決まり（UTF-8 は git が扱う。ここでは改行・空白を見る）
+# 8. .editorconfig の設定（UTF-8 は git が扱う。ここでは改行・空白を見る）
 git ls-files | while read -r f; do
     [ -s "$f" ] || continue
     [ -z "$(tail -c1 "$f")" ] || echo "NG: 末尾に改行が無い: $f" >&2

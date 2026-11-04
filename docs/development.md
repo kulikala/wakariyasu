@@ -7,17 +7,19 @@
 .claude-plugin/marketplace.json  プラグインの入手先（マーケットプレイス）の定義
 rules/                           規則の本文（writing-to-user・writing-documents・polishing）
 references/                      リファレンスの本文（日本語の表記・判断の問いかけ・指示文の書き方・README の書き方）と、
-                                 日本語では使わない言い回しの一覧（terms.tsv）
+                                 日本語では使わない言い回しの一覧（terms.tsv）と、文脈で確かめる言い回しの一覧（terms-caution.tsv）
 skills/<名前>/SKILL.md           スキルの本文
 skills/<名前>/references/        規則・リファレンス・一覧のコピー（dev/build が作る）
 skills/<名前>/scripts/           check-terms のコピー（dev/build が作る）
 scripts/check-terms              日本語では使わない言い回しを文書から探す
 scripts/terms-table              一覧を、フックと AGENTS.snippet.md に入れる表にする
 tests/terms-cases.txt            check-terms が当たる例と当たらない例
+tests/caution-cases.txt          check-terms が「（文脈で確かめる）」を付けて出す例と出さない例
 hooks/                           セッションの始めに規則を読み込ませるフック
 AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（dev/build が作る）
 dev/build                        rules/・references/・scripts/ の本文を、スキルの中と AGENTS.snippet.md にコピーする
-dev/test                         リポジトリの決まりを検査する
+dev/test                         リポジトリのルールを検査する
+.github/workflows/test.yml       push と pull request のたびに dev/test を実行する GitHub Actions の設定
 evals/                           スキルが呼ばれるかを測る claude plugin eval のケース
 docs/                            開発の手引き
 CHANGELOG.md                     バージョンごとの変更
@@ -36,7 +38,7 @@ dev/build
 
 規則とスキルの本文は、2つの層に分けて書きます。
 
-- どの言語の文章にも適用する項目。返答や文書の組み立て、語が示す対象の書き方、判断の問いかけ方など。
+- どの言語の文章にも適用する項目。返答や文書の組み立て、語が示す対象の書き方、判断の問いかけ方（ユーザーに決めてもらうことの書き方）など。
 - 日本語で書いたときに足す項目。表記の選び方、読点、日本語の文の確かめ方、yomiyasu など。
   見出しや前置きで「日本語で書いたとき」と分かるようにする。
 
@@ -54,12 +56,13 @@ dev/test
 - バージョンが `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
 - 入手先（`marketplace.json`）に載っているプラグインが1つだけ。
 - スキルごとに、`SKILL.md` が frontmatter で始まり、フォルダ名と同じ `name` と、`description` がある。
-- フックの出力に、規則3本と `references/` の各リファレンスの見出しの行と、日本語では使わない言い回しの表がある。
+- フックの出力に、規則3本と `references/` の各リファレンスの見出しの行と、日本語では使わない言い回しの表と、文脈によっては別の語のほうが自然な言い回しの表がある。
 - 規則・リファレンス・スキルが別の規則やリファレンスの節を名指しで参照するとき、名指しした見出しが参照先の規則かリファレンスにある。
 - README がリンクするリポジトリ内のファイルがある。
 - `check-terms` が `tests/terms-cases.txt` の例のとおりに当たり、当たらない。
+- `check-terms` が `tests/caution-cases.txt` の例のとおりに「（文脈で確かめる）」を付けて出し、終了コードを 1 にしない。
 - 規則・リファレンス・SKILL.md・README・手引きに、日本語では使わない言い回しが無い。
-- 最上位に `bin/` が無い。`bin/` があると、claude.ai と Cowork はプラグイン全体を受け付けない。開発用のスクリプトは `dev/` に置く。
+- 最上位に `bin/` が無い。`bin/` があると、claude.ai と Cowork（Claude のデスクトップアプリで、作業をまとめて任せる機能）はプラグイン全体を受け付けない。開発用のスクリプトは `dev/` に置く。
 - 改行と空白が `.editorconfig` の設定に合っている（git に登録済みのファイルが対象）。
 
 プラグインの定義の書式は Claude Code の検査でも確かめます。

@@ -23,6 +23,7 @@ dev/test-show-changes-page.mjs   show-changes のページをブラウザで開�
 .github/workflows/test.yml       push と pull request のたびに dev/test を実行する GitHub Actions の設定
 evals/                           スキルが呼ばれるかを測る claude plugin eval のケース
 docs/                            開発の手引き
+docs/agreements.md               著者と合意した拘束（点検で指摘しない書き方や形式）
 CHANGELOG.md                     バージョンごとの変更
 ```
 

@@ -5,44 +5,49 @@
 ```text
 .claude-plugin/plugin.json       プラグインの定義（名前・バージョン・スキルの場所）
 .claude-plugin/marketplace.json  プラグインの入手先（マーケットプレイス）の定義
-rules/                           規則の本文（writing-to-user・writing-documents・polishing）
-references/                      リファレンスの本文（日本語の表記・判断の問いかけ・指示文の書き方・README の書き方）と、
-                                 日本語では使わない言い回しの一覧（terms.tsv）と、文脈で確かめる言い回しの一覧（terms-caution.tsv）
 skills/<名前>/SKILL.md           スキルの本文
-skills/<名前>/references/        規則・リファレンス・一覧のコピー（dev/build が作る）
-skills/<名前>/scripts/           check-terms のコピー（dev/build が作る）
-scripts/check-terms              日本語では使わない言い回しを文書から探す
-scripts/terms-table              一覧を、フックと AGENTS.snippet.md に入れる表にする
+skills/<名前>/references/        そのスキルだけが読むリファレンス
+skills/<名前>/scripts/           そのスキルが実行するスクリプト
+skills/writing-rules/rules/      規則（writing-to-user・writing-documents・polishing）
+skills/writing-rules/references/ 規則が指すリファレンス（日本語の表記・判断の問いかけ・指示文の書き方・README の書き方・変更履歴の書き方）
+skills/check-terms/references/   日本語では使わない言い回しの一覧（terms.tsv）と、文脈で確かめる言い回しの一覧（terms-caution.tsv）
+skills/check-terms/scripts/      check-terms（言い回しを文書から探す）と terms-table（一覧を、フックと AGENTS.snippet.md に入れる表にする）
 tests/terms-cases.txt            check-terms が当たる例と当たらない例
 tests/caution-cases.txt          check-terms が「（文脈で確かめる）」を付けて出す例と出さない例
 hooks/                           セッションの始めに規則を読み込ませるフック
 AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（dev/build が作る）
-dev/build                        rules/・references/・scripts/ の本文を、スキルの中と AGENTS.snippet.md にコピーする
+dev/build                        規則・リファレンス・言い回しの一覧をつなげて、AGENTS.snippet.md を作る
 dev/test                         リポジトリのルールを検査する
+dev/test-show-changes.py         show-changes の build.py と template.html を改修したあとのテスト（docs/show-changes.md）
+dev/test-show-changes-page.mjs   show-changes のページをブラウザで開いて操作を試すテスト
 .github/workflows/test.yml       push と pull request のたびに dev/test を実行する GitHub Actions の設定
 evals/                           スキルが呼ばれるかを測る claude plugin eval のケース
 docs/                            開発の手引き
 CHANGELOG.md                     バージョンごとの変更
 ```
 
-フック・`dev/build`・`scripts/` は `sh` と標準のコマンドだけで動きます。`dev/test` は、さらに `git` を使います。Python などのほかの処理系は要りません。
+フック・`dev/build`・`check-terms`・`terms-table` は `sh` と標準のコマンドだけで動きます。`dev/test` は、さらに `git` を使います。Python などのほかの処理系は要りません。
 
-## 本文を直す
+スキル `show-changes` のページを作る `build.py` は、Python 3 の標準のライブラリで動きます。`build.py` を改修したあとのテストには、さらに node と Chrome を使います。改修の手順は [show-changes の改修方法](show-changes.md) にあります。
 
-規則とリファレンスは、`rules/` と `references/` だけで直します。スキルの中の `references/` と
-`AGENTS.snippet.md` はコピーなので、直接は直しません。直したら `dev/build` でコピーを作り直します。
+## 本文を修正する
+
+規則とリファレンスはスキル `writing-rules` に、言い回しの一覧と `check-terms` はスキル `check-terms` に置き、ほかのスキルはこの2つのフォルダから読みます。
+`gh skill install` のようにスキルのフォルダだけを入れる方法でも、`--all` ですべてのスキルが並んで入るので、ほかのスキルから2つのフォルダを読めます。
+
+規則・リファレンス・言い回しの一覧を修正したら、`dev/build` で `AGENTS.snippet.md` を作り直します。
 
 ```sh
 dev/build
 ```
 
-規則とスキルの本文は、2つの層に分けて書きます。
+規則とスキルの本文は、2つの層に分けて記述します。
 
-- どの言語の文章にも適用する項目。返答や文書の組み立て、語が何を示すかを読み手が読み取れる書き方、判断の問いかけ方（ユーザーに決めてもらうことの書き方）など。
-- 日本語で書いたときに足す項目。表記の選び方、読点、日本語の文の確かめ方、yomiyasu など。
-  見出しや前置きで「日本語で書いたとき」と分かるようにする。
+- どの言語の文章にも適用する項目。返答や文書の組み立て、語が何を示すかを読み手が読み取れる書き方、判断の問いかけ方（ユーザーに判断してもらうことの書き方）など。
+- 日本語で記述したときに足す項目。表記の選び方、読点、日本語の文の確かめ方、yomiyasu など。
+  見出しや前置きで「日本語で記述したとき」と分かるようにする。
 
-本文は日本語で書きます。訳さずに、日本語として書き起こします。
+本文は日本語で記述します。訳さずに、日本語として書き起こします。
 
 ## 検査する
 
@@ -50,13 +55,13 @@ dev/build
 dev/test
 ```
 
-`dev/test` はモデルを呼ばずに、次を確かめます。GitHub Actions も push と pull request のたびに同じ検査を実行します。
+`dev/test` はモデルを呼ばずに、次を確かめます。
 
-- スキルの中のコピーと `AGENTS.snippet.md` が本文と一致している。
+- `AGENTS.snippet.md` が本文と一致し、規則・リファレンス・言い回しの一覧と同じ名前のファイルが、ほかのスキルに無い。
 - バージョンが `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
 - 入手先（`marketplace.json`）に載っているプラグインが1つだけ。
 - スキルごとに、`SKILL.md` が frontmatter で始まり、フォルダ名と同じ `name` と、`description` がある。
-- フックの出力に、規則3本と `references/` の各リファレンスの見出しの行と、日本語では使わない言い回しの表と、文脈によっては別の語のほうが自然な言い回しの表がある。
+- フックの出力に、規則3本と、返答のたびに使うリファレンス（`styles.md`・`asking.md`）の見出しの行と、日本語では使わない言い回しの表と、文脈によっては別の語のほうが自然な言い回しの表がある。
 - 規則・リファレンス・スキルが別の規則やリファレンスの節を名指しで参照するとき、名指しした見出しが参照先の規則かリファレンスにある。
 - README がリンクするリポジトリ内のファイルがある。
 - `check-terms` が `tests/terms-cases.txt` の例のとおりに当たり、当たらない。
@@ -84,9 +89,9 @@ claude plugin eval . --model sonnet --allow-tools Write Edit --no-publish --max-
 |---|---|---|
 | `status-ja` | 「現状は？」 | `session-status` が呼ばれる |
 | `status-en` | "What's the status? What's done and what's left?" | `session-status` が呼ばれ、返答に日本語が混ざらない |
-| `document-ja` | 手順書 `setup.md` を書かせる | `setup.md` ができ、`remove-meta-narrative` が呼ばれ、文書自身を語る文が残らない |
+| `document-ja` | 手順書 `setup.md` を記述させる | `setup.md` ができ、`remove-meta-narrative` が呼ばれ、文書自身を語る文が残らない |
 
-`document-ja` はファイルを書くので、`--allow-tools Write Edit` が要ります。日本語が混ざらないことは、かなと漢字の正規表現で確かめます。
+日本語が混ざらないことは、かなと漢字の正規表現で確かめます。
 
 既定では、プラグインを入れた場合と入れない場合の2通りを実行して比べます。1通りだけで
 手早く確かめるなら、`--runs 1 --ablation none` を付けます。結果は `evals/results/` に出ます
@@ -94,7 +99,7 @@ claude plugin eval . --model sonnet --allow-tools Write Edit --no-publish --max-
 
 ## バージョンを上げて公開する
 
-1. `CHANGELOG.md` に新しいバージョンの節を書く。エージェントの振る舞いが変わる変更はマイナーバージョン、
+1. `CHANGELOG.md` に新しいバージョンの節を記載する。エージェントの振る舞いが変わる変更はマイナーバージョン、
    README や検査だけの変更はパッチバージョンを上げる。
 2. `.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を同じ値にする。
 3. `dev/test` と `claude plugin validate .` を通す。
@@ -103,4 +108,4 @@ claude plugin eval . --model sonnet --allow-tools Write Edit --no-publish --max-
 
 入れてある人は `/plugin marketplace update wakariyasu` のあとに
 `/plugin update wakariyasu@wakariyasu` を実行すると、新しいバージョンに替わります。Claude Code は
-プラグインをバージョンごとにコピーして読み込むので、バージョンを上げないと、直した本文は読み込まれません。
+プラグインをバージョンごとにコピーして読み込むので、バージョンを上げないと、修正した本文は読み込まれません。

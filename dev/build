@@ -1,105 +1,42 @@
 #!/bin/sh
-# rules/ と references/ の本文から、スキルごとの写しと AGENTS.snippet.md を作る。
-# 本文は rules/ と references/ だけで書き換える。
-#   skills/<名>/references/*   … スキルだけを入れた環境で、スキルが読む写し
-#   skills/<名>/scripts/*      … 同じく、スキルから使う検査のスクリプト
-#   AGENTS.snippet.md          … Claude Code 以外の道具に貼る規則とリファレンスの本文
-# dev/build --check は、写しが本文と食い違っていれば失敗する（書き換えない）。
+# 規則・リファレンス・言い回しの一覧から、Claude Code 以外のエージェントに貼る AGENTS.snippet.md を作る。
+# dev/build --check は、AGENTS.snippet.md が本文と食い違っていれば失敗する（書き換えない）。
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+W="$ROOT/skills/writing-rules"
 TMP="$(mktemp -d)"
 trap 'rm -r -- "$TMP"' EXIT
 
-# スキル名 と、そのスキルに写す本文。規則同士が互いを指すので、どのスキルにも全部を写す
-COPIES='
-session-status rules/writing-to-user.md
-session-status rules/writing-documents.md
-session-status rules/polishing.md
-session-status references/styles.md
-session-status references/asking.md
-session-status references/writing-instructions.md
-session-status references/readme.md
-session-status references/terms.tsv
-session-status references/terms-caution.tsv
-session-status scripts/check-terms
-explain-clearly rules/writing-to-user.md
-explain-clearly rules/writing-documents.md
-explain-clearly rules/polishing.md
-explain-clearly references/styles.md
-explain-clearly references/asking.md
-explain-clearly references/writing-instructions.md
-explain-clearly references/readme.md
-explain-clearly references/terms.tsv
-explain-clearly references/terms-caution.tsv
-explain-clearly scripts/check-terms
-remove-meta-narrative rules/writing-to-user.md
-remove-meta-narrative rules/writing-documents.md
-remove-meta-narrative rules/polishing.md
-remove-meta-narrative references/styles.md
-remove-meta-narrative references/asking.md
-remove-meta-narrative references/writing-instructions.md
-remove-meta-narrative references/readme.md
-remove-meta-narrative references/terms.tsv
-remove-meta-narrative references/terms-caution.tsv
-remove-meta-narrative scripts/check-terms
-review-for-readers rules/writing-to-user.md
-review-for-readers rules/writing-documents.md
-review-for-readers rules/polishing.md
-review-for-readers references/styles.md
-review-for-readers references/asking.md
-review-for-readers references/writing-instructions.md
-review-for-readers references/readme.md
-review-for-readers references/terms.tsv
-review-for-readers references/terms-caution.tsv
-review-for-readers scripts/check-terms
-'
-RULES='writing-to-user writing-documents polishing'
-
 {
-    printf '<!-- wakariyasu: https://github.com/kulikala/wakariyasu -->\n'
-    printf '<!-- rules/ から dev/build で作った写し。ここを直さず、rules/ を直す。 -->\n'
-    for r in $RULES; do
+    printf '<!-- wakariyasu:AGENTS.snippet.md -->\n'
+    for r in writing-to-user writing-documents polishing; do
         printf '\n'
-        cat "$ROOT/rules/$r.md"
+        cat "$W/rules/$r.md"
     done
-    for f in styles asking writing-instructions readme; do
+    for f in styles asking writing-instructions readme changelog; do
         printf '\n'
-        cat "$ROOT/references/$f.md"
+        cat "$W/references/$f.md"
     done
     printf '\n'
-    sh "$ROOT/scripts/terms-table"
+    sh "$ROOT/skills/check-terms/scripts/terms-table"
+    printf '\n<!-- /wakariyasu:AGENTS.snippet.md -->\n'
 } > "$TMP/AGENTS.snippet.md"
 
-ok=0
-check() { # $1 作った写し, $2 リポジトリの中の置き場所
-    if [ "$MODE" = check ]; then
-        cmp -s "$1" "$ROOT/$2" || { echo "食い違い: $2" >&2; ok=1; }
-    else
-        mkdir -p "$(dirname "$ROOT/$2")"
-        cp -p "$1" "$ROOT/$2"
-        echo "写した: $2"
-    fi
-}
-MODE=write
-[ "${1:-}" = "--check" ] && MODE=check
-
-printf '%s\n' "$COPIES" > "$TMP/copies"
-while read -r skill src; do
-    [ -n "$skill" ] || continue
-    dest="skills/$skill/$(dirname "$src" | sed 's|^rules$|references|')/$(basename "$src")"
-    printf '%s\n' "$dest" >> "$TMP/list"
-    check "$ROOT/$src" "$dest"
-done < "$TMP/copies"
-check "$TMP/AGENTS.snippet.md" AGENTS.snippet.md
-
-if [ "$MODE" = check ]; then
-    # 写しの一覧に無いファイルが references/ に残っていないか
-    for f in "$ROOT"/skills/*/references/* "$ROOT"/skills/*/scripts/*; do
+if [ "${1:-}" = "--check" ]; then
+    cmp -s "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md" || { echo "食い違い: AGENTS.snippet.md" >&2; exit 1; }
+    # 規則・リファレンス・言い回しの一覧と同じ名前のファイルが、ほかのスキルに置かれていないか
+    ok=0
+    for f in "$ROOT"/skills/*/references/* "$ROOT"/skills/*/rules/* "$ROOT"/skills/*/scripts/*; do
         [ -e "$f" ] || continue
         rel="${f#"$ROOT"/}"
-        grep -qxF "$rel" "$TMP/list" || { echo "一覧に無い写し: $rel" >&2; ok=1; }
+        case "$rel" in skills/writing-rules/* | skills/check-terms/*) continue ;; esac
+        name="$(basename "$f")"
+        for home in "$W/rules" "$W/references" "$ROOT/skills/check-terms/references" "$ROOT/skills/check-terms/scripts"; do
+            [ -e "$home/$name" ] && { echo "本文と同じ名前のファイル: $rel" >&2; ok=1; }
+        done
     done
-    [ "$ok" = 0 ] && echo "写しは本文と一致している"
+    exit "$ok"
 fi
-exit "$ok"
+cp "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md"
+echo "作った: AGENTS.snippet.md"

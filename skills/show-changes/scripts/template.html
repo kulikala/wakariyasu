@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>__TITLE__</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --font-sans: 'Noto Sans JP', sans-serif;
+    }
+  </style>
+  <style>
+    /* Whitespace marks are drawn by CSS so copying and searching still see the real characters. */
+    .ws { color: var(--muted) }
+    .ws-space { background: radial-gradient(circle, var(--muted) 0 1px, transparent 1.5px) left center / 1ch 1em repeat-x }
+    .ws-tab, .ws-nbsp, .ws-other { position: relative }
+    .ws-tab::before { content: '→'; position: absolute; left: 0 }
+    .ws-nbsp::after, .ws-other::after { content: '⍽'; position: absolute; inset: 0; text-align: center }
+    .ws-ideo { outline: 1px dashed var(--muted); outline-offset: -2px }
+    .ws-cr::after, .ws-zwsp::after, .ws-bom::after { margin: 0 1px; border: 1px solid var(--muted); border-radius: 3px; padding: 0 2px; font-size: 9px; vertical-align: 1px }
+    .ws-cr::after { content: 'CR' }
+    .ws-zwsp::after { content: 'ZWSP' }
+    .ws-bom::after { content: 'BOM' }
+  </style>
+</head>
+<body class="m-0">
+  <div id="app">
+  <div id="diff-app" class="flex h-dvh flex-col overflow-hidden bg-[var(--bg)] font-sans text-sm text-[var(--fg)]" :class="[palette, dragging ? 'cursor-col-resize select-none' : '']" :data-ready="ready">
+    <header class="flex min-h-16 shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b border-[var(--border)] bg-[var(--panel)] px-4 py-3">
+      <h1 class="min-w-0 break-all text-base font-bold">{{ data.title }}</h1>
+      <span id="version" class="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs">{{ data.data_version }}</span>
+      <span id="totals" class="text-xs text-[var(--muted)]" aria-live="polite">{{ visible.length }} ファイル　<span class="text-emerald-600">+{{ totals.added }}</span> <span class="text-rose-500">−{{ totals.deleted }}</span></span>
+    </header>
+    <div ref="split" class="relative flex min-h-0 flex-1">
+      <nav id="sidebar" aria-label="変更したファイル" class="h-full w-full shrink-0 overflow-y-auto border-r border-[var(--border)]" :class="!mobile && sidebarHidden ? 'md:hidden' : ''" :style="mobile ? null : { width: sidebarWidth + 'px' }" :inert="mobile && screen === 'diff'">
+        <div class="sticky top-0 z-10 flex items-center gap-2 border-b border-[var(--border)] bg-[var(--bg)] p-3">
+          <label v-if="data.sources.length > 1" for="source" class="flex shrink-0 items-center gap-1 text-xs">対象
+            <select id="source" v-model.number="source" class="max-w-24 cursor-pointer rounded border border-[var(--border)] bg-[var(--panel)] p-2 text-[var(--fg)]" aria-label="対象">
+              <option :value="-1">すべて</option><option v-for="(item, i) in data.sources" :value="i">{{ item.name }}</option>
+            </select>
+          </label>
+          <input id="filter" v-model="input" type="search" placeholder="ファイル名・本文を検索" aria-label="ファイル名・本文を検索" class="min-w-0 flex-1 rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-2 text-xs text-[var(--fg)] focus:outline-2 focus:outline-teal-500">
+          <button id="contentOnly" type="button" aria-label="追加・変更したファイルだけ" title="追加・変更したファイルだけを出す（削除・移動・複製・権限だけの変更・シンボリックリンクを出さない）" :aria-pressed="contentOnly" class="shrink-0 cursor-pointer rounded border border-[var(--border)] p-2 hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500" :class="contentOnly ? 'bg-teal-700 text-white' : 'bg-[var(--panel)]'" @click="contentOnly = !contentOnly"><div><list-filter :size="16"></list-filter></div></button>
+        </div>
+        <ul id="filelist" class="space-y-1 p-2">
+          <template v-for="group in groups" :key="group.name">
+            <li class="break-all px-2 pt-4 pb-1 text-xs font-bold text-[var(--muted)]">{{ group.name }}</li>
+            <li v-for="item in group.files" :key="item.id">
+              <button type="button" :data-file-id="item.id" class="flex w-full cursor-pointer items-start gap-2 rounded px-2 py-1.5 text-left hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500" @click="jump(item.id)">
+                <status-badge :status="item.file.status"></status-badge>
+                <span class="min-w-0 flex-1 break-all text-xs">{{ item.file.path }}</span>
+                <span class="shrink-0 font-mono text-[10px]"><span class="text-emerald-600">+{{ shown(item.file).added ?? '—' }}</span> <span class="text-rose-500">−{{ shown(item.file).deleted ?? '—' }}</span></span>
+              </button>
+            </li>
+          </template>
+        </ul>
+        <p v-if="!visible.length" class="p-4 text-[var(--muted)]">該当するファイルはありません。</p>
+      </nav>
+      <div v-if="!mobile && !sidebarHidden" id="resizer" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="sidebar" aria-label="ファイル一覧の幅" :aria-valuenow="sidebarWidth" :aria-valuemin="minWidth" :aria-valuemax="maxWidth()" title="ドラッグで幅を変える（ダブルクリックで元の幅）" class="group relative -ml-1 hidden w-2 shrink-0 cursor-col-resize touch-none focus-visible:outline-none md:block" @pointerdown="startDrag" @dblclick="setWidth(defaultWidth)" @keydown.left.prevent="setWidth(sidebarWidth - 16)" @keydown.right.prevent="setWidth(sidebarWidth + 16)"><div class="mx-auto h-full w-0.5 transition-colors group-hover:bg-teal-500 group-focus-visible:bg-teal-500" :class="dragging ? 'bg-teal-500' : ''"></div></div>
+      <section id="diff-screen" :data-screen="screen" class="absolute inset-0 z-30 md:z-auto flex min-w-0 flex-col bg-[var(--bg)] transition-transform duration-200 motion-reduce:transition-none md:static md:flex-1 md:translate-x-0" :class="screen === 'diff' ? 'translate-x-0' : 'translate-x-full'" :inert="mobile && screen === 'list'">
+        <div role="toolbar" aria-label="差分の表示設定" class="bar sticky top-0 z-20 flex shrink-0 flex-wrap items-center gap-2 border-b border-[var(--border)] bg-[var(--panel)] p-2 md:gap-4 md:px-4">
+          <button id="toggleSidebar" type="button" :aria-label="sidebarHidden ? 'ファイル一覧を出す' : 'ファイル一覧を隠す'" :title="sidebarHidden ? 'ファイル一覧を出す' : 'ファイル一覧を隠す'" :aria-expanded="!sidebarHidden" aria-controls="sidebar" class="hidden cursor-pointer rounded-md border border-[var(--border)] p-2 hover:bg-[var(--hover)] md:block" @click="sidebarHidden = !sidebarHidden"><div><panel-left-open v-if="sidebarHidden" :size="16"></panel-left-open><panel-left-close v-else :size="16"></panel-left-close></div></button>
+          <button id="back" type="button" aria-label="ファイル一覧に戻る" title="ファイル一覧に戻る" class="cursor-pointer rounded p-2 hover:bg-[var(--hover)] md:hidden" @click="screen = 'list'"><div><arrow-left :size="18"></arrow-left></div></button>
+          <div v-for="group in controls" :key="group.label" class="flex items-center gap-2">
+            <span class="hidden text-xs text-[var(--muted)] md:inline">{{ group.label }}</span>
+            <div class="flex overflow-hidden rounded-md border border-[var(--border)]">
+              <button v-for="control in group.items" :id="control.id" :key="control.id" type="button" :title="control.title || control.label" :aria-label="control.label" :aria-pressed="control.value ? selected(control) : undefined" :disabled="control.id === 'full' && !hasFull" class="flex cursor-pointer items-center gap-1 border-r border-[var(--border)] p-2 text-xs last:border-r-0 hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500 disabled:opacity-40" :class="selected(control) ? 'bg-teal-700 text-white' : ''" @click="activate(control)">
+                <div><component :is="control.icon" :size="16"></component></div><span class="button-text hidden md:inline">{{ control.label }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <main id="main" class="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <!-- Padding sits inside the scroll container so sticky headers stop at its top edge. -->
+          <div class="p-2 md:px-4 md:py-3">
+          <template v-if="!query">
+            <commit-list v-for="(item, i) in data.sources" v-show="(source === -1 || source === i) && (item.kind || 'git') === 'git'" :key="i" :item="item" :open="!!commits[i]" @toggle="commits[i] = !commits[i]"></commit-list>
+          </template>
+          <p v-if="!hasFull" class="mb-2 text-xs text-[var(--muted)]">全文を含まないため、差分のみ表示できます。</p>
+          <div id="files" class="min-w-0">
+            <file-panel v-for="item in visible" :key="item.id" :item="item" :open="!!opened[item.id]" :layout="layout" :scope="scope" :query="query" :theme="theme" :whitespace="whitespace" :counts="shown(item.file)" @toggle="opened[item.id] = !opened[item.id]"></file-panel>
+          </div>
+          <p v-if="!visible.length" class="p-4 text-[var(--muted)]">該当するファイルはありません。</p>
+          </div>
+        </main>
+      </section>
+    </div>
+    <button v-if="selection.show" id="copySelection" type="button" class="fixed z-50 cursor-pointer rounded-md border border-[var(--border)] bg-[var(--panel)] p-1 text-[var(--fg)] shadow hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="selection.copied ? '選んだ文字列をコピーしました' : '選んだ文字列をコピー'" :title="selection.copied ? 'コピーしました' : '選んだ文字列をコピー'" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
+  </div>
+  </div>
+  <script type="module">
+    // Import from full URLs, not an import map: Firefox refuses an import map once the
+    // artifact host has started loading modules.
+    // Vue comes from the same URL that @lucide/vue imports, so both share one Vue: Lucide reads
+    // its defaults through provide/inject, which fails across two copies. That build has no
+    // template compiler, so the compiler is registered the way Vue's full build does it.
+    import * as Vue from 'https://cdn.jsdelivr.net/npm/vue@3.5.44/+esm'
+    import { compile } from 'https://cdn.jsdelivr.net/npm/@vue/compiler-dom@3.5.44/+esm'
+    const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, nextTick } = Vue
+    Vue.registerRuntimeCompiler((template, options) => new Function('Vue', compile(template, { hoistStatic: true, ...options }).code)(Vue))
+    import { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter } from 'https://cdn.jsdelivr.net/npm/@lucide/vue@1.61.0/+esm'
+    import hljs from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/core.js/+esm'
+    import javascript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/javascript.js/+esm'
+    import typescript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/typescript.js/+esm'
+    import python from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/python.js/+esm'
+    import bash from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/bash.js/+esm'
+    import yaml from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/yaml.js/+esm'
+    import xml from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/xml.js/+esm'
+    import css from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/css.js/+esm'
+    import json from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/json.js/+esm'
+    import sql from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/sql.js/+esm'
+
+    // Register only the languages the extension map below can select.
+    Object.entries({ javascript, typescript, python, bash, yaml, xml, css, json, sql }).forEach(([name, language]) => hljs.registerLanguage(name, language))
+
+const DATA = /*__DATA__*/null
+
+    const icons = { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter }
+
+    /** Copy text from a click handler; fall back to a hidden textarea where the Clipboard API is missing or refused. */
+    function copyText (text) {
+      const fallback = () => {
+        const selection = getSelection()
+        const ranges = Array.from({ length: selection.rangeCount }, (_, i) => selection.getRangeAt(i))
+        const area = document.createElement('textarea')
+        area.value = text
+        area.style.cssText = 'position:fixed;top:0;left:0;opacity:0'
+        document.body.append(area)
+        area.select()
+        let done = false
+        try { done = document.execCommand('copy') } catch {}
+        area.remove()
+        // Selecting the textarea clears the viewer's selection; put it back.
+        selection.removeAllRanges()
+        ranges.forEach(range => selection.addRange(range))
+        return done
+      }
+      // Without the Clipboard API, copy synchronously while the click still counts as a user action.
+      if (!navigator.clipboard?.writeText) return Promise.resolve(fallback())
+      return navigator.clipboard.writeText(text).then(() => true, fallback)
+    }
+    // A raw CR would turn into a line break when the markup is parsed; the reference keeps it a CR.
+    const esc = value => String(value).replace(/[&<>"'\r]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '\r': '&#13;' })[char])
+    const spaceNames = { '\t': 'tab', '\r': 'cr', '\u3000': 'ideo', '\u00a0': 'nbsp', '\u200b': 'zwsp', '\ufeff': 'bom' }
+    /** Wrap each whitespace run in a span that CSS marks; runs of ASCII spaces share one span. */
+    const spaceHTML = text => text.replace(/ +|[\t\r\u3000\u00a0\u200b\ufeff\u2000-\u200a\u202f\u205f]|[^ \t\r\u3000\u00a0\u200b\ufeff\u2000-\u200a\u202f\u205f]+/g, part => part[0] === ' ' ? `<span class="ws ws-space">${part}</span>` : spaceNames[part] ? `<span class="ws ws-${spaceNames[part]}">${esc(part)}</span>` : /^[\u2000-\u200a\u202f\u205f]$/.test(part) ? `<span class="ws ws-other">${part}</span>` : esc(part))
+
+    /** Parse only hunk content, retaining original line numbers and excluding patch metadata. */
+    function parseDiff (body) {
+      /** @type {Array<{kind: string, text: string, old?: number, current?: number}>} */
+      const rows = []
+      let old = 0
+      let current = 0
+      let oldLeft = 0
+      let newLeft = 0
+      for (const line of (body || '').split('\n')) {
+        const match = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/)
+        if (match) {
+          old = +match[1]
+          current = +match[3]
+          oldLeft = +(match[2] ?? 1)
+          newLeft = +(match[4] ?? 1)
+          rows.push({ kind: 'hunk', text: line })
+        } else if (line.startsWith('\\')) rows.push({ kind: 'note', text: '行末に改行がありません' })
+        else if (line.startsWith('-') && oldLeft > 0) {
+          oldLeft--
+          rows.push({ kind: 'del', old: old++, text: line.slice(1) })
+        } else if (line.startsWith('+') && newLeft > 0) {
+          newLeft--
+          rows.push({ kind: 'add', current: current++, text: line.slice(1) })
+        } else if ((line.startsWith(' ') || line === '') && oldLeft > 0 && newLeft > 0) {
+          // An empty context line may have lost its leading space (diff.suppressBlankEmpty, editors).
+          oldLeft--
+          newLeft--
+          rows.push({ kind: 'context', old: old++, current: current++, text: line.slice(1) })
+        } else {
+          oldLeft = 0
+          newLeft = 0
+        }
+      }
+      return rows
+    }
+
+    const languages = { js: 'javascript', jsx: 'javascript', tsx: 'typescript', mjs: 'javascript', cjs: 'javascript', ts: 'typescript', py: 'python', sh: 'bash', yml: 'yaml', html: 'xml', htm: 'xml', vue: 'xml', css: 'css', json: 'json', sql: 'sql', yaml: 'yaml', bash: 'bash' }
+    const tokenClasses = { keyword: 'text-purple-600', string: 'text-emerald-700', number: 'text-orange-600', comment: 'text-slate-500 italic', title: 'text-blue-600', attr: 'text-blue-600', built_in: 'text-cyan-700' }
+
+    /**
+     * Formatting and search use original text offsets, including matches spanning syntax tokens.
+     * @param {string} text Original line without its diff marker
+     * @param {string} path File path used to select the language
+     * @param {string} query Lowercase search term
+     * @param {[number, number] | null} [change] Changed character interval
+     * @param {string} [kind] Row kind ('add' or 'del') that picks the changed-word color
+     * @param {number} [lead] Length of leading whitespace that differs from the paired line
+     * @returns {string} Escaped line markup
+     */
+    function textHTML (text, path, query, change, kind, lead) {
+      const ranges = []
+      const add = (start, end, cls) => ranges.push([start, end, cls])
+      const ext = path.split('.').pop().toLowerCase()
+      if (['md', 'markdown', 'mdx'].includes(ext)) {
+        if (/^#{1,6}\s/.test(text)) add(0, text.length, 'text-base font-bold')
+        for (const [pattern, cls] of [[/\*\*[^*]+\*\*/g, 'font-bold'], [/`[^`]+`/g, 'rounded bg-slate-200 text-slate-800'], [/\[[^\]]+\]\([^)]+\)/g, 'text-teal-600 underline'], [/^\s*(?:[-*+] |\d+\. )/g, 'font-bold text-slate-500']]) {
+          for (const match of text.matchAll(pattern)) add(match.index, match.index + match[0].length, cls)
+        }
+      } else if (Object.hasOwn(languages, ext) && hljs.getLanguage(languages[ext])) {
+        const fragment = document.createElement('template')
+        fragment.innerHTML = hljs.highlight(text, { language: languages[ext], ignoreIllegals: true }).value
+        let offset = 0
+        const visit = (node, styles = '') => {
+          if (node.nodeType === 3) {
+            add(offset, offset + node.textContent.length, styles)
+            offset += node.textContent.length
+          } else {
+            const cls = [...(node.classList || [])].map(name => tokenClasses[name.replace('hljs-', '')] || '').join(' ')
+            node.childNodes.forEach(child => visit(child, styles + ' ' + cls))
+          }
+        }
+        visit(fragment.content)
+      }
+      if (change) add(change[0], change[1], kind === 'add' ? 'bg-[var(--add-word)]' : 'bg-[var(--del-word)]')
+      // Mark whitespace inside the changed interval and at the end of changed lines. A lone CR at
+      // the end is marked only when it changed, so CRLF files do not flag every line.
+      if (kind === 'add' || kind === 'del') {
+        if (change) add(change[0], change[1], 'ws-zone')
+        if (lead) add(0, lead, 'ws-zone')
+        const trail = /[ \t\u3000\u00a0\u200b\u2000-\u200a\u202f\u205f]+\r?$/.exec(text)
+        if (trail) add(trail.index, text.length, 'ws-zone')
+      }
+      // Zero-width characters are invisible everywhere, so they are marked on every line.
+      for (const match of text.matchAll(/[\u200b\ufeff]/g)) add(match.index, match.index + 1, 'ws-zone')
+      if (query) {
+        let start = 0
+        let hit
+        while ((hit = text.toLowerCase().indexOf(query, start)) !== -1) {
+          add(hit, hit + query.length, 'search bg-yellow-300 text-slate-950 outline outline-1 outline-yellow-700')
+          start = hit + query.length
+        }
+      }
+      const cuts = [...new Set([0, text.length, ...ranges.flatMap(range => range.slice(0, 2))])].sort((a, b) => a - b)
+      return cuts.slice(0, -1).map((start, i) => {
+        const end = cuts[i + 1]
+        const active = ranges.filter(([a, b]) => start >= a && end <= b)
+        const cls = active.map(range => range[2]).join(' ')
+        const part = active.some(range => range[2] === 'ws-zone') ? spaceHTML(text.slice(start, end)) : esc(text.slice(start, end))
+        return active.some(range => range[2].startsWith('search ')) ? `<mark class="${cls}">${part}</mark>` : `<span class="${cls}">${part}</span>`
+      }).join('')
+    }
+
+    const leading = text => /^[\s\u200b]*/.exec(text)[0]
+
+    /** Changed interval of each line, plus the leading whitespace when the two lines indent differently. */
+    function pairRanges (a, b) {
+      let start = 0
+      let end = 0
+      const n = Math.min(a.length, b.length)
+      while (start < n && a[start] === b[start]) start++
+      while (end < n - start && a[a.length - 1 - end] === b[b.length - 1 - end]) end++
+      const ranges = start || end ? [[start, a.length - end], [start, b.length - end]] : [null, null]
+      const [left, right] = [leading(a), leading(b)]
+      return left === right ? ranges : [{ range: ranges[0], lead: left.length }, { range: ranges[1], lead: right.length }].map(({ range, lead }) => range ? [...range, lead] : [0, 0, lead])
+    }
+
+    const squash = text => text.replace(/[\s\u200b]+/g, '')
+
+    /**
+     * Pair removed and added lines that differ only in whitespace, as git diff -w does.
+     * Common leading and trailing lines are matched first, so a reindented block needs no table.
+     */
+    function matchBlock (removed, added) {
+      const a = removed.map(row => squash(row.text))
+      const b = added.map(row => squash(row.text))
+      const same = (i, j) => ({ kind: 'context', old: removed[i].old, current: added[j].current, text: added[j].text, before: removed[i].text })
+      let start = 0
+      while (start < a.length && start < b.length && a[start] === b[start]) start++
+      let end = 0
+      while (end < a.length - start && end < b.length - start && a[a.length - 1 - end] === b[b.length - 1 - end]) end++
+      const n = a.length - start - end
+      const m = b.length - start - end
+      const middle = []
+      if (n && m && n * m <= 250000) {
+        // Longest common subsequence over the remaining lines; each gap keeps removed lines before added ones.
+        const table = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1))
+        for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) table[i][j] = a[start + i] === b[start + j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1])
+        let i = 0
+        let j = 0
+        let gone = []
+        let come = []
+        while (i < n || j < m) {
+          if (i < n && j < m && a[start + i] === b[start + j]) {
+            middle.push(...gone, ...come, same(start + i, start + j))
+            gone = []
+            come = []
+            i++
+            j++
+          } else if (j >= m || (i < n && table[i + 1][j] >= table[i][j + 1])) gone.push(removed[start + i++])
+          else come.push(added[start + j++])
+        }
+        middle.push(...gone, ...come)
+      } else middle.push(...removed.slice(start, start + n), ...added.slice(start, start + m))
+      return [...Array.from({ length: start }, (_, k) => same(k, k)), ...middle, ...Array.from({ length: end }, (_, k) => same(a.length - end + k, b.length - end + k))]
+    }
+
+    /** Show whitespace-only line changes as unchanged lines; unless keepHunks, drop hunks left without changes. */
+    function ignoreSpace (rows, keepHunks) {
+      const out = []
+      for (let i = 0; i < rows.length;) {
+        if (rows[i].kind !== 'del' && rows[i].kind !== 'add') {
+          out.push(rows[i++])
+          continue
+        }
+        const removed = []
+        const added = []
+        while (rows[i]?.kind === 'del') removed.push(rows[i++])
+        while (rows[i]?.kind === 'add') added.push(rows[i++])
+        out.push(...matchBlock(removed, added))
+      }
+      if (keepHunks) return out
+      const result = []
+      let hunk = []
+      const flush = () => {
+        if (hunk.some(row => row.kind === 'del' || row.kind === 'add')) result.push(...hunk)
+        hunk = []
+      }
+      for (const row of out) {
+        if (row.kind === 'hunk') flush()
+        hunk.push(row)
+      }
+      flush()
+      return result
+    }
+
+    function renderDiff (file, layout, scope, query, whitespace) {
+      const parsed = parseDiff(scope === 'full' && typeof file.full_body === 'string' ? file.full_body : file.body)
+      const rows = whitespace === 'spaceIgnore' ? ignoreSpace(parsed, scope === 'full' && typeof file.full_body === 'string') : parsed
+      if (parsed.length && !rows.some(row => row.kind === 'del' || row.kind === 'add') && parsed.some(row => row.kind === 'del' || row.kind === 'add')) return '<p class="space-only p-3 text-[var(--muted)]">空白の違いだけです。「空白の違い」で「表示」を選ぶと、違いが見えます。</p>'
+      const digits = key => String(rows.reduce((max, row) => Math.max(max, row[key] || 0), 1)).length
+      const gutter = key => `<col class="w-[calc(${digits(key)}ch+10px)]">`
+      const ln = value => `<td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${value ?? ''}</td>`
+      const code = (row, range) => {
+        const color = row?.kind === 'add' ? 'bg-[var(--add)]' : row?.kind === 'del' ? 'bg-[var(--del)]' : ''
+        return `<td class="px-1 align-top whitespace-pre-wrap break-all ${color}">${row ? `<span class="inline-block w-3 text-[var(--muted)] select-none">${row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '}</span><span class="line-text">${textHTML(row.text, file.path, query, range && range[0] < range[1] ? range : null, row.kind, range?.[2])}</span>` : ''}</td>`
+      }
+      const output = []
+      for (let i = 0; i < rows.length;) {
+        const row = rows[i]
+        if (row.kind === 'hunk' || row.kind === 'note') {
+          output.push(`<tr><td colspan="${layout === 'split' ? 4 : 3}" class="hunk sticky top-[var(--head,0px)] z-[5] bg-[var(--hunk)] px-2 py-1 text-[var(--muted)] whitespace-pre-wrap break-all">${esc(row.text)}</td></tr>`)
+          i++
+        } else if (row.kind === 'context') {
+          // Lines matched while ignoring whitespace keep each side's own text in the split layout.
+          output.push(layout === 'split' ? `<tr>${ln(row.old)}${code(row.before === undefined ? row : { ...row, text: row.before })}${ln(row.current)}${code(row)}</tr>` : `<tr>${ln(row.old)}${ln(row.current)}${code(row)}</tr>`)
+          i++
+        } else {
+          const removed = []
+          const added = []
+          while (rows[i]?.kind === 'del') removed.push(rows[i++])
+          while (rows[i]?.kind === 'add') added.push(rows[i++])
+          const pairs = Array.from({ length: Math.max(removed.length, added.length) }, (_, j) => removed[j] && added[j] ? pairRanges(removed[j].text, added[j].text) : [null, null])
+          if (layout === 'split') {
+            pairs.forEach(([a, b], j) => output.push(`<tr>${ln(removed[j]?.old)}${code(removed[j], a)}${ln(added[j]?.current)}${code(added[j], b)}</tr>`))
+          } else {
+            removed.forEach((line, j) => output.push(`<tr class="bg-[var(--del)]">${ln(line.old)}${ln()}${code(line, pairs[j][0])}</tr>`))
+            added.forEach((line, j) => output.push(`<tr class="bg-[var(--add)]">${ln()}${ln(line.current)}${code(line, pairs[j][1])}</tr>`))
+          }
+        }
+      }
+      const cols = layout === 'split' ? `${gutter('old')}<col>${gutter('current')}<col>` : `${gutter('old')}${gutter('current')}<col>`
+      return output.length ? `<table data-layout="${layout}" data-scope="${scope}" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup>${cols}</colgroup><tbody>${output.join('')}</tbody></table>` : '<p class="p-3 text-[var(--muted)]">表示するテキスト行はありません。</p>'
+    }
+
+    const modeNames = { 100644: '通常のファイル', 100755: '実行できるファイル', 120000: 'シンボリックリンク', 160000: 'サブモジュール' }
+    const modeName = mode => `${modeNames[mode] || 'モード'}（${mode}）`
+    /** Describe a mode change, an executable file or a symbolic link; empty for an unchanged regular file. */
+    function modeText (file) {
+      const { old_mode: before, new_mode: after } = file
+      const parts = []
+      if (before && after && before !== after) parts.push(`${modeName(before)} → ${modeName(after)}`)
+      else if ((after || before) && (after || before) !== '100644') parts.push(modeName(after || before))
+      if ([before, after].includes('120000')) parts.push('シンボリックリンクの差分は、リンク先のパスです。')
+      return parts.join('。')
+    }
+
+    const StatusBadge = {
+      props: ['status'],
+      setup () {
+        return {
+          labels: { A: '追加', M: '変更', D: '削除', R: '移動', C: '複製', T: '種類変更', U: '未解決', X: '不明', B: '分割' },
+          colors: { A: 'bg-emerald-100 text-emerald-800', M: 'bg-blue-100 text-blue-800', D: 'bg-rose-100 text-rose-800', R: 'bg-amber-100 text-amber-800', C: 'bg-purple-100 text-purple-800', T: 'bg-orange-100 text-orange-800' }
+        }
+      },
+      template: `<span class="inline-block w-5 shrink-0 rounded text-center font-mono text-xs font-bold" :class="colors[status[0]] || 'bg-pink-100 text-pink-800'" :title="labels[status[0]]" :aria-label="labels[status[0]]">{{ status[0] }}</span>`
+    }
+    const FilePanel = {
+      components: { StatusBadge, ...icons },
+      props: ['item', 'open', 'layout', 'scope', 'query', 'theme', 'whitespace', 'counts'],
+      emits: ['toggle'],
+      setup (props) {
+        const root = ref(null)
+        const head = ref(null)
+        const near = ref(false)
+        let observer, sizer
+        onMounted(() => {
+          observer = new IntersectionObserver(entries => { near.value = entries[0].isIntersecting }, { root: document.getElementById('main'), rootMargin: '300px' })
+          observer.observe(root.value)
+          // The file header sticks to the top while scrolling; hunk headers stick just below it.
+          sizer = new ResizeObserver(() => root.value?.style.setProperty('--head', head.value.offsetHeight + 'px'))
+          sizer.observe(head.value)
+        })
+        onBeforeUnmount(() => { observer?.disconnect(); sizer?.disconnect() })
+        // Render only opened panels near the viewport; reserve height after leaving to keep scroll stable.
+        const visited = ref(false)
+        watch(() => props.open, open => { if (!open) visited.value = false })
+        watch(() => [near.value, props.open], ([nearby, open]) => { if (nearby && open) visited.value = true }, { immediate: true })
+        const html = computed(() => props.open && (near.value || visited.value) ? renderDiff(props.item.file, props.layout, props.scope, props.query, props.whitespace) : '')
+        const copied = ref(false)
+        const copyPath = async () => {
+          if (!await copyText(props.item.file.path)) return
+          copied.value = true
+          setTimeout(() => { copied.value = false }, 1200)
+        }
+        return { root, head, html, copied, copyPath, mode: computed(() => modeText(props.item.file)), lightDiff: computed(() => props.theme !== 'dark') }
+      },
+      template: `<article ref="root" :id="item.id" :data-file-id="item.id" class="overflow-clip rounded-lg border border-[var(--border)] bg-[var(--panel)]" :class="open ? 'my-5' : 'my-1'">
+        <div ref="head" class="file-header-row sticky top-0 z-10 flex w-full cursor-pointer flex-wrap items-center gap-2 bg-[var(--panel)] p-3" :class="open ? 'border-b border-[var(--border)]' : ''" @click="$emit('toggle')">
+          <button type="button" class="file-header flex min-w-0 cursor-pointer items-center gap-2 text-left focus-visible:outline-2 focus-visible:outline-teal-500" :aria-expanded="open" :aria-controls="item.id + '-body'"><div><chevron-down v-if="open" :size="16"></chevron-down><chevron-right v-else :size="16"></chevron-right></div><status-badge :status="item.file.status"></status-badge><span class="min-w-0 break-all font-mono text-xs font-bold">{{ item.source.name }} / {{ item.file.path }}</span></button><button type="button" class="copy-path shrink-0 cursor-pointer rounded p-0.5 text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--fg)] focus-visible:outline-2 focus-visible:outline-teal-500" :aria-label="copied ? 'パスをコピーしました' : 'パスをコピー'" :title="copied ? 'コピーしました' : 'パスをコピー'" @click.stop="copyPath"><check v-if="copied" :size="13"></check><copy v-else :size="13"></copy></button><span class="flex-1"></span><span v-if="item.file.old" class="break-all text-xs text-[var(--muted)]">← {{ item.file.old }}</span><span class="font-mono text-xs"><span class="text-emerald-600">+{{ counts.added ?? '—' }}</span> <span class="text-rose-500">−{{ counts.deleted ?? '—' }}</span></span>
+        </div>
+        <div v-if="open" :id="item.id + '-body'" :class="html ? '' : 'min-h-80'">
+          <div v-if="html" class="diff-body overflow-x-clip bg-[var(--panel)] text-[var(--fg)]" :class="lightDiff ? '[--panel:#fff] [--fg:#1d2422] [--border:#d9dfdc] [--muted:#64748b] [--add:#e6f4ea] [--del:#fbeaea] [--add-word:#a6e7b6] [--del-word:#f7b9b9] [--hunk:#eef2f6]' : '[--panel:#18201d] [--fg:#e3e8e6] [--add:#14301e] [--del:#3a1d1d] [--add-word:#2f7d48] [--del-word:#a3403f] [--hunk:#253142] [&_.text-purple-600]:text-purple-300 [&_.text-emerald-700]:text-emerald-300 [&_.text-blue-600]:text-blue-300 [&_.text-cyan-700]:text-cyan-300 [&_.text-orange-600]:text-orange-300 [&_.bg-slate-200]:bg-slate-700 [&_.text-slate-800]:text-slate-100'">
+            <p v-if="scope === 'full' && typeof item.file.full_body !== 'string'" class="p-3 text-xs text-[var(--muted)]">全文は含まれていません。変更箇所を表示します。</p><p v-if="mode" class="file-mode px-3 pt-3 text-xs text-[var(--muted)]">{{ mode }}</p><p v-if="item.file.notice" class="p-3 text-xs text-[var(--muted)]">{{ item.file.notice }}</p><div v-html="html"></div>
+          </div>
+        </div>
+      </article>`
+    }
+
+    const CommitList = {
+      components: icons,
+      props: ['item', 'open'],
+      emits: ['toggle'],
+      setup (props) {
+        const all = ref(false)
+        const expanded = reactive({})
+        const short = hash => hash ? hash.slice(0, 7) : ''
+        // Newest first, grouped by the author's calendar day as written in the ISO date.
+        const days = computed(() => {
+          const list = [...props.item.commits].reverse()
+          const shown = all.value ? list : list.slice(0, 10)
+          const groups = []
+          for (const [hash, date, subject] of shown) {
+            const day = String(date).slice(0, 10)
+            const scope = /^([\w.\/-]+)\s*[：:]\s*(.+)$/s.exec(subject)
+            if (groups.at(-1)?.day !== day) groups.push({ day, label: dayLabel(day), commits: [] })
+            groups.at(-1).commits.push({ hash, time: String(date).slice(11, 16), tag: scope?.[1] || '', text: scope?.[2] || subject })
+          }
+          return groups
+        })
+        const span = computed(() => {
+          const dates = props.item.commits.map(c => String(c[1]).slice(0, 10)).filter(Boolean)
+          if (!dates.length) return ''
+          const first = dates[0].slice(5).replace('-', '/')
+          const last = dates.at(-1).slice(5).replace('-', '/')
+          return first === last ? first : `${first} – ${last}`
+        })
+        const rest = computed(() => Math.max(0, props.item.commits.length - 10))
+        return { all, expanded, short, days, span, rest }
+      },
+      template: `<section class="mb-2 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+        <button type="button" class="commit-header flex w-full cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 p-3 text-left text-xs focus-visible:outline-2 focus-visible:outline-teal-500" :aria-expanded="open" @click="$emit('toggle')">
+          <div class="text-[var(--muted)]"><chevron-down v-if="open" :size="16"></chevron-down><chevron-right v-else :size="16"></chevron-right></div>
+          <div class="text-teal-600"><git-commit-horizontal :size="16"></git-commit-horizontal></div>
+          <span class="font-bold">{{ item.name }}</span>
+          <span class="flex min-w-0 items-center gap-1 font-mono">
+            <span class="rounded bg-[var(--hunk)] px-1.5 py-0.5" :title="item.base">{{ item.base_ref }}</span>
+            <span v-if="item.merge_base" class="text-[var(--muted)]">の分岐点</span>
+            <div class="text-[var(--muted)]"><arrow-right :size="12"></arrow-right></div>
+            <span class="rounded bg-[var(--hunk)] px-1.5 py-0.5" :title="item.target">{{ item.target_ref }}</span>
+          </span>
+          <span class="ml-auto flex items-center gap-2 text-[var(--muted)]"><span v-if="span">{{ span }}</span><span class="rounded-full bg-teal-600 px-2 py-0.5 font-bold text-white">{{ item.commits.length }} コミット</span></span>
+        </button>
+        <div v-if="open" class="commit-body border-t border-[var(--border)] px-3 pb-3 text-xs">
+          <p class="py-2 font-mono text-[var(--muted)]">{{ short(item.base) }} → {{ short(item.target) }}<span class="ml-2 font-sans">新しい順</span></p>
+          <div v-for="group in days" :key="group.day" class="mb-2">
+            <p class="sticky top-0 bg-[var(--panel)] py-1 font-bold text-[var(--muted)]">{{ group.label }}</p>
+            <ol class="ml-1.5 border-l-2 border-[var(--border)]">
+              <li v-for="commit in group.commits" :key="commit.hash" class="commit relative -ml-px py-1.5 pl-4">
+                <span class="absolute top-3 -left-[5px] size-2 rounded-full bg-teal-600 ring-2 ring-[var(--panel)]"></span>
+                <button type="button" class="block w-full cursor-pointer rounded px-1 text-left hover:bg-[var(--hunk)]" :aria-expanded="!!expanded[commit.hash]" :title="expanded[commit.hash] ? '' : '押すと全文'" @click="expanded[commit.hash] = !expanded[commit.hash]">
+                  <span class="block leading-relaxed" :class="expanded[commit.hash] ? 'whitespace-pre-wrap break-all' : 'line-clamp-2'"><span v-if="commit.tag" class="mr-1.5 rounded bg-teal-600/15 px-1.5 py-0.5 font-mono text-[11px] text-teal-600">{{ commit.tag }}</span>{{ commit.text }}</span>
+                  <span class="mt-0.5 flex gap-2 font-mono text-[11px] text-[var(--muted)]"><span>{{ short(commit.hash) }}</span><span v-if="commit.time">{{ commit.time }}</span></span>
+                </button>
+              </li>
+            </ol>
+          </div>
+          <button v-if="rest" type="button" class="mt-1 cursor-pointer rounded border border-[var(--border)] px-3 py-1 hover:bg-[var(--hunk)]" @click="all = !all">{{ all ? '新しい 10 件だけにする' : '残り ' + rest + ' 件を表示' }}</button>
+        </div>
+      </section>`
+    }
+
+    function dayLabel (day) {
+      const date = new Date(day + 'T00:00:00')
+      return Number.isNaN(date.getTime()) ? day : `${day.replace(/-/g, '/')}（${'日月火水木金土'[date.getDay()]}）`
+    }
+
+    createApp({
+      components: { StatusBadge, FilePanel, CommitList, ...icons },
+      setup () {
+        const data = DATA
+        const ready = ref(false)
+        // A small copy button floats above the end of any text the viewer selects.
+        const selection = reactive({ show: false, x: 0, y: 0, text: '', copied: false })
+        function placeSelection () {
+          const range = getSelection()
+          const text = range && !range.isCollapsed ? range.toString() : ''
+          const anchor = range?.anchorNode?.parentElement
+          if (!text.trim() || !anchor?.closest('#diff-app') || anchor.closest('input, textarea')) {
+            if (!selection.copied) selection.show = false
+            return
+          }
+          const rects = range.getRangeAt(range.rangeCount - 1).getClientRects()
+          const box = rects[rects.length - 1] || range.getRangeAt(0).getBoundingClientRect()
+          Object.assign(selection, { show: true, copied: false, text, x: Math.min(Math.max(box.right + 4, 4), innerWidth - 32), y: Math.max(box.top - 30, 4) })
+        }
+        async function copySelection () {
+          if (!await copyText(selection.text)) return
+          selection.copied = true
+          setTimeout(() => { selection.copied = false; placeSelection() }, 1200)
+        }
+        let selectionTimer
+        const onSelection = () => { clearTimeout(selectionTimer); selectionTimer = setTimeout(placeSelection, 120) }
+        document.addEventListener('selectionchange', onSelection)
+        document.addEventListener('scroll', onSelection, true)
+        const source = ref(-1)
+        const input = ref('')
+        const query = ref('')
+        const layout = ref('unified')
+        const scope = ref('diff')
+        const whitespace = ref('spaceShow')
+        // While whitespace is ignored, the counts come from the same matching as the page shows.
+        const spaceCounts = new WeakMap()
+        const shown = file => {
+          if (whitespace.value === 'spaceShow' || file.added == null) return file
+          if (!spaceCounts.has(file)) {
+            const rows = ignoreSpace(parseDiff(file.body), true)
+            spaceCounts.set(file, { added: rows.filter(row => row.kind === 'add').length, deleted: rows.filter(row => row.kind === 'del').length })
+          }
+          return spaceCounts.get(file)
+        }
+        const screen = ref('list')
+        const mobile = ref(matchMedia('(max-width: 767px)').matches)
+        /** @type {Record<string, boolean>} File disclosure state survives filtering and mobile screen switches. */
+        const opened = reactive({})
+        /** @type {Record<number, boolean>} Commit list disclosure state per source. */
+        const commits = reactive({})
+        const theme = ref(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        try {
+          const saved = localStorage.getItem('show-changes-theme')
+          if (['light', 'dark', 'hybrid'].includes(saved)) theme.value = saved
+        } catch {}
+        watch(theme, value => {
+          document.documentElement.dataset.theme = value
+          try { localStorage.setItem('show-changes-theme', value) } catch {}
+        }, { immediate: true })
+        // Side-by-side widths only; the mobile layout switches screens instead.
+        const split = ref(null)
+        const defaultWidth = 360
+        const minWidth = 200
+        const maxWidth = () => Math.max(minWidth, (split.value?.clientWidth || innerWidth) - 360)
+        const sidebarWidth = ref(defaultWidth)
+        const sidebarHidden = ref(false)
+        const dragging = ref(false)
+        try {
+          const saved = JSON.parse(localStorage.getItem('show-changes-sidebar') || '{}')
+          if (Number.isFinite(saved.width)) sidebarWidth.value = saved.width
+          sidebarHidden.value = saved.hidden === true
+        } catch {}
+        const setWidth = value => { sidebarWidth.value = Math.round(Math.min(maxWidth(), Math.max(minWidth, value))) }
+        watch([sidebarWidth, sidebarHidden], ([width, hidden]) => {
+          try { localStorage.setItem('show-changes-sidebar', JSON.stringify({ width, hidden })) } catch {}
+        })
+        /** @param {PointerEvent} event */
+        function startDrag (event) {
+          if (event.button !== 0) return
+          event.preventDefault()
+          const handle = event.currentTarget
+          const left = split.value.getBoundingClientRect().left
+          handle.setPointerCapture(event.pointerId)
+          dragging.value = true
+          const move = e => setWidth(e.clientX - left)
+          const stop = () => {
+            dragging.value = false
+            handle.removeEventListener('pointermove', move)
+            handle.removeEventListener('pointerup', stop)
+            handle.removeEventListener('pointercancel', stop)
+          }
+          handle.addEventListener('pointermove', move)
+          handle.addEventListener('pointerup', stop)
+          handle.addEventListener('pointercancel', stop)
+        }
+        const fit = () => { if (!mobile.value) setWidth(sidebarWidth.value) }
+        let timer
+        watch(input, value => {
+          clearTimeout(timer)
+          timer = setTimeout(() => { query.value = value.toLowerCase() }, 160)
+        })
+        const media = matchMedia('(max-width: 767px)')
+        const resize = event => { mobile.value = event.matches }
+        onMounted(() => {
+          media.addEventListener('change', resize)
+          addEventListener('resize', fit)
+          fit()
+          ready.value = true
+          document.getElementById('app').dataset.ready = 'true'
+        })
+        onBeforeUnmount(() => {
+          removeEventListener('resize', fit)
+          clearTimeout(timer)
+          media.removeEventListener('change', resize)
+        })
+        const records = data.sources.flatMap((source, ri) => source.files.map((file, fi) => ({ id: `f-${ri}-${fi}`, file, source, ri })))
+        // Cache only raw searchable content, never patch headers, hunk metadata or line markers.
+        const searchCache = new WeakMap()
+        const content = file => {
+          let cache = searchCache.get(file)
+          if (!cache) {
+            cache = {}
+            searchCache.set(file, cache)
+          }
+          if (!cache[scope.value]) cache[scope.value] = parseDiff(scope.value === 'full' && typeof file.full_body === 'string' ? file.full_body : file.body).filter(row => ['add', 'del', 'context'].includes(row.kind)).map(row => row.text.toLowerCase())
+          return cache[scope.value]
+        }
+        const contentOnly = ref(false)
+        // Added or modified files whose content changed; renames, copies, deletions, mode-only changes, symlinks and submodules drop out.
+        const contentChanged = file => ['A', 'M'].includes(file.status[0]) && ![file.old_mode, file.new_mode].some(mode => ['120000', '160000'].includes(mode)) && (file.binary || file.added > 0 || file.deleted > 0)
+        const visible = computed(() => records.filter(item => (source.value === -1 || source.value === item.ri) && (!contentOnly.value || contentChanged(item.file)) && (!query.value || [item.file.path, item.file.old || ''].some(path => path.toLowerCase().includes(query.value)) || content(item.file).some(text => text.includes(query.value)))))
+        const groups = computed(() => {
+          const result = new Map()
+          for (const item of visible.value) {
+            const parts = item.file.path.split('/')
+            const directory = parts.slice(0, Math.min(data.group_depth, parts.length - 1)).join('/') || 'ルート'
+            const name = item.source.name + ' / ' + directory
+            if (!result.has(name)) result.set(name, { name, files: [] })
+            result.get(name).files.push(item)
+          }
+          return [...result.values()]
+        })
+        const totals = computed(() => visible.value.reduce((sum, item) => ({ added: sum.added + (shown(item.file).added || 0), deleted: sum.deleted + (shown(item.file).deleted || 0) }), { added: 0, deleted: 0 }))
+        const hasFull = records.some(item => typeof item.file.full_body === 'string')
+        const palette = computed(() => theme.value === 'light' ? '[--bg:#f6f7f6] [--panel:#ffffff] [--fg:#1d2422] [--muted:#5f6b67] [--border:#d9dfdc] [--hover:#e2f0ed]' : '[--bg:#101714] [--panel:#1b2420] [--fg:#e3e8e6] [--muted:#a3b5ac] [--border:#34453b] [--hover:#2a3d32]')
+        const controls = [
+          { label: '開閉', items: [{ id: 'openAll', label: 'すべて開く', icon: 'chevrons-up-down' }, { id: 'closeAll', label: 'すべて閉じる', icon: 'chevrons-down-up' }] },
+          { label: '配置', items: [{ id: 'unified', label: '上下', icon: 'rows-2', value: 'layout' }, { id: 'split', label: '左右', icon: 'columns-2', value: 'layout' }] },
+          { label: '範囲', items: [{ id: 'diff', label: '差分', icon: 'file-diff', value: 'scope' }, { id: 'full', label: '全文', icon: 'file-text', value: 'scope' }] },
+          { label: '空白の違い', items: [{ id: 'spaceShow', label: '表示', title: '空白の違いを表示し、変わった空白を記号で示す', icon: 'pilcrow', value: 'whitespace' }, { id: 'spaceIgnore', label: '無視', title: '空白（全角スペース・タブ・行末の CR を含む）の違いだけの行を、変わっていない行として表示する。空行の追加と削除は表示する', icon: 'eye-off', value: 'whitespace' }] },
+          { label: '配色', items: [{ id: 'light', label: 'ライト', icon: 'sun', value: 'theme' }, { id: 'dark', label: 'ダーク', icon: 'moon', value: 'theme' }, { id: 'hybrid', label: 'ミックス', title: '周りはダーク、差分の部分だけライト', icon: 'eclipse', value: 'theme' }] }
+        ]
+        const values = { layout, scope, theme, whitespace }
+        const selected = control => control.value ? values[control.value].value === control.id : false
+        const activate = control => {
+          if (control.value) values[control.value].value = control.id
+          else visible.value.forEach(item => { opened[item.id] = control.id === 'openAll' })
+        }
+        const jump = async id => {
+          opened[id] = true
+          screen.value = 'diff'
+          await nextTick()
+          const node = document.getElementById(id)
+          const main = document.getElementById('main')
+          main.scrollTop += node.getBoundingClientRect().top - main.getBoundingClientRect().top - 12
+          node.querySelector('button').focus({ preventScroll: true })
+        }
+        return { split, sidebarWidth, sidebarHidden, dragging, minWidth, maxWidth, defaultWidth, setWidth, startDrag, data, ready, selection, copySelection, source, input, contentOnly, query, layout, scope, whitespace, shown, theme, screen, mobile, opened, commits, visible, groups, totals, hasFull, palette, controls, selected, activate, jump }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>

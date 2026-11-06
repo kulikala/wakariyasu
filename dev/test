@@ -8,8 +8,8 @@ cd "$ROOT" || exit 1
 fail=0
 ng() { echo "NG: $*" >&2; fail=1; }
 
-# 1. スキルの中の写しと AGENTS.snippet.md が、rules/ と references/ の本文と一致している
-dev/build --check >/dev/null || ng "写しが本文と食い違っている（dev/build を実行する）"
+# 1. AGENTS.snippet.md が本文と一致し、本文と同じ名前のファイルがほかのスキルに無い
+dev/build --check >/dev/null || ng "AGENTS.snippet.md が本文と食い違っているか、本文と同じ名前のファイルがほかのスキルにある（dev/build --check の出力を見る）"
 
 # 2. 版が plugin.json・marketplace.json・CHANGELOG.md でそろっている
 version_of() { sed -n 's/^ *"version": "\([^"]*\)".*/\1/p' "$1"; }
@@ -34,26 +34,26 @@ done
 # 5. フックが規則3本と、返答のたびに使うリファレンスを出し、残りのリファレンスの場所を伝える
 out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh が失敗した"
 for r in writing-to-user writing-documents polishing; do
-    printf '%s\n' "$out" | grep -qxF "$(head -1 "rules/$r.md")" || ng "フックの出力に rules/$r.md が無い"
+    printf '%s\n' "$out" | grep -qxF "$(head -1 "skills/writing-rules/rules/$r.md")" || ng "フックの出力に skills/writing-rules/rules/$r.md が無い"
 done
 for f in styles asking; do
-    printf '%s\n' "$out" | grep -qxF "$(head -1 "references/$f.md")" || ng "フックの出力に references/$f.md が無い"
+    printf '%s\n' "$out" | grep -qxF "$(head -1 "skills/writing-rules/references/$f.md")" || ng "フックの出力に skills/writing-rules/references/$f.md が無い"
 done
-for f in readme writing-instructions; do
-    [ -e "references/$f.md" ] || ng "フックが場所を伝える references/$f.md が無い"
+for f in readme writing-instructions changelog; do
+    [ -e "skills/writing-rules/references/$f.md" ] || ng "フックが場所を伝える skills/writing-rules/references/$f.md が無い"
 done
-printf '%s\n' "$out" | grep -q "$ROOT/references/" || ng "フックの出力に、リファレンスの場所が無い"
+printf '%s\n' "$out" | grep -q "$ROOT/skills/writing-rules/references/" || ng "フックの出力に、リファレンスの場所が無い"
 
 printf '%s\n' "$out" | grep -qx '# 日本語では使わない言い回し' || ng "フックの出力に、日本語では使わない言い回しの表が無い"
 printf '%s\n' "$out" | grep -qx '# 文脈によっては別の語のほうが自然な言い回し' ||
     ng "フックの出力に、文脈によっては別の語のほうが自然な言い回しの表が無い"
 
 # 6. 規則・リファレンス・スキルが「（`x.md`）の「…」の節」と指す節の見出しが、指された規則かリファレンスにある
-grep -ho '`[a-z-]*\.md`）の「[^」]*」の節' rules/*.md references/*.md skills/*/SKILL.md | sort -u | while read -r ref; do
+grep -ho '`[a-z-]*\.md`）の「[^」]*」の節' skills/writing-rules/rules/*.md skills/writing-rules/references/*.md skills/*/SKILL.md | sort -u | while read -r ref; do
     f=$(printf '%s' "$ref" | sed 's/^`\([^`]*\)`.*/\1/')
     h=$(printf '%s' "$ref" | sed 's/.*）の「\(.*\)」の節$/\1/')
-    t=rules/$f; [ -e "$t" ] || t=references/$f
-    [ -e "$t" ] || { echo "NG: $f が rules/ にも references/ にも無い" >&2; exit 1; }
+    t=skills/writing-rules/rules/$f; [ -e "$t" ] || t=skills/writing-rules/references/$f
+    [ -e "$t" ] || { echo "NG: $f が skills/writing-rules の rules/ にも references/ にも無い" >&2; exit 1; }
     grep -q "^#.* $h\$" "$t" || { echo "NG: $t に見出し「$h」が無い" >&2; exit 1; }
 done || fail=1
 
@@ -80,21 +80,21 @@ done 2>&1 | grep . >&2 && fail=1
 # 9. 使わない言い回しの検査が、試験の例のとおりに当たる・当たらない
 grep -v '^#' tests/terms-cases.txt | while IFS= read -r l; do
     want=${l%% *}; body=${l#* }
-    if printf '%s\n' "$body" | sh scripts/check-terms >/dev/null; then got=×; else got=○; fi
-    [ "$want" = "$got" ] || { echo "NG: 使わない言い回しの検査が試験の例と違う（$want のはずが $got）: $body" >&2; exit 1; }
+    if printf '%s\n' "$body" | sh skills/check-terms/scripts/check-terms >/dev/null; then got=×; else got=○; fi
+    [ "$want" = "$got" ] || { echo "NG: 使わない言い回しの検査が試験の例と違う（${want} のはずが ${got}）: $body" >&2; exit 1; }
 done || fail=1
 
 # 9b. 文脈で確かめる言い回しの検査が、試験の例のとおりに出る・出ない。終了コードは 0 のまま
 grep -v '^#' tests/caution-cases.txt | while IFS= read -r l; do
     want=${l%% *}; body=${l#* }
-    if printf '%s\n' "$body" | sh scripts/check-terms | grep -c '（文脈で確かめる）$' >/dev/null; then got=○; else got=×; fi
-    [ "$want" = "$got" ] || { echo "NG: 文脈で確かめる言い回しの検査が試験の例と違う（$want のはずが $got）: $body" >&2; exit 1; }
-    printf '%s\n' "$body" | sh scripts/check-terms >/dev/null ||
+    if printf '%s\n' "$body" | sh skills/check-terms/scripts/check-terms | grep -c '（文脈で確かめる）$' >/dev/null; then got=○; else got=×; fi
+    [ "$want" = "$got" ] || { echo "NG: 文脈で確かめる言い回しの検査が試験の例と違う（${want} のはずが ${got}）: $body" >&2; exit 1; }
+    printf '%s\n' "$body" | sh skills/check-terms/scripts/check-terms >/dev/null ||
         { echo "NG: 文脈で確かめる言い回しだけの文で、終了コードが 0 でない: $body" >&2; exit 1; }
 done || fail=1
 
 # 10. wakariyasu 自身の本文に、使わない言い回しが無い（変更履歴は過去の版の記録なので除く）
-sh scripts/check-terms --no-caution rules/*.md references/*.md skills/*/SKILL.md README.md docs/*.md >&2 ||
+sh skills/check-terms/scripts/check-terms --no-caution skills/writing-rules/rules/*.md skills/writing-rules/references/*.md skills/*/SKILL.md README.md docs/*.md >&2 ||
     ng "本文に日本語では使わない言い回しがある（上の行を直す）"
 
 # 11. 最上位に bin/ が無い（あると claude.ai と Cowork がプラグインを受け付けない）

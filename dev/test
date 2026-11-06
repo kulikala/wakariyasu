@@ -93,6 +93,13 @@ grep -v '^#' tests/caution-cases.txt | while IFS= read -r l; do
         { echo "NG: 文脈で確かめる言い回しだけの文で、終了コードが 0 でない: $body" >&2; exit 1; }
 done || fail=1
 
+# 9c. 言い回しの一覧の正規表現に、ASCII の外の文字の範囲指定が無い（C.UTF-8 の GNU sed と grep が受け付けない）。
+# 試験の例を通しても、検査が誤りを出さない
+LC_ALL=C grep -nE '\[[^]]*([^ -~]-|-[^ -~])[^]]*\]' skills/check-terms/references/*.tsv >&2 &&
+    ng "言い回しの一覧に、ASCII の外の文字の範囲指定がある（文字を並べて記述する）"
+err=$(grep -hv '^#' tests/terms-cases.txt tests/caution-cases.txt | sed 's/^[^ ]* //' | sh skills/check-terms/scripts/check-terms 2>&1 >/dev/null)
+[ -z "$err" ] || ng "言い回しの検査が誤りを出した: $err"
+
 # 10. wakariyasu 自身の本文に、使わない言い回しが無い（変更履歴は過去の版の記録なので除く）
 sh skills/check-terms/scripts/check-terms --no-caution skills/writing-rules/rules/*.md skills/writing-rules/references/*.md skills/*/SKILL.md README.md docs/*.md >&2 ||
     ng "本文に日本語では使わない言い回しがある（上の行を直す）"

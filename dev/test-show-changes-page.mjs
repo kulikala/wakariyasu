@@ -113,8 +113,9 @@ function check (value, label) {
   checks.push(label)
 }
 /** Move the pointer and dispatch mouse press/release through Chrome itself. */
-async function click (selector) {
-  await evaluate(`document.querySelector(${JSON.stringify(selector)})?.scrollIntoView({block:'nearest',inline:'nearest'})`)
+// A stuck header scrolls back to its normal place on scrollIntoView, so `inPlace` clicks it where it is.
+async function click (selector, inPlace = false) {
+  if (!inPlace) await evaluate(`document.querySelector(${JSON.stringify(selector)})?.scrollIntoView({block:'nearest',inline:'nearest'})`)
   await sleep(50)
   const rect = await evaluate(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, width: r.width, height: r.height } })()`)
   assert(rect && rect.width > 0 && rect.height > 0, `クリックできません: ${selector}`)
@@ -200,7 +201,7 @@ try {
   const availableFull = data.sources.some(source => source.files.some(file => typeof file.full_body === 'string'))
   check(await evaluate(fileCount) === total, 'sample: 全ファイルの見出し')
   check(await evaluate('document.documentElement.dataset.theme') === 'dark', 'OS の初期配色に従う')
-  check(await evaluate("document.querySelector('#full').disabled") === !availableFull, '全文の有無で切替を制御')
+  check(await evaluate("!!document.querySelector('#full') && !!document.querySelector('#diff')") === availableFull, '全文が無ければ範囲の切替を出さない')
   check(await evaluate("!!document.querySelector('#source')") === (data.sources.length > 1), '単一対象では対象選択を非表示')
   check(await evaluate("document.querySelector('#version').textContent") === data.data_version, 'バージョンをそのまま表示')
   check(await evaluate("!document.querySelector('details, summary, a[href^=\"#\"]')"), '独自開閉とハッシュ非依存')
@@ -272,7 +273,7 @@ try {
     for (const layout of ['unified', 'split']) {
       await click('#' + layout)
       for (const scope of availableFull ? ['diff', 'full'] : ['diff']) {
-        await click('#' + scope)
+        if (availableFull) await click('#' + scope)
         for (const id of ids) {
           await evaluate(`document.querySelector('#files article[data-file-id="${id}"]').scrollIntoView({block:'center'})`)
           await waitFor(`!!document.querySelector('#files article[data-file-id="${id}"] .diff-body')`, `render ${id}`)
@@ -304,6 +305,27 @@ try {
   await click('#hybrid')
   await navigate(fixturePage, 'fixture')
   check(await evaluate('document.documentElement.dataset.theme') === 'hybrid', '同じファイルで配色の保存と復元')
+  check(await evaluate("[...document.querySelectorAll('#diff-app button:not(.file-header), #diff-app select, #diff-app input, #diff-app .file-header-row')].every(e => e.title.trim())"), '押せる要素すべてに title がある')
+  check(await evaluate("!!document.querySelector('#contentOnly') && !!document.querySelector('#full')"), '絞り込みと範囲の切替を出す')
+  check(await evaluate("[...document.querySelectorAll('[role=toolbar] span')].some(e => e.textContent === '空白') && !document.querySelector('[role=toolbar]').textContent.includes('空白の違い')"), '空白の切替の名前は「空白」')
+  // A selected button must look different from a hovered unselected one, also while the pointer stays on it.
+  const { root } = await send('DOM.getDocument', { depth: -1 })
+  await send('CSS.enable')
+  const hoverColor = async selector => {
+    const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector })
+    await send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: ['hover'] })
+    await sleep(100)
+    const color = await evaluate(`getComputedStyle(document.querySelector(${JSON.stringify(selector)})).backgroundColor`)
+    await send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] })
+    return color
+  }
+  await click('#unified')
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 5, y: 890 })
+  await sleep(100)
+  const onHover = await hoverColor('#unified')
+  const offHover = await hoverColor('#split')
+  const onPlain = await evaluate("getComputedStyle(document.querySelector('#unified')).backgroundColor")
+  check(onHover !== offHover && onHover !== onPlain, `選ばれたボタンのホバーの色: ${onHover} / ${offHover} / ${onPlain}`)
   await search('needle')
   check(await evaluate(fileCount) === 1, '本文検索')
   await click('#filelist button[data-file-id]')
@@ -311,6 +333,11 @@ try {
   await click('#closeAll')
   await search('old-only')
   check(await evaluate(fileCount) === 1, '旧パス検索')
+  check(await evaluate("!!document.querySelector('#clearFilter')?.title"), '検索の文字列があれば消すボタンを出す')
+  await click('#clearFilter', true)
+  await sleep(300)
+  check(await evaluate("document.querySelector('#filter').value === '' && !document.querySelector('#clearFilter') && document.activeElement?.id === 'filter'"), '消すボタンで検索の文字列を消し、ボタンを隠して入力欄に戻る')
+  check(await evaluate(fileCount) > 1, '検索の文字列を消すと、すべてのファイルに戻る')
   await search('見出し検索')
   await click('#filelist button[data-file-id]')
   check(await evaluate("!!document.querySelector('#files mark.search')"), 'Markdown 上の検索強調')
@@ -355,6 +382,34 @@ try {
   check(await evaluate("[...document.querySelectorAll('#files article .file-header')].map(e => e.textContent.split(' / ')[1]).join()") === 'blank.py,real.py' && await evaluate("document.querySelectorAll('#filelist button[data-file-id]').length") === 2, '追加・変更したファイルだけにすると、権限だけの変更・移動・削除・シンボリックリンクを出さない')
   await click('#contentOnly')
   check(await evaluate(fileCount) === 6, '絞り込みを外すと、すべてのファイルを出す')
+  // Without full text or files the filter would hide, neither control appears.
+  const plainFixture = { ...fixture, sources: [{ ...fixture.sources[1], files: [{ ...fixture.sources[1].files[0], full_body: undefined }] }] }
+  await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(plainFixture).replace(/</g, '\u003c') + ';\n'), 'plain')
+  check(await evaluate("!document.querySelector('#contentOnly') && !document.querySelector('#full') && !document.querySelector('#diff')"), '絞り込む対象も全文も無ければ、絞り込みと範囲の切替を出さない')
+  // Closing a file from its header while scrolled into it keeps the next header in view.
+  const longBody = '@@ -0,0 +1,200 @@\n' + Array.from({ length: 200 }, (_, i) => '+line ' + i).join('\n')
+  const longFixture = { ...fixture, sources: [{ ...fixture.sources[1], files: [0, 1, 2, 3].map(i => ({ path: `long-${i}.txt`, old: null, status: 'A', added: 200, deleted: 0, binary: false, notice: '', body: longBody })) }] }
+  await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(longFixture).replace(/</g, '\u003c') + ';\n'), 'long')
+  await click('#openAll')
+  await sleep(300)
+  const nextTop = "document.getElementById('f-0-2').getBoundingClientRect().top - document.getElementById('main').getBoundingClientRect().top"
+  const scrollToNext = async offset => {
+    for (let i = 0; i < 3; i++) {
+      await evaluate(`document.getElementById('main').scrollTop += ${nextTop} - ${offset}`)
+      await sleep(250)
+    }
+  }
+  await scrollToNext(500)
+  const shownAt = await evaluate(nextTop)
+  await click('#f-0-1 .file-header', true)
+  await sleep(200)
+  check(Math.abs(await evaluate(nextTop) - shownAt) <= 2, `閉じる前に見えていた次の見出しは同じ位置に残す: ${shownAt} → ${await evaluate(nextTop)}`)
+  await click('#f-0-1 .file-header')
+  await sleep(300)
+  await scrollToNext(3000)
+  await click('#f-0-1 .file-header', true)
+  await sleep(200)
+  check(Math.abs(await evaluate(nextTop)) <= 2, `閉じる前に画面の外にあった次の見出しは、スクロール領域の先頭に出す: ${await evaluate(nextTop)}`)
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
   const mobileFixture = structuredClone(fixture)
   mobileFixture.sources[0].files = Array.from({ length: 45 }, (_, i) => ({ ...fixture.sources[0].files[0], path: `docs/mobile-${i}.md` }))

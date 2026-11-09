@@ -5,19 +5,21 @@
 set -eu
 
 for r in writing-to-user writing-documents polishing; do
+    printf '<!-- %s -->\n\n' "$r.md"
     cat "${CLAUDE_PLUGIN_ROOT}/skills/writing-rules/rules/$r.md"
     printf '\n'
 done
 for f in styles asking; do
+    printf '<!-- %s -->\n\n' "$f.md"
     cat "${CLAUDE_PLUGIN_ROOT}/skills/writing-rules/references/$f.md"
     printf '\n'
 done
 sh "${CLAUDE_PLUGIN_ROOT}/skills/check-terms/scripts/terms-table"
 printf '\n# wakariyasu のファイルの場所\n\n'
-printf 'フックの出力に入っているのは、規則3本・styles.md・asking.md・言い回しの2つの一覧（terms.tsv・terms-caution.tsv）。\n'
+printf 'フックの出力に入っているのは、規則・styles.md・asking.md・言い回しの一覧（terms.tsv・terms-caution.tsv）。\n'
 printf '規則・リファレンス・スキルが指すファイルのうち、フックの出力に入っているものは読み直さなくてよい。\n\n'
 printf -- '- 規則（writing-to-user.md・writing-documents.md・polishing.md）: %s/skills/writing-rules/rules/\n' "${CLAUDE_PLUGIN_ROOT}"
 printf -- '- リファレンス: %s/skills/writing-rules/references/\n' "${CLAUDE_PLUGIN_ROOT}"
 printf -- '- 言い回しの一覧: %s/skills/check-terms/references/\n' "${CLAUDE_PLUGIN_ROOT}"
-printf -- '- フックの出力に入っていないリファレンス: readme.md は README を書く・直すとき、changelog.md は変更履歴を書く・直すとき、writing-instructions.md はスキル・規則・プロンプトを書くときに、references/ から読む\n'
+printf -- '- フックの出力に入っていないリファレンス（writing-instructions.md・readme.md・changelog.md）も references/ にある。読む場面は規則 writing-documents.md にある\n'
 printf -- '- ファイルに記述した文書の検査: sh "%s/skills/check-terms/scripts/check-terms" <ファイル>\n' "${CLAUDE_PLUGIN_ROOT}"

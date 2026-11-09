@@ -10,12 +10,16 @@ trap 'rm -r -- "$TMP"' EXIT
 
 {
     printf '<!-- wakariyasu:AGENTS.snippet.md -->\n'
+    printf '\n# wakariyasu のファイルの場所\n\n'
+    printf 'この本文には、規則（writing-to-user.md・writing-documents.md・polishing.md）、リファレンスの styles.md・asking.md、言い回しの一覧（terms.tsv・terms-caution.tsv）が入っている。各ファイルの本文は、ファイル名を書いたコメントの行から始まる。この本文にあるファイルは開き直さなくてよい。本文に入っていないファイルは、wakariyasu のスキルのフォルダにある。\n\n'
+    printf -- '- リファレンス（writing-instructions.md・readme.md・changelog.md）: スキル writing-rules のフォルダの references/。読む場面は規則 writing-documents.md にある\n'
+    printf -- '- 言い回しの一覧と、ファイルに記述した文書を検査するスクリプト: スキル check-terms のフォルダ\n'
     for r in writing-to-user writing-documents polishing; do
-        printf '\n'
+        printf '\n<!-- %s -->\n\n' "$r.md"
         cat "$W/rules/$r.md"
     done
-    for f in styles asking writing-instructions readme changelog; do
-        printf '\n'
+    for f in styles asking; do
+        printf '\n<!-- %s -->\n\n' "$f.md"
         cat "$W/references/$f.md"
     done
     printf '\n'

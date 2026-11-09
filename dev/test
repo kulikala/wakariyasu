@@ -31,7 +31,7 @@ for d in skills/*/; do
     grep -q '^description: .' "$s/SKILL.md" || ng "$s/SKILL.md に description が無い"
 done
 
-# 5. フックが規則3本と、返答のたびに使うリファレンスを出し、残りのリファレンスの場所を伝える
+# 5. フックが規則と、返答のたびに使うリファレンスを出し、残りのリファレンスの場所を伝える
 out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh が失敗した"
 for r in writing-to-user writing-documents polishing; do
     printf '%s\n' "$out" | grep -qxF "$(head -1 "skills/writing-rules/rules/$r.md")" || ng "フックの出力に skills/writing-rules/rules/$r.md が無い"

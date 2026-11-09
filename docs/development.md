@@ -16,7 +16,7 @@ tests/terms-cases.txt            check-terms が当たる例と当たらない�
 tests/caution-cases.txt          check-terms が「（文脈で確かめる）」を付けて出す例と出さない例
 hooks/                           セッションの始めに規則を読み込ませるフック
 AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（dev/build が作る）
-dev/build                        規則・リファレンス・言い回しの一覧をつなげて、AGENTS.snippet.md を作る
+dev/build                        規則・返答のたびに使うリファレンス・言い回しの一覧をつなげて、AGENTS.snippet.md を作る
 dev/test                         リポジトリのルールを検査する
 dev/test-show-changes.py         show-changes の build.py と template.html を改修したあとのテスト（docs/show-changes.md）
 dev/test-show-changes-page.mjs   show-changes のページをブラウザで開いて操作を試すテスト
@@ -34,7 +34,7 @@ CHANGELOG.md                     バージョンごとの変更
 ## 本文を修正する
 
 規則とリファレンスはスキル `writing-rules` に、言い回しの一覧と `check-terms` はスキル `check-terms` に置き、ほかのスキルはこの2つのフォルダから読みます。
-`gh skill install` のようにスキルのフォルダだけを入れる方法でも、`--all` ですべてのスキルが並んで入るので、ほかのスキルから2つのフォルダを読めます。
+`gh skill install` のようにスキルのフォルダだけをインストールする方法でも、`--all` ですべてのスキルが並んでインストールされるので、ほかのスキルから2つのフォルダを読めます。
 
 規則・リファレンス・言い回しの一覧を修正したら、`dev/build` で `AGENTS.snippet.md` を作り直します。
 
@@ -62,7 +62,7 @@ dev/test
 - バージョンが `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
 - 入手先（`marketplace.json`）に載っているプラグインが1つだけ。
 - スキルごとに、`SKILL.md` が frontmatter で始まり、フォルダ名と同じ `name` と、`description` がある。
-- フックの出力に、規則3本と、返答のたびに使うリファレンス（`styles.md`・`asking.md`）の見出しの行と、日本語では使わない言い回しの表と、文脈によっては別の語のほうが自然な言い回しの表がある。
+- フックの出力に、規則と、返答のたびに使うリファレンス（`styles.md`・`asking.md`）の見出しの行と、日本語では使わない言い回しの表と、文脈によっては別の語のほうが自然な言い回しの表がある。
 - 規則・リファレンス・スキルが別の規則やリファレンスの節を名指しで参照するとき、名指しした見出しが参照先の規則かリファレンスにある。
 - README がリンクするリポジトリ内のファイルがある。
 - `check-terms` が `tests/terms-cases.txt` の例のとおりに当たり、当たらない。

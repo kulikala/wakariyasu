@@ -3,6 +3,13 @@
 バージョンの番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従います。
 規則やスキルの書き方が変わり、エージェントの振る舞いが変わる変更は、マイナーバージョンを上げます。
 
+## [0.11.0] - 2026-11-11
+
+### 追加
+
+- エージェントが日本語の文書を記述するとき、和語と漢語のどちらにも寄せない標準表記と、意味と読みやすさを失わない範囲で漢語を中心に記述する漢語表記のどちらかを、文書の目的と読み手から選ぶ。
+- どちらの表記で記述させるかは、CLAUDE.md で指定できる。
+
 ## [0.10.0] - 2026-11-09
 
 ### 追加
@@ -214,6 +221,7 @@
 - セッションの始めに規則を読み込ませるフック。
 - Claude Code 以外のエージェントに貼る `AGENTS.snippet.md`。
 
+[0.11.0]: https://github.com/kulikala/wakariyasu/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/kulikala/wakariyasu/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/kulikala/wakariyasu/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/kulikala/wakariyasu/compare/v0.7.0...v0.8.0

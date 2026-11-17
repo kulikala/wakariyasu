@@ -1,60 +1,29 @@
-# 記述した文章は、渡す前に整える
+# Polish what you wrote before handing it over
 
-整えるのは読みやすさのため。主張・条件・数値・言い切りの強さは変えない。
+Polish for readability. Do not change the claims, conditions, numbers, or the strength of assertions.
 
-## どの言語でも確かめること
+## Checks for every language
 
-- 1つの文には1つのことだけを記述する。2つ以上のことを述べた長い文は、切る。
-- 主語と述語、修飾する語とされる語が離れていたら、近づける。
-- 比喩・飾りの語・宣伝のような言い回しは、消しても読み手の理解が変わらなければ消し、変わるなら中身を表す言葉に置き換える。
-- 予告だけの文は続く中身の文とまとめる。
-- 結論や要約が続くことを予告するだけの前置きの句は外す。
-- 見出しは、読み手が見出しだけを拾って読む節を選べるように、その節に何が記述してあるかを表す語句にする。ユーザーに判断してもらう問いかけの見出しは、問いかけの形のままにする。
-- 太字の見出し語とコロンで始まる箇条書きは、値が短い事実のときだけ使う。説明の文が続くなら、
-  地の文にする。
-- 否定してから言い直す文は、言いたい側だけで通じるなら、言いたい側だけを記述する。
-- 同じ文末が続いて単調になっていたら、文のつなぎ方を変える。
-- 並べた項目や手順の数は書かない。項目を足し引きするたびに数も更新する必要があり、更新し忘れると本文と食い違う。上限や回数のように、数そのものが決まりのときだけ書く。
-- 丸括弧 `（）` の補足と、鉤括弧 `「」` で囲んだ例は、1つずつ、読み手に必須の中身か、括弧を外して地の文として記述できないか、除けないかを確かめる。除いても読み手の理解が変わらなければ除き、必須なら地の文に組み込む。丸括弧を残すのは、地の文に組み込むと文の筋が追えなくなるときだけにする。鉤括弧は、文字そのものに意味があるもの（見出し・画面の項目・コマンドの出力のように、読み手やツールがその文字で探すもの）を示すときに残す。括弧や記号そのものを本文で示すときは、地の文の括弧と見分けられるように、インラインのコードの書式で示す。
+- Put one point in each sentence. Split a long sentence that states two or more points.
+- When a subject and its predicate, or a modifier and the word it modifies, are far apart, bring them closer.
+- Delete metaphors, decorative words, and promotional phrases if deleting them does not change what the reader understands. If deleting them does change it, replace them with words that state the content.
+- Merge a sentence that only announces what follows with the sentence that carries the content.
+- Remove introductory phrases that only announce that a conclusion or summary follows.
+- Make a heading a phrase that says what the section contains, so that a reader who picks out only headings can choose the section to read. Keep the heading of a question that asks the user to decide in the form of a question.
+- Use a bold lead-in term followed by a colon in a bullet only when the text after the colon is a short fact. If an explanatory sentence follows the term, write plain prose.
+- When a sentence denies something and then restates it, write only the side you mean if that side stands on its own.
+- When consecutive sentences repeat the same pattern (the same opening, the same ending, or the same structure) and read monotonously, change how the sentences connect.
+- Do not state the number of listed items or steps. Every time you add or remove an item, you would have to update the number, and a forgotten update makes the text contradict itself. State a number only when the number itself is the rule, such as a limit or a count of times.
+- Check each parenthetical remark and each quoted example, one at a time. Ask whether its content is essential to the reader. If it is not essential, remove it.
+  - If it is essential, work it into the main text.
+  - Keep parentheses only when working the content into the sentence would make the sentence hard to follow.
+  - Keep quotation marks when they mark text whose exact characters matter, such as headings, screen labels, and command output that readers or tools search for.
+  - When you show a bracket or symbol itself in the text, show it in inline code format so that it is distinct from brackets in the prose.
 
-## 日本語で記述したときに足すこと
+## Checks for the language you wrote in
 
-### 表記を文章ごとに選ぶ
+Apply the `polishing.md` in the language pack for the language of the text. If the pack has a `styles.md`, choose notation by it. The language packs are in `lang/<code>/` of the `writing-rules` skill's folder. A language with no pack gets only the checks for every language.
 
-表記は `styles.md` の順番で選び、選んだ書き方にそろえる。語の選び方も、和語と漢語のどちらにも寄せない標準表記と、漢語を中心に記述する漢語表記のどちらかを、`styles.md` に沿って選ぶ。
+## Read it through at the end
 
-### 示す対象と動く人の欠落を確認する
-
-日本語の文は主語や目的語を省いても文になるので、示す対象（目的語が表すもの）や動く人（主語）が欠けていても、書き手は気付きにくい。
-主語や目的語を省いた文のうち、前後の文から補えるか迷う文は、主語と目的語を省けない英語に一語ずつ訳すつもりで読み、訳すのに補う語が要るかを確認する。
-補う語が要るなら、補った語が示す対象を、日本語の文として自然な言い方で記述する。
-英語に訳すのは欠落を見つけるための手段で、訳した英文の語の選び方や語順を日本語の文に写すと、翻訳調の言い方になる。
-
-### 読点を確かめる
-
-間を取るだけの読点は外す。条件や場面の区切り、並べた語の区切り、
-外すと掛かり先が変わる所の読点は残す。
-
-### 日本語では使わない言い回しを探す
-
-翻訳調の語や作業の中で生まれた造語が混ざると、読み手は意味を取り違え、文書を信頼しにくくなる。
-英語の語句や名前を日本語にするときは、語ごとに置き換えず、文脈に合わせて日本語の書き手が使う言い方を選ぶ。
-使わない言い回しの一覧（`terms.tsv`）の語は作成する時点から避け、文脈で確かめる言い回しの一覧（`terms-caution.tsv`）の語は
-作成する時点から候補の語と比べる。
-
-一覧に無い語も、同じ観点で確認する。和語は意味の幅が広く、作業の中で使い続けると、書き手にだけ通じる意味を帯びる。
-文書の中で、和語の動詞や名詞を日常の具体的な意味から離れて使っているときは、示す対象を正確に表す漢語に言い換えられないかを確認する。
-標準表記の文書では、日常の具体的な意味で使う和語と、漢語にすると硬くなって読み手に通じにくくなる語は残す。漢語表記の文書では、それらの語も、意味と読みやすさを失わずに漢語にできるかを確認する。
-
-ファイルに保存した文書は、wakariyasu のスキル `check-terms` に沿って、言い回しの一覧の語を探して替える。
-
-### 人に渡す文書は、yomiyasu があれば yomiyasu に通す
-
-README・手順書・仕様書・提案書のように、人が読むために渡す・公開する日本語の文書は、自分で整え、`check-terms` で確かめたあとで、使えるスキルの中に yomiyasu があれば yomiyasu スキルに通す。
-yomiyasu には文書と、`styles.md` の表の「種類」の列にある文章の種類の名前を渡す。読み手の詳しさが分かっていれば、expert（同じ分野の人）・informed（分野は違うが、技術や業務に詳しい人）・general（専門の知識が無い人）のどれかも渡す。
-漢語表記の文書は、yomiyasu を通したあとで、選んだ漢語が和語に言い換えられていないかを確かめ、言い換えられていれば漢語に戻す。
-ユーザーへの返答・作業の報告・コミットメッセージ・PR・コードのコメントには通さない。返答に文書の全文を載せるときは、全文の部分だけを文書として扱う。
-
-## 最後に読み直す
-
-自分で文頭から順に読み直す。読み直す途中で前に戻った箇所があれば、前に戻る原因になった文を修正する。
+Read the text through yourself from the start. If you went back to an earlier place while reading, fix the sentence that made you go back.

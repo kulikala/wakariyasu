@@ -1,56 +1,50 @@
 ---
 name: review-for-readers
-description: 人に渡す・送る・公開する文書（README・仕様書・手順書・提案書・規則・SKILL.md など）を、作成したときの経緯を知らない読み手の視点で読み直し、引っかかる箇所を修正する。「読み手の目でレビューして」「公開前に見て」「初めて読む人に分かるか確かめて」と言われたときに使う。言われなくても、人に渡す文書を書き上げて渡す前に使う。経緯を渡さない別のエージェントに文書だけを読ませ、挙がった箇所を修正して読み直させる。
+description: Reread a document that will be handed over, sent or published (README, specification, procedure, proposal, rule, SKILL.md and so on) from the viewpoint of a reader who does not know the history of how it was written, and fix the places where that reader gets stuck. Use when the user says things like "Review it with a reader's eyes", "Look at it before we publish" or "Check whether someone reading it for the first time can follow it", and when the user says the same thing in another language. Also use without being asked after finishing a document that will be handed over, before handing it over. Have a separate agent, given only the document and not the history, read it, fix the places it raises, and have it read the document again.
 ---
 
-# スキルの目的
+# Purpose
 
-文書を作成した側は作成したときのやり取りを覚えているので、文書に記載していないことまで読めてしまう。
-経緯を知らない読み手に文書だけを読ませ、読み手が引っかかる箇所を修正する。
+The writer of a document remembers the exchanges during the writing, so the writer can fill in what the document does not state.
+Have a reader who does not know the history read only the document, and fix the places where that reader gets stuck.
 
-## 1. 読み手の準備
+## 1. Prepare the reader
 
-経緯を渡さない別のエージェント（サブエージェント）を起こし、次の2つだけを渡す。
+Start a separate agent (a subagent) that has no history, and give it only these two things.
 
-- 文書の本文（ファイルのパスか、全文）。
-- 想定する読み手を1行で（文書が扱うものについて、読み手が何を知っていて何を知らないか）。
+- The text of the document (a file path or the full text).
+- The assumed reader in one line: what that reader knows and does not know about the subject of the document.
 
-作業の経緯・作成の意図・修正した箇所は渡さない。渡すと、読み手は書き手と同じものが読めてしまう。
-読み手には渡した文書以外のファイル（同じリポジトリの指示のファイルなど）を開かないように頼む。
+Do not give it the history of the work, the intent of the writing, or the places you fixed. If you do, the reader can fill in what the document leaves unsaid, as the writer can.
+Ask the reader not to open any file other than the document you gave it, such as instruction files in the same repository.
 
-別のエージェントを起こせない環境では、自分で文書だけを頭から1回読み直し、「2. 読み手への依頼内容」の節の観点で
-修正する。書き手は前のバージョンを覚えているので、書き手が何度読み直しても読み手の代わりにはならない。
-読み直しは1回で終え、報告に「別の読み手ではなく、書き手が読み直した」と記載する。
+If you cannot start a separate agent, reread the document yourself once from the start. Fix it using the points in "2. What to ask the reader". The writer remembers the earlier version, so rereading many times is never a substitute for a reader.
+Reread only once, and state in your report that the writer reread the document instead of a separate reader.
 
-## 2. 読み手への依頼内容
+## 2. What to ask the reader
 
-読み手には文書を頭から順に読み、前に戻らずに読んでもらう。読んだうえで、次に当たる箇所を、
-場所と理由を添えて挙げてもらう。修正方法の案は求めない。
+Ask the reader to read the document from the start, in order, without going back. Then ask the reader to list the places that match the following, each with its location and the reason. Do not ask for suggested fixes.
 
-- 意味が決まらない語。作った呼び名、説明のない略称、中身の決まらない抽象的な語。
-- 示す対象が分からない語。指示語や、何の・誰のものかが無い一般語。
-- 文書に記載されていない前提が必要な文。会話の中で決定した事項、別の文書の中身。
-- 前に戻って読み直した箇所。戻った理由も。
-- 読み終えて、答えの出ない疑問。文書の対象で何ができるのか、読み手が何をすればよいのか、など。
+- Words whose meaning is not settled: coined names, abbreviations without an explanation, abstract words with no definite content.
+- Words whose referent is unclear: pronouns and demonstratives, and general words with no "of what" or "of whom".
+- Sentences that need a premise the document does not state: matters decided in a conversation, the content of another document.
+- Places the reader went back to reread, with the reason they went back.
+- Questions the reader is left with after finishing and cannot answer: what the subject of the document can do, what the reader should do, and so on.
 
-日本語の文書なら、迷った文を英語に直訳させる。主語・目的語・冠詞を補わないと英文にならないなら、
-元の日本語の文は示す対象が足りない。
+Then apply the language pack's `skills.md` section for review-for-readers, if any, to what you ask the reader. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
 
-## 3. 修正と再読
+## 3. Fix and reread
 
-挙がった箇所を修正する。そのときは、規則「エージェントが記述する文書は、文書だけで通じるように記述する」（スキル `writing-rules` の `rules/writing-documents.md`）に沿う。
-作った経緯や文書自身を語る文が見つかったら、
-`remove-meta-narrative` スキルで修正する。最後に、規則「記述した文章は、渡す前に整える」（スキル `writing-rules` の `rules/polishing.md`）に
-沿って整える。
+Fix the places the reader raised. Follow rule `writing-documents.md` ("Write documents that make sense on their own") in the `writing-rules` skill.
+If you find sentences about the history of the writing or about the document itself, fix them with the `remove-meta-narrative` skill. Finally, polish the document following rule `polishing.md` ("Polish what you wrote before handing it over") in the `writing-rules` skill.
 
-修正したら、前とは別の、経緯を知らない読み手にもう一度読ませる。同じ読み手は前のバージョンを覚えている。
-読み手が理解を妨げる箇所を挙げなくなるまで繰り返す。目安は2〜3回。
+After fixing, have a different reader, again one who does not know the history, read the document once more. The same reader remembers the earlier version.
+Repeat until the reader raises nothing that hinders understanding. As a rough guide, expect two or three rounds.
 
-日本語の文書で、読み手が挙げなくなったら、使えるスキルの中に yomiyasu があれば yomiyasu スキルを呼び出し、文書と
-文章の種類を渡して整える。種類の名前は、「日本語の表記の選び方」（スキル `writing-rules` の `references/styles.md`）の表の「種類」の列にある。
+When the reader no longer raises anything, apply the language pack's `skills.md` section for review-for-readers, if any, to the finished document.
 
-## 4. 報告内容
+## 4. What to report
 
-- 何回読ませたか、読み手がどの観点で読んだか。
-- 挙がった箇所と、どう修正したか。修正しなかった箇所は修正しなかった理由。
-- 確かめていないこと（例：英語版は読ませていない、実際の手順は動かしていない）。
+- How many times you had the document read, and from which points the reader read it.
+- The places the reader raised and how you fixed each. For a place you did not fix, the reason.
+- What you have not verified (for example: a translation was not read, the actual procedure was not run).

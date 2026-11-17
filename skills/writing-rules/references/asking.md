@@ -1,33 +1,28 @@
-# 判断の問いかけの書き方
+# How to write a decision question
 
-返答の中でユーザーに判断してもらうことは、答えを1つ返してもらう問いかけごとに、次の形で記述する。
-ユーザーが問いかけの番号と案の記号だけで答えられるよう、問いかけが1つだけでも見出しに番号を付ける。
-番号はセッションの中で把握している範囲の通し番号とし、答えをもらった問いかけの番号も使い回さない。
+Write each point the user must decide in a reply as a decision question, one question per answer the user returns, in the form below.
+Number the heading even when there is only one question, so that the user can answer with only the question number and the option letter.
+Number questions continuously across what you know of the session, and do not reuse the number of a question that has been answered.
 
 ```markdown
-### 1. <判断してもらうことを記述した問いかけの文>
+### 1. <Question sentence stating what the user must decide>
 
-<何を目指す作業の途中か、作業で何に行き当たって判断が必要になったか、エージェントではなくユーザーが判断する理由を記述した段落>
+<Paragraph stating what the work is aiming at, what the work ran into that requires a decision, and why the user and not the agent decides>
 
-| 案 | 背景・選ぶと起きること |
+| Option | Background and what happens if chosen |
 |---|---|
 | A | … |
 | B | … |
 ```
 
-- 問いかけは何を判断するのかが問いかけだけで分かる文にする。対象の固有名があれば入れる。
-- 何を目指す作業の途中かは、ユーザーの依頼から読める作業の目的で記述する。判断を求めているあいだも、書き手と
-  ユーザーが同じ目的を思い出せるようにするためだ。目的を記載すると、問いかけが目的に向かう途中の判断になっているか、
-  案が目的に照らして並んでいるかを、書き手が確かめられる。
-- ユーザーが判断する理由は、規則 `writing-to-user.md` が挙げるユーザーに判断してもらう場面のどれに当たるかを、ユーザーに通じる文で記述する。
-- 案は1つにつき1行とし、お勧めの度合いの高い順に並べる。案の数は問いかけに合わせる。
-- 案の列には答えに使う記号を記載する。案を並べるときは、上から A・B・C… を使える。
-  はいかいいえかの二択には Y と N の組を使える。記号だけでは案が見分けにくければ、記号に短い語を添えられる。
-- 「背景・選ぶと起きること」の列には、案の中身を呼び名だけで済ませずに記載し、選ぶと作業の目的に向けて何が起きるかを続ける。
-  なぜ選択肢になるのかが案の中身だけでは分からないときは、案を挙げた背景も記載する。
-- 特にお勧めの案があれば、いちばん上の案の記号のあとに「（お勧め）」と記載し、
-  「背景・選ぶと起きること」の列の最後にお勧めする理由を記載する。
-- 案を並べられない問いかけは表を省き、答えてほしい中身を問いかけに記載する。
-- 表の列名と「（お勧め）」は返答と同じ言語で記載する。
-- 問いかけが複数あるときは、答えによって後の作業が大きく変わる問いかけから並べる。
-- お勧めを付けた問いかけでも、表のどの案を選ぶかはユーザーが判断する。エージェントが受け持つのは、案ごとに選ぶと起きることを並べるところまでだ。
+- Make the question a sentence that shows what is being decided without the rest of the reply. Include the proper name of the subject if there is one.
+- State the purpose of the work, as far as it can be read from the user's request. Stating the purpose lets the writer and the user keep the same purpose in mind while the decision is pending. It also lets the writer check that the question is a step toward the purpose and that the options line up against the purpose.
+- State why the user decides. Say, in words the user understands, which of the situations in rule `writing-to-user.md` where the user must decide applies.
+- Give each option one row, and order the rows from most to least recommended. The number of options depends on the question.
+- Put the letter used to answer in the option column. For a list of options, use A, B, C… from the top. For a yes-or-no choice, use the pair Y and N. If letters alone make the options hard to tell apart, add a short word to the letter.
+- In the "Background and what happens if chosen" column, state the content of the option instead of only its label. Then state what happens toward the purpose of the work if the option is chosen. When the content of the option alone does not show why it is a choice at all, state the background that led to the option too.
+- If one option is especially recommended, write "(recommended)" after the letter of the top option. End the "Background and what happens if chosen" column of that row with the reason for recommending it.
+- For a question that cannot list options, omit the table and state in the question what you want answered.
+- The column names in the template and "(recommended)" are the English labels. Use them as written in an English reply. In a reply in another language, use the names that the language pack's `conventions.md` defines for that language. If the pack has no `conventions.md`, write the labels in the reply's language. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
+- When there are several questions, put first the question whose answer changes the later work the most.
+- Even for a question with a recommendation, the user decides which option to choose. You list what happens for each option.

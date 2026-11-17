@@ -1,106 +1,111 @@
 ---
 name: summarize-session
-description: 今のセッションで扱った内容を、セッションに居なかった人やエージェントが後から読んで使える文書にまとめる。「このセッションをまとめて」「判明したことをまとめて」「指摘を抜き出して」と言われたときと、ほかの言語で同じ意味のことを言われたときに使う。依頼からユーザーが求めているものを推定し、頼まれた事柄を文書として構造化するドキュメント出力・分かったことを汎用的な知見として構成する知見抽出・ユーザーの指摘を指摘事項と意図と背景と対応方針で整理する指摘抽出・作業の記録を残すログ出力のうち、該当するモードの方針で文書を作る。複数のモードに該当すれば、モードごとに文書を分ける。どのモードにも該当しなければ、各モードの方針を参考に構成を組み立てる。返答の中で短く要約するだけのときには使わない。セッションの進み具合を聞かれたときは session-status を、直前の返答が分からないと言われたときは explain-clearly を使う。
+description: Turn what the current session covered into a document that people or agents who were not in the session can read later and use. Use when the user says things like "Summarize this session", "Summarize what we found" or "Extract my feedback", and when the user says the same thing in another language. Infer from the request what the user wants, and build the document with the policy of the matching mode. Document output structures the matters the user asked about as a document. Insight extraction organizes what was learned as general insights. Feedback extraction organizes the user's feedback by finding, intent, background and target, and response policy. Log output keeps a record of the work. If several modes apply, make a separate document for each mode. If no mode applies, build a structure using the modes' policies as a reference. Do not use it for a short summary inside a reply. For questions about how the session is going, use session-status. When the user says they do not understand your last reply, use explain-clearly.
 ---
 
-# スキルの目的
+# Purpose
 
-セッションで検討したこと・分かったこと・受けた指摘は、セッションが終わると会話の記録の中に埋もれる。このスキルはセッションの中身を、セッションを追っていない人が文書だけを読んで使える形にまとめ、セッションの外へ渡せるようにする。
+What the session examined, learned and was told is buried in the conversation record once the session ends. Put the content of the session into a form that someone who did not follow it can read and use from the document alone, so that it can be handed outside the session.
 
-文書の読み手はセッションに居なかった人とエージェントだ。依頼が読み手や渡す先を示していれば、その読み手に合わせる。
+The readers of the document are people and agents who were not in the session. If the request names the reader or where the document will go, fit that reader.
 
-## モードの選択
+## Choose the mode
 
-依頼から、ユーザーが何を求めているかを推定する。依頼の言葉だけで決まらないときは、依頼の前後の会話と、セッションで扱った中身から推定する。求めているものが次のモードのどれかに該当すれば、そのモードの方針に従って文書を作る。
+Infer from the request what the user wants. If the words of the request do not settle it, infer from the conversation before and after the request and from what the session covered. If what the user wants matches one of the modes below, build the document with that mode's policy.
 
-| モード | ユーザーが求めているもの |
+| Mode | What the user wants |
 |---|---|
-| ドキュメント出力 | セッションで検討・決定した事柄を、文書として構造化したもの |
-| 知見抽出 | セッションで確認した事実から導いた、セッションの外でも通用する理解 |
-| 指摘抽出 | ユーザーがエージェントに出した指摘と、指摘ごとの対応方針 |
-| ログ出力 | エージェントが行った作業の記録 |
+| Document output | The matters examined and decided in the session, structured as a document |
+| Insight extraction | Understanding that holds outside the session, derived from facts confirmed in the session |
+| Feedback extraction | The feedback the user gave the agent, with a response policy for each item |
+| Log output | A record of the work the agent did |
 
-- 求めているものが複数のモードに該当するときは、モードごとに別の文書にする。モードごとに読み手と使い道が違い、1つにまとめると、どの読み手にも余計な章が混ざるためだ。
-- どのモードにも該当しないときは、ユーザーが求めているものに合う構成を自分で組み立てる。組み立てるときは、各モードの方針のうち、求めているものに合う部分を参考にする。
-- 依頼がセッションの一部に対象を絞っていれば、その対象に絞る。絞っていなければ、セッション全体のゴールを対象にする。
+- If what the user wants matches several modes, make a separate document for each mode. Each mode has different readers and uses, and combining them puts chapters in the document that no reader needs.
+- If no mode applies, build a structure that fits what the user wants. Use the parts of each mode's policy that fit.
+- If the request narrows the target to part of the session, narrow to that. If not, the target is the goal of the whole session.
 
-## 時間で変わるかの判定
+## Decide whether the content changes over time
 
-文書を作り始める前に、ユーザーの依頼から、文書が次のどちらかを判定する。読み手が文書を読むのはセッションより後なので、時間が経つと変わる値が混ざった文書は、読んだ時点では誤りになる。
+Before you start the document, decide from the user's request which of the following the document is. Readers read the document after the session. A value that changes over time can be wrong by the time it is read.
 
-- 時間が経っても変わらない中身の文書：目的・方針・決定とその理由・知見のように、セッションが終わったあとも成り立つ中身だけで構成する。その時点の状態（進み具合・件数や大きさの現在の値・公開済みのバージョン）と作業記録は記述しない。ユーザーが依頼で作業記録を求めたときだけ、作業記録を記載する。求められても文書の種類は変えず、作業記録は別の節にするか引用の形にして、作業記録の部分と中身の部分を読み手が区別できるようにする。
-- 変わる状態を含む文書：その時点の状態や作業の経過を残すことが目的の文書だ。作業記録も記述する。状態にはいつの時点の状態かを添える。
+- A document whose content does not change over time: Build it only from content that holds after the session ends, such as purposes, policies, decisions and their reasons, and insights. Do not write the state at that point (progress, the current value of a count or size, the published version) or a work log.
+  - Write a work log only when the user asks for one in the request. Even then, do not change the kind of document. Put the work log in a separate section or in a quotation, so that the reader can tell the work log from the content.
+- A document that contains states that change: The purpose of the document is to keep the state or the course of the work at that point. Write the work log too. Add the time to which each state applies.
 
-ドキュメント出力・知見抽出・指摘抽出は、依頼が文書の目的として状態を残すことを求めていなければ、時間が経っても変わらない中身の文書にする。ログ出力は変わる状態を含む文書にする。
+For document output, insight extraction and feedback extraction, make a document whose content does not change over time unless the request asks for the state to be kept as the purpose of the document. Log output is a document that contains states that change.
 
-作業記録は文書に書く中身の種類を指す。エージェントが何をしたか、何をどの環境（どの PC・どの設定）で何回試したか、という中身だ。時系列をやめて中身の軸で並べ替えても、中身がこの種類なら作業記録のままだ。知見や決定が成り立つ範囲（対象のツールや前提の条件）は、知見や決定の一部であり、作業記録ではない。
+A work log is a kind of content. It states what the agent did, and how many times it tried what in which environment (which PC, which settings). If the content is of this kind, reordering it by content instead of by time does not stop it from being a work log. The range in which an insight or a decision holds (the tool it concerns, or the conditions it assumes) is part of the insight or decision, not a work log.
 
-## 文書の根拠にする記録
+## Records to base the document on
 
-文書の中身は確認できる記録から取る。会話の記録・変更したファイル・コミット・コマンドの出力を見て、セッションを終えた時点の事実に合わせる。
+Base the document on records you can verify. Look at the conversation record, the changed files, commits and command output, and match the facts at the end of the session.
 
-- 会話が要約されて続いているセッションでは、要約は細部と言い回しを落としている。元の会話の記録のファイルを読める環境なら、その記録を読む。記録が大きければ、ユーザーの発言と、その直前のエージェントの提案や問いかけを組にして読む。ユーザーの承認や選択は、何を承認したのかが直前の提案を読まないと分からないためだ。指摘抽出では、指摘と指示の区別や、指摘が繰り返されたかが要約から読み取れないので、とくに元の記録から取る。
-- 元の記録を読めないときは、会話に残っている要約と、ファイル・コミットから取る。
-- 途中で取り消した案・誤りだと分かった事実・ユーザーの後の指示で置き換わった方針は、セッションを終えた時点で有効なものを採る。有効なものを説明するのに取り消した経緯が必要なときだけ、取り消したことを決定の理由の一部として記載する。取り消すまでに試した順序は記載しない。
-- 記録から確認できないことは記載しない。推し量るなら、推定だと分かる形で記載する。
-- 持ち主が外部への提供を認めていない情報は、文書に転記せず、あることだけを記載する。文書はセッションの外へ渡るためだ。ユーザーの言葉を引用するときも、その情報の部分だけを伏せる。
+- A session whose conversation continues from a summary has lost detail and wording in the summary. If you can read the file of the original conversation record, read it. If the record is large, read the user's statements together with the agent's proposal or question just before each. The user's approval or choice cannot be understood without the proposal just before it. For feedback extraction, rely on the original record in particular, because a summary does not show whether something is feedback or an instruction, or whether feedback was repeated.
+- If you cannot read the original record, base the document on the summary left in the conversation, and on files and commits.
+- Use only what is valid at the end of the session. Ignore options withdrawn midway, facts found to be wrong, and policies replaced by the user's later instructions. Mention a withdrawal only when it is needed to explain what is valid, and then state it as part of the reason for a decision. Do not state the order of what was tried before the withdrawal.
+- Do not write what you cannot confirm from the records. If you estimate, write it so that it is clear it is an estimate.
+- The document goes outside the session, so do not copy information that its owner has not allowed to be shared externally. Write only that the information exists. When you quote the user's words, hide only the part that contains it.
 
-## 文書の組み立て
+## Structuring the document
 
-どのモードでも、読み手が読み始めてすぐに、何についての文書かを読み取れるようにする。対象は対象そのものを語る文で示し、文書が自分を説明する文にはしない。何から文書を作ったかは、読み手に必要なときだけ、本文とは別の節で記述する。
+In every mode, let the reader tell what the document is about as soon as they start reading. Show the subject with sentences that talk about the subject itself, not sentences in which the document explains itself. Say what the document was made from only when the reader needs it, in a section separate from the body.
 
-時間が経っても変わらない中身の文書には、ユーザーが求めたときのほかは作業記録を記述しない。読み手が知りたいのは、エージェントが何をしたかではなく、何を目指し、何を決定し、何に留意するかだからだ。
+For a document whose content does not change over time, do not write a work log unless the user asked for one. The reader wants to know what to aim for, what was decided and what to keep in mind, not what the agent did.
 
-- 全体を時系列ではなく、中身の軸で章と節に分ける。
-- 見出しは、見出しだけを読んでも節の中身が分かる言い方にする。分類の名前だけの見出しは、読み手が節を開くまで中身が分からないので避ける。
-- 全体の目的と方針の骨子と意図が、細部より先に読み取れるようにする。細部は、セッションの外の読み手が細部を知らないと判断や行動を誤るときだけ残す。
-- 量は、読み手が目的と方針を読み取るのに必要な分にする。項目が増えたら、上位の方針でまとめ、細かい項目を並べ続けない。
+- Divide the whole into chapters and sections by the axes of the content, not in time order.
+- Make each heading say what is in the section, so that it can be understood from the heading alone. Avoid headings that are only the name of a category, because the reader cannot tell the content until they open the section.
+- Let the reader read the overall purpose, the outline of the policy and the intent before the detail. Keep detail only when a reader outside the session would decide or act wrongly without it.
+- Keep the amount to what the reader needs to understand the purpose and policy. When items multiply, group them under a higher-level policy and do not keep listing small items.
 
-### ドキュメント出力
+### Document output
 
-ドキュメント出力でいちばん大事なのは、文書として構造化することだ。事柄を並べただけの一覧では、読み手は事柄どうしがどう関わり、どれが上位の方針かを自分で組み立て直すことになる。
+The most important point in document output is to structure the material as a document. With a plain list of matters, the reader has to rebuild how the matters relate and which one is the higher-level policy.
 
-何を文書にするかは、依頼からユーザーが求めているものを推定して判断する。依頼が名指した事柄と、その事柄についてセッションで検討・決定したことが対象になる。
+Decide what to put in the document by inferring from the request what the user wants. The target is the matter the request named, and what the session examined and decided about it.
 
-- 対象を、個々の作業や発言の層から、目的・方針・決定とその理由の層へ、抽象の階層を上げる。
-- 文書全体の目的を念頭に置き、目的を支える部分を章に、章を支える事柄を節に分けて、階層を作る。各章と各節が、文書全体の目的のどこを担うかが読み取れるようにする。
-- 部分どうしの関係を記載し、読み手が前提になる部分から順に理解できるように構成する。
-- 決定したことと、決定していないことは分けて記述する。読み手がどこから先を自分で判断すればよいかが分かる。決定していないことは、セッションで質問として挙がったまま答えの出ていないものに限り、何が未決定で、決定に何が必要かを対象の状態として記述する。
-- 決定には理由を添える。理由が分かれば、読み手は記載していない場面でも同じ方針で判断できる。理由に検証の結果が必要なときは、結果から言えることだけを書き、試した手順・回数・環境は書かない。
-- 手順は、特定のバージョンの値でなく一般の形で書く。読み手は、文書を読んだ時点のバージョンに当てはめて手順を使う。
+- Raise the level of abstraction of the target, from individual tasks and statements to purposes, policies, and decisions with their reasons.
+- Keep the purpose of the whole document in mind. Build a hierarchy of chapters that support the purpose and sections that support each chapter. Let the reader see which part of the document's purpose each chapter and section carries.
+- Write how the parts relate, and arrange them so that the reader can understand from the premises onward.
+- Write what was decided separately from what was not decided. Then the reader knows where to start judging for themselves. Limit undecided matters to those that were raised in the session as questions and left unanswered. Write what is undecided and what is needed to decide it, as a state of the subject.
+- Add a reason to each decision. With the reason, the reader can judge by the same policy in situations the document does not cover. If the reason depends on the result of a verification, write only what the result supports. Do not write the procedure, the number of trials, or the environment.
+- Write procedures in the general form, not with the values of a specific version. The reader applies the procedure to the version in use when they read the document.
 
-### 知見抽出
+### Insight extraction
 
-知見は、セッションの外でも通用する、汎用的な理解だ。読み手が次に同じ種類の環境・ツール・課題に直面したとき、判断を誤らずに済むことを目的に、事実から抽象の階層を上げて構成する。
+An insight is general understanding that holds outside the session. Build it by generalizing from facts, so that the reader does not misjudge the next time they face the same kind of environment, tool or problem.
 
-書き手は、いつ何が分かったかを報告したくなるが、読み手に必要なのは、何が言えるかだ。エージェントの作業の記録は知見の文書から除く。知見を理解するのに背景が必要なときだけ、背景を短く添える。
+The writer is tempted to report when and what was found. The reader needs what can be said in general. Leave the agent's work record out of an insight document. Add short background only when it is needed to understand an insight.
 
-- 個々の事実をそこから言える性質・傾向・因果・前提にまとめ、知見を主語にした節を立てる。事実は知見の根拠として必要な分だけ記述する。
-- 抽象の階層を上げられず、汎用的に言えないまま細部の列挙にとどまる事柄は、知見から落とす。
-- 知見どうしの関係が分かるように構成する。ある知見が別の知見を前提にしているなら、読み手が前提の知見から順に理解できるようにする。
-- 知見ごとに、知見が成り立つ範囲（対象のツールや前提の条件）を記述し、読み手の判断にどう影響するかを記述する。
-- 推し量った知見は、推定だと分かる形で記述する。知見の確かさは、確認した知見か推定かの区別で示し、確かめた回数・方法・確かめていない理由では示さない。回数や方法は作業記録だからだ。
-- 知見を確かめた手順（実験の進め方）と、確認していないことの一覧は記述しない。手順は作業記録で、確認していないことは作業の残りであり、どちらも知見ではない。ユーザーが求めたときだけ、記録として記載する。
+- Combine individual facts into the properties, tendencies, causes and premises they support, and make sections with the insight as the subject. Write facts only as far as they are needed as the basis of an insight.
+- Drop any matter that cannot be generalized into an insight and would remain only a list of details.
+- Organize the insights so that their relations are clear. If an insight presupposes another, let the reader understand from the premise insight onward.
+- For each insight, write the range in which it holds (the tool concerned, or the conditions it assumes) and how it affects the reader's judgment.
+- Write an inferred insight so that it is clear it is inferred. Show how certain an insight is by distinguishing confirmed from inferred. Do not show it by how many times, by what method, or why it was not confirmed. The number of times and the method belong to a work log.
+- Do not write the procedure used to verify an insight (how the experiment went) or a list of what was not confirmed. The procedure is a work log, and what was not confirmed is remaining work. Neither is an insight. Write them as a record only when the user asks.
 
-### 指摘抽出
+### Feedback extraction
 
-指摘は、エージェントの振る舞いや成果物が、ユーザーの期待とずれていることの表明だ。指示はこれから何をするかの依頼で、指摘とは違う。指示は作業の内容を決め、指摘は振る舞いの方針を変える。指示を指摘として並べると、一度きりの作業の依頼が、続けて守る方針に見えてしまうので混在させない。
+Feedback is the user's statement that the agent's behavior or deliverable differs from what they expected. An instruction is different: it is a request for what to do from now on. An instruction decides the content of a task, and feedback changes the policy of behavior. If you list instructions as feedback, a one-off task request looks like a policy to keep following, so do not mix them.
 
-指摘された事実を並べるのではなく、指摘から、ユーザーが何を目指しているかを読み取り、目的に向けた方針として整理する。読み手が、同じ指摘を受ける前に振る舞いを変えられることが目的だ。
+Do not just list the points that were raised. Read from the feedback what the user is aiming for, and organize it as a policy toward that aim. The purpose is for the reader to change their behavior before they receive the same feedback.
 
-- 繰り返された指摘や、同じ目的から出た指摘は、一つ一つを並べず、共通する目的に引き上げて1つの指摘にまとめる。繰り返されたこと自体は、その方針が重いことの根拠になる。
-- まとめた指摘ごとに、指摘事項・意図・背景と対象・対応方針の4つを記述する。指摘事項は、何がユーザーの期待とずれていたか。意図は、ユーザーが指摘で目指していること。背景と対象は、指摘がどんな場面で、エージェントのどの振る舞いや成果物に向けられたか。対応方針は、エージェントがどう振る舞うか。読み手が、指摘の意図と対応を組にして読めるように、4つとも省かない。
-- 指摘が多いときは、意図が近い指摘を、共通して重視している観点ごとの章にまとめる。観点はそのセッションの指摘から立てる。
-- ユーザーの言葉は意図の根拠として必要なときだけ短く引用する。引用は書き換えない。
-- ユーザーが承認した進め方も、続けてよい方針として含める。
-- 同じ論点で指摘が変わったときは、セッションを終えた時点で有効な方針を採る。
+- Do not list repeated feedback, or feedback that comes from the same aim, one by one. Raise it to the shared aim and combine it into one item of feedback. That it was repeated is itself evidence that the policy matters.
+- For each combined item of feedback, write four things: the finding, the intent, the background and target, and the response policy. Do not omit any of the four, so that the reader can read the intent of each item of feedback together with the response.
+  - The finding is what differed from the user's expectation.
+  - The intent is what the user is aiming for with the feedback.
+  - The background and target are the situation in which the feedback was given, and the agent behavior or deliverable it was aimed at.
+  - The response policy is how the agent will behave.
+- When there is a lot of feedback, group feedback with similar intent into chapters by the viewpoint they share. Set the viewpoints from the session's feedback.
+- Quote the user's words only when needed as evidence for the intent, and keep quotations short. Do not rewrite quotations.
+- Include the ways of working the user approved as policies to keep following.
+- When feedback on the same point changed, use the policy that is valid at the end of the session.
 
-### ログ出力
+### Log output
 
-ログ出力は作業自体を記録する文書なので、時系列で並べてよい。一連の作業を節にまとめ、節ごとに、その作業が何のためのもので、結果どうなったかが先に読み取れるようにする。何のための作業かは節ごとに決まった書き出しで述べるのではなく、作業の中身に合わせた文で記述する。途中で失敗した試みや、分からなかったことも残す。残っている作業と、ユーザーの判断を待っていることは、記録を読み終えた読み手が、次に何が必要かを分かるように記述する。
+Log output is a document that records the work itself, so it may be in time order. Group a series of work into sections. For each section, let the reader see first what the work was for and what the result was. Write what the work was for in sentences fitted to the content of the work, not in an opening that is the same for every section. Keep attempts that failed along the way and what was not understood. Write the remaining work and what is waiting for the user's decision, so that a reader who finishes the record knows what is needed next.
 
-## 仕上げ
+## Finishing
 
-表記の種類は、スキル `writing-rules` の `references/styles.md` にある「日本語の表記の選び方」から選択する。ログ出力のほかは、表記の種類のどれにも該当しなければ技術記事の種類にする。仕上げは、スキル `writing-rules` の `rules/writing-documents.md` にある規則「エージェントが記述する文書は、文書だけで通じるように記述する」の「書き終えたら」の節に従う。ログ出力は、規則 `writing-documents` の表で作業記録・進行記録として扱う。
+If the language pack has a `styles.md`, choose the kind of text from it. Except for log output, use `article` if none of the kinds fits. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill). For finishing, follow the "When you finish writing" section of `writing-documents.md`. Treat log output as a work log under the "How the history of the work is handled depends on the kind of text" section of `writing-documents.md`.
 
-文書を提示するときの返答には、選択したモードと、時間で変わるかの判定の結果を記載する。どのモードにも該当せずに構成を組み立てたときは、そのことと組み立てた構成を記載する。根拠にした記録も記載する。元の会話の記録を読んだのか、要約から取ったのかをユーザーが区別できるようにするためだ。
+In the reply that presents the document, state the mode you chose and the result of deciding whether the content changes over time. If no mode applied and you built a structure, say so and state the structure you built. Also state the records you based it on, so that the user can tell whether you read the original conversation record or took from a summary.

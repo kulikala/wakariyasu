@@ -1,12 +1,14 @@
-# 変更履歴の書き方
+# How to write a changelog
 
-公開するツールの変更履歴（CHANGELOG・リリースノート）は、ツールを使っている人と、使うかを考えている人に向けた、新しいバージョンの案内だ。読み手は変更履歴だけを読んで、ツールを新しいバージョンに更新するか、使い方を変える必要があるかを判断する。そのため、1つの項目には、読み手にとって何が変わったか（できるようになったこと・振る舞いの変化・読み手がすること）を記述する。
+The changelog of a published tool (CHANGELOG, release notes) tells people who use the tool, and people who are considering it, about the new version. Readers read only the changelog to decide whether to update the tool to the new version and whether they must change how they use it. So each entry states what changed for the reader: what became possible, how behavior changed, and what the reader must do.
 
-書き方は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に、バージョンの番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従う。ファイルやウェブを読めるなら、迷ったときは2つの原文を開いて確かめる。次の点は、エージェントが外しやすい。
+Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for how to write it, and [Semantic Versioning](https://semver.org/) for version numbers. If you can read files or the web, open the two originals to check when in doubt. Agents tend to miss the following points.
 
-- 項目には、読み手がツールを使うときに気づく変化を記載する。Keep a Changelog が求めるとおり、コミットや作業の記録を並べない。どう作ったか、何を比べて決めたか、どのファイルのどの文を直したかは、読み手が更新を判断するのに使わないので記載しない。項目を書いたら、自分に何が変わるのかを読み手が聞き返さずに済むかを確かめる。
-- 変化の詳しい使い方はツールの README や手引きの該当する節へのリンクで示し、変更履歴に書き写さない。
-- 1つのバージョンの項目は Keep a Changelog の変更の種類で小見出しに分ける。日本語の変更履歴なら、小見出しの名前は「追加」「変更」「非推奨」「削除」「修正」「セキュリティ」にする。項目の無い種類の小見出しは立てない。
-- 1つの項目には、1つの変化を、読み手の側から見た言葉で記述する。ツールの中の名前（関数・ファイル・内部の呼び名）は、読み手が使う名前（コマンド・スキル・設定の名前）のときだけ記載する。
-- 読み手が何かをしないと使い続けられない変化（設定の書き換え、インストールのやり直し、使えなくなる機能）は、その項目の中に、読み手がすることまで記載する。
-- 公開前の変更は「Unreleased」の見出しにまとめ、公開するときにバージョンの番号と公開日の見出しに改める。見出しの形は、変更履歴の冒頭や開発の手引きに決まりがあれば従い、無ければ変更履歴にある前のバージョンの書き方にそろえる。
+- Write in an entry the changes the reader notices when using the tool. As Keep a Changelog requires, do not list commits or work records. The reader does not use the following to decide on an update, so leave them out: how the tool was built, what was compared to decide, and which sentence in which file was fixed. After writing an entry, check that the reader does not have to ask what changes for them.
+- Give the detailed usage of a change as a link to the relevant section of the tool's README or guide. Do not copy the usage into the changelog.
+- Divide one version's entries under subheadings by the Keep a Changelog types of change. Do not add a subheading for a type that has no entries.
+- Write one change per entry, in the reader's terms. Name something inside the tool (a function, a file, an internal name) only when it is a name the reader uses (a command, a skill, a setting).
+- When a change prevents the reader from continuing to use the tool unless they do something (rewrite settings, reinstall, stop using a feature), state in the entry what the reader must do.
+- Collect changes before release under an "Unreleased" heading. When you release, change that heading to one with the version number and release date. Follow the heading form if the top of the changelog or the development guide defines one. If neither defines one, match how the previous versions in the changelog are written.
+
+Use the subheading names, section wording, and phrasing that human-maintained changelogs in the document's language use. Use the language pack's `conventions.md` when it defines them.

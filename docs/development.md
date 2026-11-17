@@ -9,14 +9,15 @@ skills/<名前>/SKILL.md           スキルの本文
 skills/<名前>/references/        そのスキルだけが読むリファレンス
 skills/<名前>/scripts/           そのスキルが実行するスクリプト
 skills/writing-rules/rules/      規則（writing-to-user・writing-documents・polishing）
-skills/writing-rules/references/ 規則が指すリファレンス（日本語の表記・判断の問いかけ・指示文の書き方・README の書き方・変更履歴の書き方）
+skills/writing-rules/references/ 規則が指すリファレンス（判断の問いかけ・指示文の書き方・README の書き方・変更履歴の書き方）
+skills/writing-rules/lang/<言語>/ 言語ごとの追加分（言語パック。ja は日本語、en は英語）
 skills/check-terms/references/   日本語では使わない言い回しの一覧（terms.tsv）と、文脈で確かめる言い回しの一覧（terms-caution.tsv）
 skills/check-terms/scripts/      check-terms（言い回しを文書から探す）と terms-table（一覧を、フックと AGENTS.snippet.md に入れる表にする）
 tests/terms-cases.txt            check-terms が当たる例と当たらない例
 tests/caution-cases.txt          check-terms が「（文脈で確かめる）」を付けて出す例と出さない例
-hooks/                           セッションの始めに規則を読み込ませるフック
+hooks/                           セッションの始めに規則を読み込ませ、言語パックの場所を伝えるフック（load-rules.sh・lang-index.sh）
 AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（dev/build が作る）
-dev/build                        規則・返答のたびに使うリファレンス・言い回しの一覧をつなげて、AGENTS.snippet.md を作る
+dev/build                        規則・asking.md・言語パック・言い回しの一覧をつなげて、AGENTS.snippet.md を作る
 dev/test                         リポジトリのルールを検査する
 dev/test-show-changes.py         show-changes の build.py と template.html を改修したあとのテスト（docs/show-changes.md）
 dev/test-show-changes-page.mjs   show-changes のページをブラウザで開いて操作を試すテスト
@@ -44,11 +45,19 @@ dev/build
 
 規則とスキルの本文は、2つの層に分けて記述します。
 
-- どの言語の文章にも適用する項目。返答や文書の組み立て、語が何を示すかを読み手が読み取れる書き方、判断の問いかけ方（ユーザーに判断してもらうことの書き方）など。
-- 日本語で記述したときに足す項目。表記の選び方、読点、日本語の文の確かめ方、yomiyasu など。
-  見出しや前置きで「日本語で記述したとき」と分かるようにする。
+- どの言語の文章にも適用する内容（返答や文書の組み立て、語が何を示すかを読み手が読み取れる書き方、判断の問いかけ方など）は、規則・リファレンス・スキルの本文に、英語で記述します。訳さずに、英語として書き起こします。
+- 1つの言語で記述したときにだけ足す内容（表記の選び方、読点、その言語の文の確かめ方、その言語の推敲スキルなど）は、言語パック `skills/writing-rules/lang/<言語>/` に、その言語で記述します。言語のコードは ISO 639-1 の2文字です。
 
-本文は日本語で記述します。訳さずに、日本語として書き起こします。
+言語パックのファイルは次の決まった名前のどれかにします。足すことの無いファイルは置きません。規則とスキルは、この名前で言語パックを指します。
+
+| ファイル | 中身 |
+|---|---|
+| `polishing.md` | その言語で記述した文章を整えるときに足す確認。使わない言い回しの一覧や、外部の推敲スキルもここで指す |
+| `styles.md` | 文章の種類ごとの表記と文体の選び方 |
+| `conventions.md` | その言語の読み手が見慣れた名前（README の章の名前・変更履歴の小見出し・session-status の見出しと状態の語・判断の問いかけの列名） |
+| `skills.md` | スキルごとに足すこと（スキルの名前の節に記述する） |
+
+ユーザーが言語を切り替える設定はありません。フックは規則と `asking.md` の本文と、言語パックの一覧（言語のコードとフォルダの場所）だけを出します。エージェントは、返答や文書を記述する言語の言語パックがあれば、記述する前にそのフォルダのファイルを読みます。言語を足すときは、`lang/` に言語のコードのフォルダを作り、上の名前のファイルを置きます。フック・`dev/build`・`dev/test` は `lang/` の下のフォルダを数えるので、書き換える必要はありません。
 
 ## 検査する
 
@@ -62,12 +71,13 @@ dev/test
 - バージョンが `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
 - 入手先（`marketplace.json`）に載っているプラグインが1つだけ。
 - スキルごとに、`SKILL.md` が frontmatter で始まり、フォルダ名と同じ `name` と、`description` がある。
-- フックの出力に、規則と、返答のたびに使うリファレンス（`styles.md`・`asking.md`）の見出しの行と、日本語では使わない言い回しの表と、文脈によっては別の語のほうが自然な言い回しの表がある。
-- 規則・リファレンス・スキルが別の規則やリファレンスの節を名指しで参照するとき、名指しした見出しが参照先の規則かリファレンスにある。
+- フックの出力に、規則と `asking.md` の見出しの行と、言語パックごとのフォルダの場所があり、言語パックの中身は無い。
+- 言語パックのファイルが決まった名前のどれか。
+- 規則・リファレンス・言語パック・スキルが別の規則やリファレンスの節を名指しで参照するとき（英語の本文は ``the "<見出し>" section of `x.md` ``、日本語の本文は ``（`x.md`）の「<見出し>」の節`` の形）、名指しした見出しが参照先の規則かリファレンスにある。
 - README がリンクするリポジトリ内のファイルがある。
 - `check-terms` が `tests/terms-cases.txt` の例のとおりに当たり、当たらない。
 - `check-terms` が `tests/caution-cases.txt` の例のとおりに「（文脈で確かめる）」を付けて出し、終了コードを 1 にしない。
-- 規則・リファレンス・SKILL.md・README・手引きに、日本語では使わない言い回しが無い。
+- 日本語の言語パック・`check-terms` の SKILL.md・README・手引きに、日本語では使わない言い回しが無い。
 - 最上位に `bin/` が無い。`bin/` があると、claude.ai と Cowork（Claude のデスクトップアプリで、作業をまとめて任せる機能）はプラグイン全体を受け付けない。開発用のスクリプトは `dev/` に置く。
 - 改行と空白が `.editorconfig` の設定に合っている（git に登録済みのファイルが対象）。
 

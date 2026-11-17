@@ -1,37 +1,52 @@
 ---
 name: writing-rules
-description: プラグイン wakariyasu の規則（ユーザーへの返答の記述方法・文書の記述方法・記述した文章を渡す前の整え方）と、規則が参照するリファレンス（日本語の表記・判断の問いかけ・指示文・README・変更履歴の記述方法）を持つ。ユーザーへの返答や文書を記述するときに、規則の本文が会話に無ければ使い、記述するものに当てはまる規則とリファレンスを読む。wakariyasu のほかのスキルも、規則とリファレンスのファイルをこのスキルのフォルダから開いて読む。
+description: Holds the rules of the wakariyasu plugin (how to write replies to the user, how to write documents, and how to polish text before handing it over), the references the rules point to (how to write decision questions, instructions for agents, READMEs, and changelogs), and the language packs with what applies only when writing in a given language. Use it when you write a reply to the user or a document and the text of the rules is not in the conversation. Read the rules and references that apply to what you write. Other wakariyasu skills also open the rule, reference, and language pack files from this skill's folder. It also applies when the user says the same thing in another language.
 ---
 
-# スキルの目的
+# Purpose of this skill
 
-wakariyasu は、エージェントが記述する返答と文書を、作業の経緯を知らない人（ユーザーや、文書を後から読む人とエージェント）が読んでも分かるようにするプラグインだ。そのための規則とリファレンスを、この SKILL.md があるフォルダ（以下「このスキルのフォルダ」）に置いている。
+wakariyasu is a plugin that makes the replies and documents agents write understandable to people who did not follow the work: the user, and people and agents who read a document later. The rules, references, and language packs for that are in the folder that contains this SKILL.md (the "skill's folder" below).
 
-## 規則
+## Rules
 
-規則は、返答や文書を記述するたびに従う。このスキルのフォルダの `rules/` にある。記述するものに当てはまる規則にはすべて従う（コミットメッセージは文書なので、`writing-documents.md` と `polishing.md` に従う）。
+Follow the rules every time you write a reply or a document. They are in `rules/` of the skill's folder. Follow every rule that applies to what you write. A commit message is a document, so it follows `writing-documents.md` and `polishing.md`.
 
-| ファイル | 従う場面 |
+| File | When to follow it |
 |---|---|
-| `writing-to-user.md` | ユーザーへの返答（報告・判断の問いかけ・質問への答え）を記述するとき |
-| `writing-documents.md` | 返答のほかに、人やエージェントが読む文書（README・仕様書・SKILL.md・コミットメッセージ・PR の本文など）を記述するとき |
-| `polishing.md` | 記述した返答と文書を、ユーザーに送る前・ファイルに保存して人に渡す前に整えるとき |
+| `writing-to-user.md` | When you write a reply to the user (a report, a decision question, an answer to a question) |
+| `writing-documents.md` | When you write a document other than a reply that people or agents read (a README, specification, SKILL.md, commit message, PR description, and so on) |
+| `polishing.md` | When you polish a reply or document before you send it to the user or save it to a file to hand to people |
 
-## リファレンス
+## References
 
-リファレンスは、規則の本文が読むように指示している場面で読む。このスキルのフォルダの `references/` にある。
+Read a reference when a rule tells you to. They are in `references/` of the skill's folder.
 
-| ファイル | 読む場面 |
+| File | When to read it |
 |---|---|
-| `styles.md` | 日本語の表記（かなと漢字・数字・常体と敬体）を、文章の種類に合わせて選ぶとき |
-| `asking.md` | ユーザーに判断を求める問いかけを記述するとき |
-| `writing-instructions.md` | スキル・規則・プロンプトのように、エージェントが読む指示文を記述するとき |
-| `readme.md` | ツールを外に公開するリポジトリの最上位の README を記述・修正するとき（公開しない README は `writing-documents.md` だけに従う） |
-| `changelog.md` | 公開するツールの変更履歴（CHANGELOG・リリースノート）を記述・修正するとき |
+| `asking.md` | When you write a question that asks the user to decide |
+| `writing-instructions.md` | When you write instructions that an agent reads, such as a skill, a rule, or a prompt |
+| `readme.md` | When you write or revise the top-level README of a repository that publishes a tool externally. A README that is not published follows only `writing-documents.md` |
+| `changelog.md` | When you write or revise the changelog of a published tool (CHANGELOG, release notes) |
 
-## 読み込まれているかの見分け方
+## Language packs
 
-wakariyasu をプラグインとして入れた Claude Code では、規則・`styles.md`・`asking.md` の本文が、セッションの始めに会話に読み込まれる。
-どのファイルも、1行目の見出しから本文が始まる。会話の中に、使うファイルの1行目の見出しと本文があれば、そのファイルは読み直さなくてよい。本文が会話に無ければ（プラグインとして入れていない環境や、Claude Code 以外のエージェントを含む）、記述する前に、このスキルのフォルダからそのファイルを読む。
+A language pack holds what applies only when writing in one language. Packs are in `lang/<code>/` of the skill's folder, where `<code>` is the ISO 639-1 language code of the language.
 
-規則 `polishing.md` の「日本語では使わない言い回しを探す」の節で、記述するときと渡す前に使う言い回しの一覧と、文書から言い回しを探すスクリプトは、このスキルのフォルダと同じ階層にある `check-terms` フォルダ（スキル `check-terms`）にある。使い方はスキル `check-terms` の SKILL.md にある。
+Before you write a reply or a document in a language, read every file in that language's folder, unless the text of the file is already in the conversation. If the folder does not exist, only the rules apply.
+
+Every file in a pack has one of the names in the table below. A pack holds only the files that language needs. When a file is missing, nothing is added for that language: skip the step that would use it, and use the English names given in the rules and skills.
+
+| File | Holds |
+|---|---|
+| `polishing.md` | Checks to add when polishing text in that language, including phrases to avoid and any external reviewer skill |
+| `styles.md` | How to choose register, notation, and formatting for each kind of text |
+| `conventions.md` | Names readers expect in that language: README section names, changelog subheading names, fixed labels such as session-status headings, task-state words, and the column names of decision questions |
+| `skills.md` | Additions for each skill, one section per skill name |
+
+A pack may point to tools in other skills. The Japanese pack uses the `check-terms` skill.
+
+## How to tell whether the files are already loaded
+
+In Claude Code with the wakariyasu plugin installed, the text of the rules and of `asking.md` is loaded into the conversation at the start of the session, together with a list of the available language packs and their paths. The files of a language pack are not loaded at the start.
+
+Every file starts with a heading on its first line. If the conversation contains that heading and the text of a file you need, you do not need to read the file again. If the text is not in the conversation (an environment where the plugin is not installed, or an agent other than Claude Code), read the file from the skill's folder before you write.

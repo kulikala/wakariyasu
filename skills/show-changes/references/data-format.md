@@ -1,32 +1,32 @@
-# show-changes の差分のデータの形
+# The data format of show-changes diffs
 
-`--json-out` が書き出し、`--data` が読む JSON の形。`--data` は読み込むときに形を確かめ、合わなければ止まる。
+The JSON format that `--json-out` writes and `--data` reads. `--data` checks the format when it reads and stops if it does not match.
 
 ```
 {
   "schema_version": 1,
-  "title": "…", "data_version": "…", "generated_at": "ISO 8601 の日時",
+  "title": "…", "data_version": "…", "generated_at": "ISO 8601 date and time",
   "group_depth": 2, "full_text": false,
   "sources": [{
-    "name": "対象の名前（絞り込みの選択肢）",
-    "kind": "git・plain・patch のどれか（無ければ git）",
-    "base_ref": "渡した BASE（plain・patch は「変更前」）", "target_ref": "渡した TARGET（plain・patch は「変更後」）",
-    "base": "比べた起点のコミット（git 以外は空）", "target": "TARGET のコミット（git 以外は空）",
+    "name": "the target's name (a choice in the filter)",
+    "kind": "one of git, plain, patch (git if absent)",
+    "base_ref": "the BASE passed (for plain and patch: 変更前)", "target_ref": "the TARGET passed (for plain and patch: 変更後)",
+    "base": "the commit of the starting point compared (empty if not git)", "target": "the commit of TARGET (empty if not git)",
     "merge_base": false,
-    "commits": [["ハッシュ", "作者の日時（ISO 8601）", "件名"]],
+    "commits": [["hash", "author date and time (ISO 8601)", "subject"]],
     "files": [{
-      "path": "変更後の側のパス", "old": "移動・複製の元のパス（無ければ null）",
-      "status": "A・M・D・R100・C・T など", "added": 1, "deleted": 0, "binary": false,
+      "path": "the path on the after side", "old": "the original path of a move or copy (null if none)",
+      "status": "A, M, D, R100, C, T, etc.", "added": 1, "deleted": 0, "binary": false,
       "old_mode": "100644", "new_mode": "100755",
-      "body": "最初の @@ からの unified diff", "notice": "見る人への説明（バイナリ、内容の差分が無い、UTF-8 として読めないバイトがある、など。無ければ空）",
-      "full_body": "全文の unified diff（full_text のときだけ。バイナリ・サブモジュール・patch の対象は null）"
+      "body": "the unified diff from the first @@", "notice": "an explanation for the viewer (binary, no content diff, bytes that are not valid UTF-8, etc.; empty if none)",
+      "full_body": "the unified diff of the full text (only when full_text is true; null for binary files, submodules and patch targets)"
     }]
   }]
 }
 ```
 
-- `kind` が git の対象だけが、`commits`・`base`・`target`・`merge_base` に値を持つ。git 以外の対象は `commits` が空の配列で、`merge_base` を持たない
-- `merge_base` が true のとき、`base` は分岐点のコミット
-- `added`・`deleted` は、バイナリのとき null
-- `old_mode`・`new_mode` は git のモード（通常のファイル 100644・実行できるファイル 100755・シンボリックリンク 120000・サブモジュール 160000）。追加の前と削除の後の側、モードの分からない差分ファイルでは null か、キーを省く。シンボリックリンクの `body` は、リンク先のパスの差分
-- `generated_at` は、ページを作るたびに新しくなる（`--data` で作り直したときも）
+- Only targets whose `kind` is git have values in `commits`, `base`, `target` and `merge_base`. Targets of other kinds have `commits` as an empty array and have no `merge_base`.
+- When `merge_base` is true, `base` is the divergence-point commit.
+- `added` and `deleted` are null for binary files.
+- `old_mode` and `new_mode` are git modes (regular file 100644, executable file 100755, symbolic link 120000, submodule 160000). They are null, or the key is omitted, on the before side of an addition, on the after side of a deletion, and for diff files that do not give modes. The `body` of a symbolic link is the diff of the link target path.
+- `generated_at` is renewed each time a page is built (also when it is rebuilt with `--data`).

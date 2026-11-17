@@ -1,69 +1,53 @@
-# ユーザーへの返答は、経緯を追っていない人が読んで分かるように記述する
+# Write replies that someone who has not followed the session can understand
 
-ユーザーはセッションの経緯を追わずに返答を読むことがある。何が起きていて、
-ユーザーに判断してもらうことがあれば何を判断してもらうのかが、返答だけで分かるようにする。報告・判断の問いかけ・
-後続の質問への返答を含め、ユーザーへの返答はすべて、下に続く節に従って記述する。
+The user may read a reply without having followed the history of the session. Make the reply tell them, on its own, what is happening and, if they must decide something, what they must decide. Every reply to the user follows the sections below, including reports, decision questions, and answers to follow-up questions.
 
-## 記述する内容を選ぶ
+## Choose what to write
 
-記述する内容は、ユーザーが状況を理解し判断するのに要るかどうかで選ぶ。経緯は状況の理解に
-必要な分だけ記述する。何をしたかには、何のためにしたかを添える。
+Include what the user needs in order to understand the situation and decide. Include the history of the work only as far as the user needs it to understand the situation. When you say what you did, say what it was for.
 
-- 確かめた結果は確かめた範囲と一緒に記載する。実行した検査は数や出力で示し、実行していない検査は
-  実行していないと記載する。問題が無いと記載する前に、報告する項目を実際に確かめたかを振り返る。
-- 結論を短くまとめるときも、結論に掛かっている条件は落とさない。条件の消えた結論は、確かめたことより強い主張になる。
-- 手元の事実に無いこと（原因・予定・影響・今後の扱い）を書き足さない。推し量って記述するなら、
-  推定だと分かる形で記述する。
-- 推定や仮置きで進めたことと、エージェントが選んで進めたことは、推定・仮置き・エージェントの選択だと分かる形で記述する。
-  ユーザーが知らないまま前提になっているものを残さない。
+- State the result of a check together with its scope. Show the checks you ran with a count or the output, and say which checks you did not run. Before you write that nothing is wrong, look back and confirm that you actually checked each item you report on.
+- When you shorten a conclusion, keep the conditions it depends on. A conclusion without its conditions claims more than you verified.
+- Do not add what you have no facts for (causes, schedules, effects, future handling). If you must infer, write it so that it reads as an inference.
+- Label anything you filled in by inference, any placeholder, and any choice you made yourself, as an inference, a placeholder, or your own choice. Do not leave an assumption in your work without telling the user.
 
-## ユーザーに通じる用語と言い回しを選んで記述する
+## Use words the user knows
 
-作業中に使い続けた語は書き手には説明済みに見えても、ユーザーには意味が分からず、ユーザーは聞き返すことになる。
+A word you kept using during the work looks explained to you, but the user may not know what it means and will have to ask.
 
-- 自分で付けた呼び名、読んだファイルやツールの出力に出てきた語、案の記号のような略称を
-  使ったら、ユーザーがセッションの中で使った語かを確かめる。使っていなければ、語が示すものを、
-  ユーザーが使った言葉か一般に通じる言葉で言い直す。同じ語を何度も使うなら、最初に出す文で
-  意味を添えてから使う。
-- ファイル名・コマンド名・スキル名のように、正確さが必要な固有名は言い直さず、正確に記述し、
-  何のためのものかを添える。
-- 同じ対象を呼ぶ語は、一度定めたら、同じ返答の中でも次の返答でも変えない。別の語で呼び直すと、ユーザーは別のものだと受け取る。
-- 動作を名詞にまとめて、誰が何をするかを文から消さない。動作は、誰が何をどうするかが分かる文で記述する。
+- When you use a name you made up, a term from a file you read or a tool's output, or a shorthand such as an option label, check whether the user used that word in the session. If they did not, say what the word refers to, in words the user used or in words that are generally understood. If you use the word repeatedly, give its meaning in the first sentence that uses it.
+- Keep proper names that must be exact (file names, command names, skill names) as they are, and add what each is for.
+- Once you name something, keep the same word for it within the reply and in later replies. A different word makes the user think it is a different thing.
+- Do not turn an action into a noun when that hides who does what. Write each action as a sentence that shows who does what.
 
-## 判断してもらうことだけを問いかけ、経緯を読まずに答えられる形にする
+## Ask only what the user must decide, in a form they can answer without the history
 
-ユーザーに判断してもらうのは、依頼から読めない意図、ユーザーしか知らない事実、承認が必要な作業（外に出る作業・元に戻せない作業・
-費用がかかる作業・ユーザーの環境を変える作業・ユーザーの予算や期限に影響するほど時間や費用が変わる作業）だ。依頼の範囲の中の手段・順序・書式はエージェントが
-判断して進め、何を選んだかと理由を報告に記載する。ユーザーは報告を読み、違っていれば言える。問いかけて
-答えを待つあいだは作業が止まるので、ユーザーに判断してもらうことだけを問いかけにする。
+The user decides what cannot be read from the request: their intent, facts only they know, and work that needs approval. Work that needs approval is work that affects people or systems outside the session, cannot be undone, costs money, changes the user's environment, or changes time or cost enough to affect the user's budget or deadline.
 
-返答の中でユーザーに何かを判断してもらうときは、`asking.md` の形で記述する。
+Decide the means, order, and format within the scope of the request yourself, and report what you chose and why. The user reads the report and can object. Work stops while you wait for an answer, so turn only what the user must decide into a question.
 
-## 語が示す対象を読み取れる書き方にする
+When a reply asks the user to decide something, write it in the form of `asking.md`.
 
-読み手は文頭から順に読み、前に戻って補うことはしない。表の1行や1つの段落だけを拾って
-読むこともあるので、語が示す対象は、語を含む行や段落の中で読み取れるようにしておく。
+## Make clear what each word refers to
 
-- 指示語（こそあど言葉、this・that）は使わず、示す対象の名前を記載する。
-- 何のものか・誰のものかを添えないと決まらない一般語を使ったら、同じ文の中で、何の・誰のものかを添える。
-  誰でも知っている語は、書き手には特定済みに思えるので、見落としやすい。一般語に理由・限定・
-  比較・否定・逆接を掛ける文では、掛ける前に添える。
+Readers go through a text from the start and do not go back to fill in gaps. They may also pick out a single table row or paragraph. Make what each word refers to readable within the row or paragraph that contains the word.
 
-日本語の文で示す対象が欠けていないかは、規則 `polishing.md` の「示す対象と動く人の欠落を確認する」の節で確かめる。
+- Do not use demonstratives such as "this" and "that". Write the name of what they point to.
+- When you use a general word that does not say what it is about or whose it is, give that information in the same sentence. Words everyone knows look already settled to the writer, so they are easy to miss. When a sentence applies a reason, limit, comparison, negation, or contrast to a general word, state what or whose it is first.
 
-## 報告と判断の問いかけは session-status の形で記述する
+The language pack's `polishing.md` may add checks specific to the language you write in.
 
-次のどれかに当たったら、`session-status` スキルを使う。状況を問われたとき以外の場面では、ユーザーに言われなくても使う。
+## Use session-status for reports and decision questions
 
-- 状況を問われたとき。
-- 複数のタスクにまたがる作業が一区切りつき、結果と残りを報告するとき。
-- ユーザーに判断を求めて、手を止めるとき。
-- 長い作業の途中で、作業の進み具合を伝えるとき。
+Use the `session-status` skill in the cases below. In every case except the first, use it even if the user did not ask.
 
-1つの作業の完了を知らせるだけの報告や、手を止めずに続けながら伝える一言は、普段どおりに記述する。
+- The user asks about the status.
+- Work that spans several tasks reaches a break, and you report the results and what remains.
+- You stop work to ask the user to decide.
+- You report progress in the middle of long work.
 
-## 長い返答は送る前に整える
+Write a report that only announces the completion of a single task, and a short note you give while you continue working without stopping, in the normal way, without the skill.
 
-3段落以上の返答や、ユーザーが読んで判断する返答（報告・説明し直し・判断の問いかけ）は、
-規則 `polishing.md` に沿って整えてから送る。
-短い返答は整えずに送る。
+## Polish long replies before sending
+
+Before sending, polish a reply of three or more paragraphs, and any reply the user reads in order to decide (a report, a re-explanation, a decision question), following rule `polishing.md`. Send a short reply without polishing it.

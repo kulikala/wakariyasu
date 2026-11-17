@@ -1,48 +1,48 @@
 ---
 name: explain-clearly
-description: エージェントが自分で作成した直前の返答や、返答の中の語・説明が分からないと言われたときに使う。「分かりやすく」「つまり？」「簡潔に」「どういうこと？」「言い換えると？」「平易に言うと？」「小学生でも分かるように」、返答に出た語について「〜とは？」、返答で並べたものについて「〜と〜の違いは？」と聞かれたときに当たる。ほかの言語で同じ意味のことを聞かれたときも当たる。作業の経緯を知らない人に通じる言葉で言い直し、言われた言葉から、短くまとめるか前提を足すかを選ぶ。返答と関係の無い一般の質問（「REST とは？」）は普段どおりに答える。セッションの進み具合を聞かれたら session-status を使う。
+description: Use when the user says they do not understand your last reply, or a word or explanation in it. This covers requests like "Explain it more clearly", "So what does that mean?", "Shorter please", "What do you mean?", "In other words?", "Explain it simply", "Explain it so a child could understand", "What is X?" about a term that appeared in your reply, and "What is the difference between X and Y?" about things your reply listed. Also use it when the user says the same thing in another language. Restate in words that someone who has not followed the session understands, and choose from the user's wording whether to shorten or to add background. Answer a general question unrelated to your reply (such as "What is REST?") as usual. For questions about how the session is going, use session-status.
 ---
 
-# スキルの目的
+# Purpose
 
-ユーザーが分からなかったものを、ユーザーが分かる言葉で言い直す。中身は変えず、伝え方を変える。
+Restate what the user did not understand in words the user understands. Keep the content. Change how you say it.
 
-## 分からなかった点の特定
+## Identify what was unclear
 
-言い直す前に、ユーザーが引っかかったものを判断する。
+Before restating, decide what the user got stuck on.
 
-- **語**（「〜とは？」）: 作業の中で使い続けた呼び名や、ツールの出力に出てきた語であることが多い。
-- **つながり**（「どういうこと？」）: 1つずつの文は読めても、何が何の理由なのか、何と何を比べているのかが追えていない。
-- **結論**（「つまり？」）: 説明は読めたが、自分にとって何を意味するのか、何を判断すればよいのかが分からない。
-- **違い**（「〜と〜の違いは？」）: 並んだものの、どこが違い、選ぶと何が変わるのかが分からない。
-- **全体**（「分かりやすく」）: 上のどれか1つに絞れない。直前の返答を、経緯を知らない人の視点で頭から読み、引っかかる箇所をすべて挙げる。
+- **A word** ("What is X?"): Often a name you kept using during the work, or a term from tool output.
+- **A connection** ("What do you mean?"): Each sentence is readable, but the user cannot follow what is the reason for what, or what is being compared with what.
+- **A conclusion** ("So what does that mean?"): The user could read the explanation, but does not know what it means for them or what they should decide.
+- **A difference** ("What is the difference between X and Y?"): The user does not know where listed items differ, or what changes depending on the choice.
+- **The whole reply** ("Explain it more clearly"): The cause is not one of the above. Read your last reply from the start as someone who has not followed the session, and list every place where they would get stuck.
 
-ユーザーの言葉から上のどれに当たるかを判断できないときは、直前の返答から、ユーザーがセッションの中で使っていない語と、何を示すかが語を含む文の中に記載されていない語を探し、探した語から言い直す。
+If the user's words do not tell you which of these applies, look in your last reply for words the user has not used in the session and for words whose referent is not stated in the sentences that contain them. Start the restatement from those words.
 
-## 説明の長さの選択
+## Choose the length of the explanation
 
-| 言われた言葉 | 向き |
+| What the user said | Direction |
 |---|---|
-| 「つまり？」「簡潔に」「一言で」 | 短くする。結論を1〜3文で言い、必要な条件だけを残す |
-| 「どういうこと？」「小学生でも分かるように」「平易に」 | 前提を足す。結論の前に、知らないと読めない前提を短く置く |
-| 「言い換えると？」「分かりやすく」 | 長さは大きく変えない。語と文の組み立てを替える |
-| 「〜とは？」 | 語の意味を1〜2文で言い、今の話の中で何を示しているかを添える |
-| 「〜と〜の違いは？」 | 違う点だけを並べる。選ぶと何が起きるかまで記載する |
+| "So what?", "Shorter", "In a word" | Shorten. State the conclusion in one to three sentences and keep only the conditions that matter |
+| "What do you mean?", "Explain it so a child could understand", "Simply" | Add background. Before the conclusion, put the short background that is needed to read it |
+| "In other words?", "Explain it more clearly" | Do not change the length much. Change the words and how the sentences are built |
+| "What is X?" | Give the meaning of the word in one or two sentences, and add what it refers to in the current discussion |
+| "What is the difference between X and Y?" | List only the points that differ. Include what happens depending on the choice |
 
-表に無い言い方は、意味の近い行として扱う。
+When the user's words match no row of the table, use the row closest in meaning.
 
-## 言い直しの方法
+## How to restate
 
-- 結論を先に述べる。
-- 作業の中で付けた呼び名・略称・ファイルの中の語は、ユーザーが使った言葉か、一般に通じる言葉に置き換える。正確さが必要な固有名（ファイル名・コマンド名）は残し、何のためのものかを添える。
-- 元の説明に無い因果やつながりを足さない。別々に決定した2つのことを、理由を示す接続でつながない。つながりが分からなければ、別々の文で記述する。
-- 例えを使うなら1つだけにし、例えのどこが本題のどこに当たるかを記載する。
-- 前の説明で記載した条件・例外・確かさ（推定か、確かめたか）を、短くするために落とさない。落とすなら、落としたことを記載する。
-- 言い直し自体から始める。前の説明のどこが分かりにくかったかの説明や、謝りの前置きは要らない。
+- State the conclusion first.
+- Replace names, abbreviations and terms from files that came up during the work with words the user used or words that are generally understood. Keep exact proper names, such as file names and command names, and add what each is for.
+- Do not add causes or connections that the original explanation did not have. Do not join two separately decided things with a connective that implies a reason. If you do not know how they connect, write them in separate sentences.
+- Use at most one analogy, and state which part of the analogy corresponds to which part of the subject.
+- Do not drop the conditions, exceptions and degree of certainty (inferred or verified) from the earlier explanation to make it shorter. If you drop any, say that you did.
+- Start with the restatement itself. Do not open with an explanation of what was unclear in the earlier explanation or with an apology.
 
-書き方は規則「ユーザーへの返答は、経緯を追っていない人が読んで分かるように記述する」（スキル `writing-rules` の `rules/writing-to-user.md`）に従う。
+Follow rule `writing-to-user.md` ("Write replies that someone who has not followed the session can understand") in the `writing-rules` skill.
 
-## 送信前の確認
+## Check before sending
 
-- 言い直した文を、直前の返答を読んでいない人の視点で、頭から順に読む。前に戻って読み直した箇所があれば修正する。
-- 規則「記述した文章は、渡す前に整える」（スキル `writing-rules` の `rules/polishing.md`）に沿って整える。表記で迷ったら、「日本語の表記の選び方」（スキル `writing-rules` の `references/styles.md`）を読む。
+- Read the restated text from the start, in order, as someone who has not read your last reply. If you had to go back and reread any part, fix it.
+- Polish it following rule `polishing.md` ("Polish what you wrote before handing it over") in the `writing-rules` skill. If you are unsure about notation or register and the language pack has a `styles.md`, read it. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).

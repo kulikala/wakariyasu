@@ -1,61 +1,62 @@
 ---
 name: remove-meta-narrative
-description: 文書（README・仕様書・設計書・提案書・手順書・規則・SKILL.md・プロンプトなど）から、メタ記述（文書が自分自身や作った経緯を語る文）を見つけて修正し、対象自体を語る文にする。エージェントの作業記録や途中の出力（「〜は未達」「〜は不明だった」）が残っていないかも確かめる。「メタ記述を除いて」「メタ記述を確かめて」と言われたときに使う。言われなくても、単体で読まれる文書を書き上げて渡す前に使う。ユーザーへの返答・作業の報告には使わない。作業記録・進行記録のように、目的が作業の記録である文書では、作った経緯・作業の段取り・途中の出力（群3〜群5）は確かめない。人に渡す文書では、review-for-readers より先に使う。
+description: Find meta-narrative in a document (README, specification, design document, proposal, procedure, rule, SKILL.md, prompt and so on), that is, sentences in which the document talks about itself or the history of how it was made, and rewrite them so the document talks about its subject itself. Also check that the agent's work log or intermediate output (such as "Not achieved" or "Unknown") has not been left in. Use when the user says things like "Remove the meta-narrative" or "Check for meta-narrative", and when the user says the same thing in another language. Also use without being asked after finishing a document that will be read on its own, before handing it over. Do not use it on replies to the user or reports of work. For a document whose purpose is to record work, such as a work log, do not check the history of how it was made, the work procedure or intermediate output (groups 3 to 5). For a document handed to people, use it before review-for-readers.
 ---
 
-# スキルの目的
+# Purpose
 
-文書は対象（仕組み・仕様・提案の中身）自体を語る。文書自身・作った経緯・記述する行為・
-指示への応答は語らない。読み手は、渡された時点の文書だけを読む。
+A document talks about its subject (the mechanism, the specification, the content of a proposal). It does not talk about the document itself, the history of how it was made, the act of writing, or a response to an instruction. The reader reads only the document as handed over.
 
-適用するのは文書の本文。ユーザーへの返答や作業の報告は、何をしたかを記載するのが役目なので適用しない。
-コミットメッセージと PR の本文は、何をどう変えたかを記載するのが役目なので、群3のうち前のバージョンとの差は
-適用しない。試した順番や苦労（群3）と、群4・群5だけを適用する。
-文書の目的が作業の記録であるとき（作業記録・進行記録・検証の記録・議事録・変更履歴）は、群3〜群5を適用せず、群1と群2だけを適用する。
-目的が作業の記録でない文書（設計書・仕様書・README など）は、記録を書いた節があっても、その節を含めて群3〜群5を適用する。中身を理解するのに記録が必要なときだけ、記録を残し、別の節にするか引用の形にして、記録の部分と中身の部分を読み手が区別できるようにする。
+Apply this skill to the body of a document. Do not apply it to replies to the user or reports of work, because their job is to say what was done.
+The job of a commit message and of a PR description is to say what was changed and how. So do not apply the part of group 3 about differences from the earlier version. Apply only the part of group 3 about the order of what was tried and the difficulties met, and groups 4 and 5.
+When the purpose of a document is to record work (a work log, a progress log, a verification record, minutes, a change history), do not apply groups 3 to 5. Apply only groups 1 and 2.
+For a document whose purpose is not to record work (a design document, a specification, a README), apply groups 3 to 5 even to a section that holds a record. Keep a record only if it is needed to understand the content. In that case, put it in a separate section or in a quotation, so that the reader can tell the record from the content.
 
-## メタ記述の分類と判定基準
+## Groups of meta-narrative and how to judge them
 
-| 群 | よく出る形 | 見分けるための質問 |
+| Group | Common form | Question to tell them apart |
 |---|---|---|
-| 1. 文書が自分を語る | 文書・章・資料を主語にして、扱う内容・前提・位置づけ・記述した基準を述べる文 | 消したとき、対象についての情報が減るか |
-| 2. 文書が外を参照する | 文書のほかの場所や別の資料を、場所を特定せずに指す語句 | 文書だけを読んで、参照先が分かるか |
-| 3. 作った経緯が残る | 作業の順番、受けた指摘への対応、前のバージョンとの差、依頼への応答を述べる文 | 渡された時点の文書だけを読む人に、文が要るか |
-| 4. 作り手の作業（段取り・報告・予定）が残る | 書き手が進められる作業、済ませた作業、次に予定する作業を述べる文 | 文頭に「（書き手は、作業の中で）」を補って読めるか |
-| 5. 作業の途中の出力が残る | 未達・不明・未確認・要確認・TODO のように、書き手の作業がどこまで進んだかを述べる語句 | 対象がどうなっているかではなく、書き手の作業がどこまで進んだかを言っているか |
+| 1. The document talks about itself | A sentence whose subject is the document, a chapter or a source, and which states what it covers, its premises, its position, or the criteria used in writing it | If you remove it, does the information about the subject decrease? |
+| 2. The document refers to something outside | A phrase that points to another place in the document or to another source without saying where | Can a reader tell what is referred to from the document alone? |
+| 3. The history of how it was made remains | A sentence that states the order of the work, a response to a comment received, a difference from the earlier version, or a response to the request | Does a reader who reads only the document as handed over need the sentence? |
+| 4. The author's work (steps, reports, plans) remains | A sentence that states work the writer can proceed with, work the writer has finished, or work the writer plans next | Does the sentence still read naturally if you add "(the writer, in the course of the work)" at its start? |
+| 5. Intermediate output of the work remains | A word or phrase such as not achieved, unknown, unconfirmed, needs checking or TODO that says how far the writer's work has progressed | Does it say how far the writer's work has progressed, rather than how the subject is? |
 
-修正方法は群ごとに決まっている。
+The fix is set for each group.
 
-- 1 は、文書ではなく対象を主語にした文に書き換える。前提の宣言が対象の要件（使うのに必要な権限など）なら、要件として記述する。
-- 2 は、まず消してみる。消して意味が通るなら消す。意味が通らないなら、章の番号のように文書の中で特定できる形にする。参照先の中身が理解に必要なら、必要な分を本文に記載する。
-- 3 は、結論だけを残す。前のバージョンとの差を伝えたいなら、文書の外（送るときの返答・変更履歴）で伝える。
-- 4 は、作業の段取りや報告を消し、条件・状態・結果だけを残す。次にすることを記載するなら、読み手と合意した約束として記載する。合意があったかが文書から分からなければ、修正せずに「判断が要る」として挙げる。
-- 5 は、読み手に必要な対象の状態なら、対象を主語にした状態や制約として記述する（未達の対応は、対応していないという対象の状態にする）。書き手が確かめられなかっただけの事柄を、対象の状態（値が決まっていない、など）に書き換えるのは、対象の状態を確かめてあるときだけにする。確かめていなければ、修正せずに「判断が要る」として挙げる。書き手の作業の進み具合だけなら消し、ユーザーへの返答で伝える。要確認と TODO の印は、確かめる中身が対象の未定の事柄なら未定として記載し、書き手の作業の残りなら消す。
+- Group 1: Rewrite the sentence so that its subject is the subject of the document, not the document. If a declaration of premises is a requirement of the subject (such as the permissions needed to use it), write it as a requirement.
+- Group 2: First try removing the phrase. If the text still makes sense, remove it. If it does not, change the phrase to a form that can be identified within the document, such as a chapter number. If the content of what the phrase refers to is needed to understand the text, put the needed part in the body.
+- Group 3: Keep only the conclusion. If you want to convey the difference from the earlier version, do so outside the document, in the reply when you send it or in a change history.
+- Group 4: Remove the work steps and reports, and keep only the conditions, states and results. If you write what will be done next, write it as a promise agreed with the reader. If the document does not show whether the promise was agreed, do not fix the sentence. List it as "needs a decision".
+- Group 5: If the reader needs the information as the state of the subject, write it as a state or constraint of the subject (turn "not achieved" into the state that the subject does not support the thing in question).
+  - Turn something the writer merely could not verify into a state of the subject (such as "the value is not decided") only when you have verified the state of the subject. If you have not, do not fix the sentence. List it as "needs a decision".
+  - If the sentence only says how far the writer's work has progressed, remove it and say it in the reply to the user.
+  - For a "needs checking" or TODO mark: if what is to be checked is an undecided matter of the subject, write it as undecided. If it is work remaining for the writer, remove it.
 
-群4はほかの群の形を取らないので見つけにくい。文書の一節がまるごと作り手の作業で区切られている（自分で進められることと、相手を待つことで分けている、など）なら、文を修正しても直らない。区切り方を、対象の側の軸（条件・確かさ・影響の範囲）に組み直す。
+Group 4 has no single recognizable sentence form, so it is hard to find. Sometimes a whole passage of the document is divided by the author's work (for example, into what you can proceed with yourself and what you wait for others on). Fixing individual sentences will not solve that. Reorganize the division along the subject's own axes (conditions, certainty, scope of impact).
 
-## 対象外の記述
+## What is not meta-narrative
 
-次は、読み手が本文を読むのに使うので、メタ記述として扱わない。
+The following are used by the reader to read the body, so do not treat them as meta-narrative.
 
-- 本文で使う記号やラベルの定義。
-- 文書が扱う対象の目的。文書の使われ方の説明にまで広げない。
-- 出典と日付。
-- 章の番号などで特定できる、文書の中の参照。
-- 前のバージョンの数字からの差が、読み手の判断に必要なもの（見積・実績・目標で、いくら動いたか）。
-- 読み手の注意を促す前置き。ほかの群にはっきり当たるときだけ直す。
+- Definitions of symbols and labels used in the body.
+- The purpose of the subject the document covers. An explanation of how to use the document is still meta-narrative.
+- Sources and dates.
+- References within the document that can be identified, such as by chapter number.
+- A difference from the earlier version's numbers that the reader needs for a decision (in an estimate, an actual or a target: how much it moved).
+- A preface that draws the reader's attention. Fix it only when it clearly falls under another group.
 
-迷ったら、文を消したときに、読み手の判断や理解が変わるかを考える。変わるなら残す。
+If unsure, consider whether removing the sentence would change the reader's decision or understanding. If it would, keep it.
 
-## 作業手順
+## Procedure
 
-1. 文書を頭から順に読み、1文ずつ5つの群の質問で確かめる。見出し・表のセル・箇条の項目・注記も読む。
-2. 当たった文を、群の修正方法で修正する。
-3. 修正したあと、もう一度頭から読む。修正したことで、参照先が消えた文や、つながらなくなった文が無いかを見る。
+1. Read the document from the start, and check each sentence against the questions of the five groups. Read headings, table cells, list items and notes too.
+2. Fix each sentence that matches, using the fix for its group.
+3. After fixing, read it from the start again. Look for sentences whose referent the fix removed, and sentences that no longer connect.
 
-文書の書き方の全体は規則「エージェントが記述する文書は、文書だけで通じるように記述する」（スキル `writing-rules` の `rules/writing-documents.md`）にある。
+How to write documents in general is in rule `writing-documents.md` ("Write documents that make sense on their own") in the `writing-rules` skill.
 
-## 結果の返却形式
+## Format of the result
 
-- メタ記述を除くように頼まれたときは、「場所／群／直す前 → 直した後」の一覧と、修正した全文を返す。メタ記述か中身か決めきれない文は修正せず、一覧に「判断が要る」として挙げる。
-- 文書を渡す前に自分から使ったときは、修正した文書を渡し、返答では使ったことを1行で伝える。一覧はユーザーに求められたら出す。
+- When asked to remove meta-narrative, return a list of "location / group / before -> after" and the full fixed text. Do not fix a sentence you cannot decide is meta-narrative or content; list it as "needs a decision".
+- When you used this skill yourself before handing over a document, hand over the fixed document and say in the reply in one line that you used it. Give the list if the user asks for it.

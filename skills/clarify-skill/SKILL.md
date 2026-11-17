@@ -1,69 +1,70 @@
 ---
 name: clarify-skill
-description: 作られたスキル（SKILL.md・references・同梱のツールの案内）を、エージェントへの指示文として点検し、修正する方針を立てる（頼まれれば書き直す）。読んだエージェントが目的から判断できるか、縛りすぎや要らない文が無いか、置き場所が合っているかを見る。スキルのレビュー・汎用化・手順書になったスキルの書き直し、複数のスキルの点検を頼まれたときに使う。スキルを新しく作ることは受け持たない。スキルを書き上げたり修正したりしたら、言われなくても、remove-meta-narrative と review-for-readers より先に使う。SKILL.md を一般の文書として読み手の視点で整えるだけなら review-for-readers、メタ記述を除くだけなら remove-meta-narrative を使う。
+description: Review a finished skill (SKILL.md, references, and the guidance for bundled tools) as instructions for agents, and plan how to fix it (rewrite it when asked). Checks whether an agent reading it can decide from its purpose, whether it over-constrains or contains needless sentences, and whether each piece sits in the right place. Use it when asked to review a skill, generalize it, rewrite a skill that has turned into a procedure, or review several skills. It does not create new skills. Also use it, without being asked, after writing or changing a skill, before remove-meta-narrative and review-for-readers. To polish a SKILL.md only as a general document from the reader's viewpoint, use review-for-readers. To remove only meta-narrative, use remove-meta-narrative. Also applies when the user says the same thing in another language.
 ---
 
-# スキルの目的
+# Purpose of the review
 
-スキルは読み込まれるたびにエージェントの文脈を使い、そのエージェントの振る舞いを決定する。点検の目的は、読んだエージェントがスキルの目的と受け持つ範囲を理解し、記述されていない場面でも目的に合う判断ができる状態にすることだ。手順・ツール・出来事・数値を細かく書き込むと、記述した場面の外で振る舞いが決まらず、ツールや環境が変わったときに古い指示が残る。
+A skill takes up the agent's context every time it is loaded, and it decides how that agent behaves. The purpose of the review is that an agent reading the skill understands its purpose and scope, and can make choices that fit the purpose in situations the skill does not describe. When a skill spells out procedures, tools, events, and numbers in detail, behavior is undefined outside the situations it describes. Stale instructions also remain when tools or the environment change.
 
-このスキルが変えるのは、指示の書き方と置き場所だけだ。スキルに記述された業務の決まり（何を正とするか、人から受けた指摘で決まったこと）は、中身を落とさずに残すか、正しい置き場所へ移す。
+This skill changes only how instructions are written and where they are placed. Domain rules written in the skill (what counts as authoritative, what was decided after a person's feedback) are kept intact or moved to the right place.
 
-呼び出し元は、このスキルを頼んだユーザー、またはこのスキルを呼んだエージェントだ。
+The caller is the user who asked for this skill or the agent that invoked it.
 
-当てる決まりは、点検するスキルを置くリポジトリやプロジェクトの指示ファイルと開発の文書（スキル・ツール・規則の置き場所と書き方の決まり）と、そのリポジトリが従う上位の文書（組織やチームで共通の決まり）にある。スキルの書き方の決まりが見つからないときは、スキル `writing-rules` のフォルダの `references/writing-instructions.md` の方針と、下の観点の表の「満たされた状態」を基準にする。
+The rules to apply are in the repository's or project's instruction files and development documents (where skills, tools, and rules are placed and how they are written). They are also in the higher-level documents that the repository follows (rules shared by the organization or team). When no rules for writing skills can be found, use the guidance in `references/writing-instructions.md` of the `writing-rules` skill and the "Condition to meet" column of the checkpoint table below.
 
-点検するスキルを置くリポジトリやプロジェクトに、ユーザーと合意した拘束の記録があれば読む。記録にある拘束は、観点に該当しても指摘しない。ユーザーが合意して定めた形式を、点検で縛りすぎとして外さないためだ。点検や書き直しの途中でユーザーと新しく拘束を合意したら、記録に追加する。記録が無ければ、記録を置く場所を修正する方針に記載する。
+If the repository or project holding the skill has a record of constraints agreed with the user, read it. Do not flag a constraint in the record even when it matches a checkpoint, so that a format the user agreed to is not removed as over-constraining. When you agree a new constraint with the user during a review or rewrite, add it to the record. If no record exists, include in the fix plan where to put one.
 
-## review-for-readers・remove-meta-narrative との分担
+## Division of work with review-for-readers and remove-meta-narrative
 
-review-for-readers は、人に渡す文書を、経緯を知らない読み手の視点で読み直す。remove-meta-narrative は、文書自身や作った経緯を語る文を除く。このスキルは、スキルをエージェントへの指示文として見て、目的が伝わるか、縛りすぎていないか、置き場所が合っているかを点検する。
+review-for-readers rereads a document meant for people from the viewpoint of a reader who did not follow its history. remove-meta-narrative removes sentences in which a document talks about itself or how it was made. This skill reads the skill as instructions for agents. It checks whether the purpose comes across, whether the skill over-constrains, and whether each piece is in the right place.
 
-- 観点 3・4・16 は `writing-instructions.md` の方針と重なる。指示ごとの目的、選べる幅、記述しなくても変わらない文の除き方は、`writing-instructions.md` に沿う。
-- 観点 2 の出来事や出所の記録と、観点 16 の書き手の造語は、メタ記述や読み手の引っかかりとも重なる。メタ記述は remove-meta-narrative で、読み手の引っかかりは review-for-readers で修正する。
-- スキルの目的・受け持ち・置き場所・実行環境・呼ばれ方のように、文書の読みやすさでは見つからない点は、このスキルが受け持つ。
+- Checkpoints 3, 4, and 16 overlap with `writing-instructions.md`. Follow `writing-instructions.md` for the purpose of each instruction, the range of choices left open, and removing sentences that change nothing when dropped.
+- The records of events and origins in checkpoint 2, and the writer's coined names in checkpoint 16, also overlap with meta-narrative and with places where the reader gets stuck. Fix meta-narrative with remove-meta-narrative. Fix places where the reader gets stuck with review-for-readers.
+- This skill covers what readability checks do not find: the skill's purpose, scope, placement, execution environment, and how it gets invoked.
 
-## 点検の観点
+## Checkpoints
 
-観点はすべて当て、対象に当てはまらない観点は理由を添えて当たらないとする。各観点の確認方法と修正方法は `references/skill-checkpoints.md` にある。日本語の言い回しの検査は観点 16 にある。
+Apply every checkpoint. For a checkpoint that does not fit the target, state that it does not apply and why. How to check and how to fix each checkpoint is in `references/skill-checkpoints.md`. Checks specific to a language are in the language pack (see checkpoint 16).
 
-| # | 観点 | 満たされた状態 |
+| # | Checkpoint | Condition to meet |
 |---|---|---|
-| 1 | 目的と受け持つ範囲 | スキルが何のために何をできるのかが冒頭で分かる。越えやすい境目があれば、受け持たないことも分かる。手順に無い場面でも、目的から振る舞いを選べる |
-| 2 | 一般化 | 記述した場面の外でも使える。具体名・出来事・出所の記録が無く、出来事から取り出した目的の文になっている。人・会議・組織は役割で記述され、今の担当との対応はリポジトリやプロジェクトの文書にある。出所と出来事の記録はスキルの外にある |
-| 3 | 拘束の度合い | エージェントが楽になる条件（ほかが読む出力の名前と形、正とする資料、起きると分かっている落とし穴）は残り、エージェントが判断すべきこと（ツールの選択とオプション、作業フォルダの名前、読む順、件数や長さ）は任されている。手段ではなく目的と満たすべき状態が記述されている。スキルが作る成果物の書き方は、出力の形式をはっきり指定されたときと、ほかが読む形のときのほかは、読み手が何を読み取れればよいかという方針で記述されている。「」の言い回しは、文字そのものに意味があるものだけで、写す型になっていない。目的と方針で伝わることは禁止の形で記述せず、禁止はどうしても避けるべきことだけに使っている |
-| 4 | 要らない文 | どの文と句も、記述しなければ振る舞いが変わる。環境の決まり（指示ファイル・規則・利用者の指示）や、エージェントがふつうにすることを繰り返していない |
-| 5 | 始める条件 | 前提が必要なスキルでは、前提が状態として記述され、前提をそろえる作業は手順に入っていない。欠けたときの振る舞いが分かる |
-| 6 | エージェントの選択 | サブエージェントの種類・人数・モデル・別の実行環境のエージェントを指定せず、選ぶ目安を記述している。独立した目を通すような品質の決まりは、目的と一緒に残っている |
-| 7 | 文脈の受け渡し | 呼ぶエージェントに渡す共有事項と、独立に見つけてほしいので渡さないことが分けてある。共有事項は 1 度だけ渡す |
-| 8 | 振る舞いと環境の案内 | SKILL.md には振る舞いを記述し、環境の決まりは環境の文書を指す。ツールの使い方は、環境にツールの案内（ツールの使い方を 1 か所にまとめた文書）があれば、その案内を指す。ほかのリポジトリ・ツール・文書は名前ではなく役割で指す。同じ事実がスキルの中・スキルと環境の文書で重なっていない |
-| 9 | 事実の鮮度 | 記述された環境の事実（置き場所・ツールの動き・ファイル名・見本のパス）が、今の文書・ツール・コード・フォルダと合う。移行期の記述や使わなくなった流れが本体に残っていない |
-| 10 | スキルどうしの整合 | 同じ決まりを複数のスキルが書き写しておらず、1 か所を正として指している。作る順で前後するスキルの間で、前提と出力が合う |
-| 11 | 読み込む重さ | 毎回読む SKILL.md は、どの場面でも必要なことだけ。場面ごとに必要な詳しいことは references に分かれ、どの場面で読むかが記述してある |
-| 12 | 実行環境 | 想定する実行環境のどれでも記述されたとおりに動ける。特定のツールの名前・読み込み方・1 台の PC にしか無い資料に頼っていない。秘密情報が無い |
-| 13 | 戻せない操作 | 消す・上書きする・その場で書き換える操作が自分の作業の分だけに当たり、共有のもの（ほかのセッションも使う退避の場所・原本・人が編集したもの）を巻き込まない |
-| 14 | 呼ばれ方 | description が、使う場面・使わない場面・隣のスキルとの分担を場面として記述し、本文と食い違わない。依頼の言い方の例は、場面を補ってスキルを選ぶ手がかりになる分だけ添えてある。呼び出し元が人でも、自動の仕組みでも、ほかのエージェントでも成り立つ |
-| 15 | 参照のつながり | このスキルを参照している所（参照元）と、このスキルが参照する先（参照先）の両方が、書き直した後もつながる。文書のほか、コードの import・パス、表の列の番号、評価のシナリオも含む |
-| 16 | 文章 | 1 文 1 事柄、指示に目的が添えてある、書き手の造語が無い |
+| 1 | Purpose and scope | The opening shows what the skill is for and what it can do. If there is a boundary that is easy to cross, the opening also shows what the skill does not cover. In situations the procedure does not cover, the agent can choose behavior from the purpose |
+| 2 | Generalization | The skill works outside the situations it describes. It has no specific names, events, or records of origin. Its sentences state purposes drawn from events. People, meetings, and organizations are written as roles. The mapping from roles to current owners is in the repository's or project's documents. Records of origin and events are outside the skill |
+| 3 | Degree of constraint | Conditions that make the agent's work easier remain: the name and shape of output that others read, the authoritative sources, and pitfalls known to occur. What the agent should decide is left to it: tool choice and options, working folder names, reading order, counts and lengths. The skill states purposes and the state to satisfy, not means. The skill states how its deliverables are written as a policy about what the reader should be able to take away. The exceptions are an explicitly specified output format and output that others read. Quoted phrases are only those whose exact characters matter, and none is a template to copy. A prohibition does not repeat what a purpose and policy already convey. Prohibitions are used only for what must be avoided |
+| 4 | Needless sentences | Without any sentence or phrase, behavior would change. The skill does not repeat what the environment already decides (instruction files, rules, user instructions) or what agents do anyway |
+| 5 | Starting conditions | A skill that needs prerequisites states them as conditions. The work of preparing them is not in the procedure. The behavior when a prerequisite is missing is clear |
+| 6 | Choice of agents | The skill does not specify the type, number, or model of subagents or agents in other runtimes. It states criteria for choosing. Quality rules such as getting an independent review stay, together with their purpose |
+| 7 | Handing over context | What is shared with the agents the skill calls is separated from what is withheld so that those agents find it independently. Shared items are handed over once |
+| 8 | Guidance on behavior and environment | SKILL.md describes behavior. It points to environment documents for environment rules. For how to use tools, it points to the environment's tool guide (a document that collects how to use tools in one place) if one exists. Other repositories, tools, and documents are referred to by role, not by name. The same fact does not appear twice within the skill or between the skill and environment documents |
+| 9 | Freshness of facts | The environment facts the skill states (locations, tool behavior, file names, paths of examples) match the current documents, tools, code, and folders. The body has no text about a transition period or a flow that is no longer used |
+| 10 | Consistency between skills | Several skills do not copy the same rule. One place is authoritative and the others point to it. For skills that run in sequence, the prerequisites and outputs fit together |
+| 11 | Loading weight | SKILL.md, which is read every time, holds only what every situation needs. Details needed only in some situations are in references, and the skill says when to read each reference |
+| 12 | Execution environment | The skill works as written in every runtime it is meant for. It does not depend on a specific tool's name, on how the skill is loaded, or on material that exists only on one PC. It has no secrets |
+| 13 | Irreversible operations | Operations that delete, overwrite, or edit in place affect only the agent's own work. They do not affect shared things (a staging place that other sessions also use, originals, files that people edited) |
+| 14 | How the skill gets invoked | The description states, as situations, when to use the skill, when not to use it, and how it divides work with neighboring skills. It does not contradict the body. Example phrasings of requests are added only as far as they help choose the skill by filling in situations. The skill works whether the caller is a person, an automated mechanism, or another agent |
+| 15 | Reference links | After a rewrite, both the places that refer to this skill (referrers) and the places this skill refers to (referents) still connect. The links include documents, code imports and paths, column numbers in tables, and evaluation scenarios |
+| 16 | Wording | Each sentence has one point. Each instruction has its purpose. The skill has no names coined by the writer |
 
-## 決まりの保ち方
+## Preserving the rules
 
-書き直すときは、元の決まりが失われていないことを示せるよう、書き直す前に、元の決まりのそれぞれを残す・移す（移し先）・消す（理由）に振り分け、書き直した後に元との差分で確かめる。点検だけのときは、振り分けは行わず、一般化しても落としてはいけない決まりを、元の決まりの行き先の案とともに返す。消してよいのは観点 4 に当たる文、移し先にすでに同じことがある文、今のツールやフォルダと合わなくなった事実だけだ。消してよいかに迷ったら残す。
+Before a rewrite, sort each of the original rules into keep, move (with the destination), or delete (with the reason), so that you can show that no rule is lost. After the rewrite, check against the original. For a review only, do not sort. Return the rules that must not be dropped when generalizing, with proposed destinations. Delete only sentences that match checkpoint 4, sentences whose same content already exists at the destination, and facts that no longer match the current tools or folders. When unsure whether to delete, keep the sentence.
 
-決まりどうしが食い違い、後の決定（日付の新しい指示や合意）や一次の資料（決まりを定めた原典）で判断がつかないときは、どちらを正とするかを定めずに、両方を並べて呼び出し元に返す。後の決定で判断がつく食い違いは新しい決定に合わせ、何で判断したかを所見に記載する。新しい決定に合わせることは、決まりの中身を変えることに当たらない。
+When rules conflict, a later decision (a newer instruction or agreement) or a primary source (the original document that set the rule) may settle the conflict. If neither can settle it, do not decide which rule is authoritative. Return both rules to the caller, side by side. When a later decision can settle the conflict, follow the newer decision and record in the findings what you used to decide. Following a newer decision does not change the content of the rule.
 
-## 書き直しと委任
+## Rewriting and delegation
 
-書き直したときと、複数のスキルを任せるときは、`references/skill-checkpoints.md` の末尾の「書き直したあとの読み直し」と「複数のスキルを任せるとき」を読む。
+When you have rewritten a skill, or when you delegate several skills, read "Re-reading after a rewrite" and "Delegating several skills" at the end of `references/skill-checkpoints.md`.
 
-## 返すもの
+## What to return
 
-- 判定（修正しなくてよい／一部を修正する／作り直す）、観点ごとの所見（当たらない観点はその理由）、修正する方針
-- 残すべき決まり（一般化しても落としてはいけない条件・基準・例外）と、元の決まりの行き先
-- 参照のつながり（参照元・参照先）
-- 呼び出し元が判断すること（判断がつかない決まりの食い違いなど）と、観点の候補（点検の途中で、表に無いがほかのスキルにも当たりそうだと気づいた観点。気づいたときに出す）
-- 書き直したときは、書き直したスキルと移し先の変更、確かめたこと・確かめていないこと
+- The verdict (no fix needed / partial fix / rebuild), findings per checkpoint (the reason for each checkpoint that does not apply), and the fix plan
+- The rules to keep (conditions, criteria, and exceptions that must not be lost when generalizing) and where each original rule goes
+- Reference links (referrers and referents)
+- What the caller must decide (such as conflicts between rules that cannot be settled)
+- Candidate checkpoints: a checkpoint that is not in the table and seems to apply to other skills too. Report it when you notice it during the review
+- After a rewrite: the rewritten skill and the changes at the destinations, what you verified, and what you did not verify
 
-## 語の扱い
+## Handling terms
 
-点検や書き直しで言い換えたくなった語でも、スキルを置く環境の決まりの文書で定義され、人も使っている語は、ほかの文書が参照する節の名前や人の呼び方とそろうよう、そのまま使う。
+When a term seems worth rewording but the environment's documents define it and people use it, keep it as it is. Then it matches the section names that other documents refer to and the way people call it.

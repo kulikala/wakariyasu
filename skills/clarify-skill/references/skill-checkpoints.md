@@ -1,283 +1,287 @@
-# 点検の観点：確認方法と修正方法
+# Checkpoints: how to check and how to fix
 
-SKILL.md の観点の表の 1 つずつについて、どこを見て見つけるか（確認方法）と、どう書き直すか（修正方法）を記述する。修正方法は目安で、スキルの性質に合わせて選べる。1 つの箇所が 2 つ以上の観点に当たるときは、所見に両方の番号を記載する（例：コマンドを書き写した所は、縛りすぎとして 3、置き場所として 8）。重なりの観点は、1 つのスキルの中の文の重なりを 4、事実の置き場所を 8、スキルの間の重なりを 10 で見る。
+For each checkpoint in the table in SKILL.md, this reference describes where to look to find a problem (how to check) and how to rewrite (how to fix). The fixes are suggestions. Choose according to the nature of the skill. When one place matches two or more checkpoints, record both numbers in the findings (for example, a copied command is over-constraining under 3 and misplaced under 8). For overlaps, use 4 for repeated sentences within one skill, 8 for where a fact is placed, and 10 for overlaps between skills.
 
-## 1. 目的と受け持つ範囲
+## 1. Purpose and scope
 
-### 確認方法
+### How to check
 
-- SKILL.md の冒頭を読めば、このスキルが何をできるのかが分かるか
-- 本文が番号付きの手順だけでできていないか。手順のうち、別の関心（成果物を渡す、決まりの文書を育てる、前提をそろえる）が混ざっていないか
-- 手順に無い場面（対象が 1 件だけ、一部だけをやり直す、前提の一部が無い）で、どう振る舞うかを目的から判断できるか
-- 点検の一覧のように、手順ではなく基準を並べるスキルでは、どの場面でどの基準を当てるかが分かるか
+- Does the opening of SKILL.md show what the skill can do?
+- Is the body only a numbered procedure? Does the procedure mix in other concerns (handing over deliverables, maintaining rule documents, preparing prerequisites)?
+- In situations the procedure does not cover (only one target, redoing only a part, a missing prerequisite), can the agent decide how to behave from the purpose?
+- For a skill that lists criteria instead of a procedure, is it clear which criteria apply in which situation?
 
-### 修正方法
+### How to fix
 
-- 冒頭に目的（何のために、何ができればよいか）と、スキルができることを記述する。受け持たないことは、読んだエージェントが越えそうな境目（隣のスキルの仕事など）だけを記述し、受け持つスキルの名前を添える
-- 順序に意味がある所だけを手順に残し、ほかは方針（何を満たせばよいか）に書き直す
-- ほかのスキルを順に呼ぶだけの手順書になっているスキルは、全体の目的と、各スキルへ渡すもの・受け取るものを記述し、呼ぶ順の細部は呼ばれる側に任せる
-- 別の関心は受け持つスキルや決まりの文書へ移し、元のスキルからは指すだけにする
+- Write the purpose (what the skill is for and what it should achieve) and what the skill can do in the opening. For what the skill does not cover, write only the boundaries an agent reading it is likely to cross (a neighboring skill's work) and add the name of the skill that covers it.
+- Keep a procedure only where the order matters. Rewrite the rest as policy (what to satisfy).
+- If a skill is only a procedure that calls other skills in turn, write the overall purpose and what it hands to and receives from each skill, and leave the details of the order to the skills being called.
+- Move other concerns to the skill or rule document that covers them, and only point to them from the original skill.
 
-## 2. 一般化
+## 2. Generalization
 
-### 確認方法
+### How to check
 
-- 具体名（人・会議・組織・案件・業務 ID・日付・特定のファイル）が、指示の文に入っていないか。具体名で記述した指示は、担当や相手が変わったときや、別の対象で同じことをするときに当てはまらない
-- 出来事の記録（何が起きたか、エージェントが作業で何を見つけたか）が、指示の理由や例として記述されていないか
-- 出所の記録（いつ・誰の指摘や決定から来た決まりか、指摘の原文）が記載されていないか
-- 過去の発言を「」で引いて例にしていないか（エージェントは引いた発言に似た場面だけを見つけようとする）
-- 例が 1 つだけで、その例の場面にしか当てはまらない書き方になっていないか
-- 複数の環境で使うスキルに、1 つのチームやプロジェクトの置き場所・業務・人の例が入っていないか
+- Do specific names (people, meetings, organizations, cases, domain identifiers, dates, particular files) appear in the instruction sentences? An instruction written with specific names does not apply when the owner or counterpart changes, or when the same thing is done for another target.
+- Are records of events (what happened, what the agent found during work) written as the reason for or an example of an instruction?
+- Are records of origin written (when, and from whose feedback or decision a rule came; the original wording of feedback)?
+- Are past remarks quoted in quotation marks as examples? An agent looks only for situations that resemble the quoted remark.
+- Is there only one example, so that the wording fits only that example's situation?
+- Does a skill used in several environments contain the placement, domain, or people examples of one team or project?
 
-### 修正方法
+### How to fix
 
-- 出来事から、避けたいことと満たしたいことを取り出し、目的の文にする。決まりの中身は残し、出所は外す
-- 人・会議・組織は役割で記述する（判断する人、成果物を確かめていただく相手、成果物を作る側、など）。役割と今の担当の対応は、スキルを置くリポジトリやプロジェクトの文書の 1 か所に置く
-- 具体名が要るのは、呼び出しの約束になっている名前（スキル名、ツールの項目、ほかの人やツールが読む見出し・名前の決まり）だけ
-- 出来事と出所の記録は、スキルの外（変更履歴・設計の資料・指摘の記録）に置く。消す前に、その記録が外にあるかを確かめ、無ければ外へ移す
-- 例は一般的な文を読んでも取り違えやすい所にだけ残し、具体名を外した例であることが分かる形で記述する
-- 複数の環境で使うスキルのうち 1 つのチームやプロジェクトに固有の部分は、そのチームやプロジェクトのスキルや文書に移し、複数の環境で使うスキルからは、環境の決まりがあればそれに従うことが分かるようにする
+- From each event, extract what to avoid and what to achieve, and write that as a purpose sentence. Keep the content of the rule and drop its origin.
+- Write people, meetings, and organizations as roles (the person who decides, the party who reviews the deliverable, the side that produces the deliverable). Put the mapping from roles to current owners in one place in the documents of the repository or project that holds the skill.
+- Keep a specific name only where it is part of a calling convention: skill names, tool entries, and headings or naming rules that other people or tools read.
+- Put records of events and origins outside the skill (change history, design documents, feedback records). Before deleting one, check whether the record exists outside; if not, move it out.
+- Keep an example only where a general sentence is easy to misread, and write it so that it is clearly an example with specific names removed.
+- For a skill used in several environments, move the parts specific to one team or project into that team's or project's skill or documents. In the multi-environment skill, make clear that the environment's rules apply when they exist.
 
-## 3. 拘束の度合い
+## 3. Degree of constraint
 
-### 確認方法
+### How to check
 
-- コマンドの行・オプション・解像度・ツールの呼び方・実行ファイルのパスが記述されていないか（ツールの定義の置き場所を定めた規則がリポジトリにあれば、それに従う）。リポジトリにツールの書き写しを機械で探す検査があっても、検査が実行ファイルの場所しか見ないなら、書き写したオプションや呼び方は自分で探す
-- 作業フォルダの名前、ファイルを読む順、使うツールの選択が決め打ちになっていないか
-- 件数・文の数・字数・回数のような数値の目安で、手段を縛っていないか。数値は、ほかの人やツールが読む形の決まりのように、外すと困るときだけ残す。繰り返す作業の止めどころの目安のように、エージェントが手間をかけすぎないための数値は、目的を添えれば残せる
-- 出力の表の列や見出しの形を、ほかが読まないのに定めていないか
-- スキルが作る成果物の書き方を縛る指示が入っていないか。文書のどこに何を置くか、どう書き出すか、どの順序で並べるかを定める文は、作業の指示になり、成果物ごとに合う構成をエージェントが選択できなくなる。書き方を定めてよいのは、ユーザーやスキルの依頼元が出力の形式をはっきり指定しているときと、ほかの人やツールがその形式で読むときだけ
-- 禁止の形の文が、目的と方針を伝えれば済む所に使われていないか。禁止が要るのは、破ると戻せない・ほかの人の作業や原本を巻き込む・人から受けた指摘で禁じられた、のように、どうしても避けるべきことだけ。禁止は記述した場面の外で何をすればよいかを伝えず、禁じた語の周りの振る舞いまで縮める
-- ツールが計算して決定する規則を、本文で説明し直していないか（ツールが変わると食い違う）
-- 目的ではなく手段（使う命令、操作の順、対象の特定のしかた）を指定していないか。目的が記述されていないと、その手段が使えない場面や、もっと良い手段がある場面で判断できない
-- 「」で囲んだ言い回し（依頼の文例、出力の文の型、言い換えの前と後の対、場面の型）が、エージェントがそのまま写したり、それに合わせて振る舞いを狭めたりする型になっていないか。「」が要るのは文字そのものに意味があるときだけで、入力の中から照合する語（決まりの文書で定義された語）、ほかの人やツールがその名前で読む出力（見出し・列の名前）、文言の一致が決まりになっているものが当たる。description で場面を補う依頼の言い方の例は、観点 14 で見る
-- 括弧の中や「など」で例を並べていないか。例を並べると、読んだエージェントは並べた項目を対象のすべてと受け取り、並べていない項目には当てはめなくなる。項目を並べてよいのは、並べた項目で対象がすべてそろい、どの項目を含むかそのものが規定になっているときだけ
-- 決め打ちを外すと困るもの（ほかの人・ツール・スキルが読む出力の名前と形、正とする資料、起きると分かっている落とし穴）を見分けたか
+- Are command lines, options, resolutions, tool call forms, or executable paths written? (If the repository has a rule on where tool definitions are placed, follow it.) The repository may have a mechanical check for copied tool usage. If that check looks only at executable locations, look for copied options and call forms yourself.
+- Are working folder names, the order of reading files, or the choice of tool fixed?
+- Do numeric targets (counts, number of sentences, characters, repetitions) constrain the means? Keep a number only when removing it causes trouble, such as a format that other people or tools read. A number that keeps the agent from spending too much effort, such as a stopping point for a repeated task, can stay if its purpose is attached.
+- Is the shape of output tables, columns, or headings fixed even though nobody reads it?
+- Does the skill include instructions that constrain how its deliverables are written? A sentence that fixes where things go in a document, how it opens, or in what order things are arranged becomes a work instruction. It stops the agent from choosing the structure that suits each deliverable. Fixing the form is acceptable only when the user or the party requesting the skill has explicitly specified an output format, or when other people or tools read the deliverable in that format.
+- Is a prohibition used where a purpose and policy would do? A prohibition is needed only for what must be avoided: what cannot be undone if broken, what involves other people's work or originals, or what a person's feedback prohibited. A prohibition does not say what to do outside the described situation. It also narrows behavior even around the prohibited words.
+- Does the body re-explain rules that a tool computes and decides? (They will diverge when the tool changes.)
+- Does the skill specify means (the command to use, the order of operations, how to identify the target) instead of purpose? Without the purpose, the agent cannot decide in situations where that means is unavailable or a better means exists.
+- Are quoted phrases (sample requests, output sentence templates, before-and-after rewording pairs, situation templates) templates that the agent copies as they are, or that narrow its behavior to match? Quotation marks are needed only when the exact characters carry meaning. That applies to words matched against input (terms defined in the rule documents), output that other people or tools read under that name (headings, column names), and wording whose exact match is itself a rule. Check example phrasings of requests that fill in situations in a description under checkpoint 14.
+- Are examples listed in parentheses or with "etc."? When examples are listed, the agent takes the listed items as all of the target and does not apply the rule to items not listed. List items only when the listed items cover the whole target and which items are included is itself the rule.
+- Did you separate what must not be removed from fixed choices (the name and shape of output that other people, tools, and skills read; authoritative sources; pitfalls known to occur)?
 
-### 修正方法
+### How to fix
 
-- 環境にツールの案内（ツールの使い方を 1 か所にまとめた文書）があるときは、ツールの使い方はその案内を指す。案内に項目が無いツールは、項目を足すことを修正する方針に記載する。書き直しを頼まれていて、案内が書き直しを受け持つリポジトリにあれば、案内の書き方に沿って項目を足す。ほかのリポジトリにあれば、足す案を所見に記載する（観点 15 の参照元と同じ扱い）。案内が無い環境では、ツールの使い方を置く場所を、環境の文書に合わせて方針に記載する。スキルに同梱したツール（スキルの `scripts/`）も項目にし、スキル（references を含む）には使い方を写さない
-- ツールを動かすことが役目のスキルでは、ツールの使い方を移した後の SKILL.md に、いつ・何のために動かすか、業務で決まる引数、結果の読み方（警告ごとに誰に何を返すか）、ツールの外で判断することを残す
-- ツールが計算する規則は、ツールの項目かツールのコードを正とし、スキルからはツールが決定することだけが分かるようにする
-- エージェントが楽になる条件（決まった出力の名前と形、正とする資料の在りか、起きると分かっている落とし穴）は残す。落とし穴は、何をすると何が起きるかを、避けたいことと一緒に記述する
-- エージェントが判断すべきことは、選べる幅として記述するか、満たすべき状態だけを記述する
-- 手段の指定は、その手段で満たしたい目的と状態に書き直し、手段は任せる。手段を選ぶのに必要な事実（共有されているもの、変わりうるもの）は判断の材料として残す
-- 成果物の書き方を縛る指示は、読み手が成果物から何を読み取れればよいかという方針に書き直し、どこに何を置くかはエージェントに任せる
-- 「」の言い回しは、伝えたい意図を地の文で記述する。文字そのものに意味がある「」は残す
-- 例の列挙は、項目を満たす条件や性質の記述に置き換える
-- 数値の目安は何を満たせばよいか（読み手が迷わない量、要点が分かる長さ）の文に置き換える
-- 禁止の形の文は、禁止で避けたかったことを目的として記述し、何をすればよいかの方針にする。どうしても避けるべきことの禁止は理由と一緒に残す
+- When the environment has a tool guide (a document that collects how to use tools in one place), point to the guide for how to use tools. For a tool with no entry in the guide, include adding an entry in the fix plan.
+  - If you were asked to rewrite and the guide is in the repository you are responsible for rewriting, add the entry following the guide's style.
+  - If the guide is in another repository, record a proposed addition in the findings. Treat it the same as referrers under checkpoint 15.
+  - In an environment without a guide, include in the plan where to put tool usage, following the environment's documents.
+  - Tools bundled with the skill (the skill's `scripts/`) also get an entry. The skill, including its references, does not copy their usage.
+- For a skill whose job is to run a tool, after moving tool usage out, keep in SKILL.md when and why to run the tool, the arguments that depend on the skill's domain, how to read the results (who gets what back for each warning), and what is decided outside the tool.
+- For rules that a tool computes, treat the tool's entry or code as authoritative, and make the skill show only that the tool decides them.
+- Keep the conditions that make the agent's work easier (the name and shape of fixed output, where authoritative sources are, pitfalls known to occur). For a pitfall, state which action leads to which result, together with what is to be avoided.
+- Write what the agent should decide as a range of choices, or write only the state to satisfy.
+- Rewrite a specified means as the purpose and state it should satisfy, and leave the means to the agent. Keep the facts needed to choose a means (what is shared, what can change) as material for judgment.
+- Rewrite instructions that constrain how a deliverable is written as a policy about what the reader should be able to take away from it, and leave to the agent where to put what.
+- For quoted phrases, write the intended meaning in plain sentences. Keep quotation marks where the exact characters carry meaning.
+- Replace a list of examples with a description of the condition or property that items must satisfy.
+- Replace numeric targets with a sentence about what to satisfy (an amount that does not leave the reader unsure, a length at which the point is clear).
+- Rewrite a prohibition as the purpose the prohibition was meant to serve, stated as a policy of what to do. Keep prohibitions on what must be avoided, with the reason.
 
-## 4. 要らない文
+## 4. Needless sentences
 
-### 確認方法
+### How to check
 
-- 1 文ずつ、その文が無かったら読んだエージェントの振る舞いが変わるかを問う
-- 環境の決まり（リポジトリやプロジェクトの指示ファイル・規則・利用者の指示・記憶）がすでに定めていること（push の可否、一時ファイルの置き場所、作業用のブランチ、返答の言語など）を繰り返していないか
-- エージェントがふつうにすること（全文を読む、確かめた結果を報告する）を指示にしていないか
-- 同じことをスキルの中の 2 か所以上に記述していないか。一緒に読み込まれるファイルどうし（SKILL.md と references、スキルと規則）も見る
-- 文の中の句も同じように問う。理由や評価を添えた句のうち、消しても振る舞いが変わらない飾りの句が無いか。判断を変える理由（何を避けるためか）は目的なので残す
+- For each sentence, ask whether the agent's behavior would change without it.
+- Does it repeat what the environment's rules (instruction files, rules, user instructions, memory of the repository or project) already decide, such as whether to push, where temporary files go, working branches, or the language of replies?
+- Does it turn what the agent does anyway (reading the whole file, reporting the result of what it checked) into an instruction?
+- Is the same thing written in two or more places within the skill? Also check files that are loaded together (SKILL.md and references, skill and rules).
+- Ask the same question of phrases within sentences. Are there decorative phrases, giving a reason or an evaluation, that would not change behavior if removed? A reason that changes a judgment (what it is meant to avoid) is a purpose, so keep it.
 
-### 修正方法
+### How to fix
 
-- 振る舞いが変わらない文と句は消す。環境の決まりを繰り返している文は消し、スキルに固有の例外だけを残す
-- 消すと振る舞いが変わる文でも、その目的がほかの文に含まれていれば、ほかの文にまとめる
+- Delete sentences and phrases that would not change behavior. Delete sentences that repeat environment rules, and keep only the exceptions specific to the skill.
+- When a sentence would change behavior if removed but its purpose is already contained in another sentence, merge it into the other sentence.
 
-## 5. 始める条件
+## 5. Starting conditions
 
-### 確認方法
+### How to check
 
-- 手順の最初の数ステップが対象を決定する・前提の成果物を作る作業になっていないか
-- その作業がほかのスキルの受け持ちと重なっていないか
-- 材料を探して読むことが、そのスキルの仕事そのものか、前提をそろえる作業かを分けたか（議事録を作るスキルにとって文字起こしを探すことは仕事のうち。点検のスキルにとって、点検する成果物がまだ無いことは前提の欠け）
+- Do the first few steps of the procedure decide the target or produce a prerequisite deliverable?
+- Does that work overlap with what another skill covers?
+- Did you separate finding and reading materials as the skill's own job from preparing prerequisites? (For a skill that writes minutes, finding the transcript is part of the job. For a review skill, the absence of a deliverable to review is a missing prerequisite.)
 
-### 修正方法
+### How to fix
 
-- 前提が必要なスキルでは、そろっているべきもの（対象・前提の成果物・権限）を状態として記述する。前提がほかの節の 1 文で伝わるなら、節を立てなくてよい。前提が無いスキルには記述しない
-- 欠けていたときの振る舞い（呼び出し元に返す、そろえる側のスキルの名前を挙げる、そろえられる分だけ進めて欠けを報告する、など）を記述する
-- 条件がそろっているかを確かめる手間は残してよい（確かめるのは安く、確かめずに進むと高くつくため）。そろえる作業は呼び出す側に任せる
+- For a skill that needs prerequisites, state what should be in place (the target, prerequisite deliverables, permissions) as states. If one sentence elsewhere conveys the prerequisite, no section is needed. For a skill without prerequisites, write nothing.
+- State the behavior when something is missing (return to the caller, name the skill that prepares it, proceed as far as what can be prepared and report what is missing, and so on).
+- Keep the effort of checking that the conditions are met (checking is cheap, and proceeding without checking is costly). Leave the work of preparing them to the caller.
 
-## 6. エージェントの選択
+## 6. Choice of agents
 
-### 確認方法
+### How to check
 
-- サブエージェントの種類・分け方・人数・モデル・別の実行環境のエージェントを使うかを指定していないか
-- 指定が環境の選択（何人で、どのモデルで）なのか、品質の決まり（独立した目を 2 つ通す、作った人と別の目で見る）なのかを分けたか
+- Does the skill specify the kind of subagent, how to split work, the number, the model, or whether to use agents in another runtime?
+- Did you tell apart whether a specification is a choice about the environment (how many, which model) or a quality rule (get two independent reviews, have someone other than the author look)?
 
-### 修正方法
+### How to fix
 
-- 分け方・人数・モデル・別の実行環境のエージェントを使うかは、呼び出したエージェントが環境と量で判断すると記述する
-- 選ぶための目安だけを記述する。目安は、量（対象の数・資料の長さ）、独立した目が要るか（点検・検証）、重い推論が要るか、使える環境、利用枠
-- 品質の決まりは残し、何のための決まりか（作った文脈に引きずられない点検にする、など）を添える
-- 起きると分かっている落とし穴は残す（例：書き込めない環境で動くエージェントには、結果を返事の本文に出させる）
+- Write that the agent that makes the call decides how to split work, how many agents, which model, and whether to use agents in another runtime, based on the environment and the amount of work.
+- Write only the criteria for choosing. The criteria cover the amount (number of targets, length of materials), whether an independent view is needed (review, verification), whether heavy reasoning is needed, the available runtime, and the usage quota.
+- Keep quality rules and add what each is for (making a review that is not pulled along by the context in which the work was done, for example).
+- Keep pitfalls known to occur (for example, an agent that runs in an environment where it cannot write files should return its result in the body of its reply).
 
-## 7. 文脈の受け渡し
+## 7. Handing over context
 
-### 確認方法
+### How to check
 
-- 呼ぶエージェントに何も渡さないと定め、各エージェントが同じ資料を探し直す作りになっていないか
-- 逆に、作った側の結論・期待する答えまで渡して、独立に確かめる意味を消していないか
-- サブエージェントを呼ばないスキルでは、この観点は当たらない
+- Does the skill hand nothing to the agents it calls, so that each agent searches for the same materials again?
+- Conversely, does it hand over the author's conclusion or the expected answer, which removes the point of checking independently?
+- For a skill that does not call subagents, this checkpoint does not apply.
 
-### 修正方法
+### How to fix
 
-- 渡すことを 2 つに分けて記述する
-  - 共有事項：目的、正とするものの在りか、当てる決まり、対象の一覧、用語の扱い、書き込んでよい場所、出力の形。1 つのファイルにして、各エージェントに場所を渡せる
-  - 渡さないこと：作った側の判断・前の結論・期待する指摘など、呼ばれたエージェントに独立に見つけてほしいこと。渡さない理由も記述する
-- 前の点検で足した観点は結論ではなく観点として渡す
+- Write what is handed over in two groups.
+  - Shared items: the purpose, where the authoritative material is, the rules to apply, the list of targets, how to treat terms, where writing is allowed, and the form of output. Put them in one file and give each agent its location.
+  - What is withheld: the author's judgment, earlier conclusions, expected findings, anything the called agent should find independently. Write why it is withheld.
+- Hand over a checkpoint added in an earlier review as a checkpoint, not as a conclusion.
 
-## 8. 振る舞いと環境の案内
+## 8. Guidance on behavior and environment
 
-### 確認方法
+### How to check
 
-- フォルダの構成、ファイルの名前の決まり、置き場所の表が SKILL.md と環境の文書の両方、または同じスキルの中の 2 か所に記述されていないか
-- SKILL.md の文のうち、エージェントの振る舞い（何を判断し、何を作るか）ではなく、環境の説明（どこに何があるか）の文がどれだけあるか
-- スキルの中で定義した語を、ほかのスキルも使っていないか（使っているなら、定義の置き場所は環境の文書のほうが合う）
-- 作り手向けの保守の手順（ツールの修正のしかた、作り直し方）が、使うたびに読む指示に混ざっていないか
-- リポジトリ・ツール・文書を名前やパスで名指ししていないか。名前が変わると、スキルまで探して修正することになる
+- Are the folder structure, file naming rules, or a table of locations written in both SKILL.md and environment documents, or in two places within the same skill?
+- How many of the sentences in SKILL.md explain the environment (what is where) instead of the agent's behavior (what to decide and what to make)?
+- Do other skills also use a term defined within this skill? (If so, the environment's documents are a better place for the definition.)
+- Are maintenance procedures for the maker (how to fix or rebuild a tool) mixed into instructions that are read every time the skill is used?
+- Are repositories, tools, or documents named or given by path? When a name changes, someone has to search the skills and fix them.
 
-### 修正方法
+### How to fix
 
-- 置き場所の目安は、記述することと置き場所を並べた次の対応のとおり。
+- The following table shows where each kind of content goes.
 
-  | 記述すること | 置き場所 |
+  | What it describes | Where it goes |
   |---|---|
-  | このスキルを使うエージェントの振る舞い（目的・範囲・前提・方針など） | SKILL.md |
-  | このスキルを使うときだけ必要な詳しい型・観点・見本の在りか | スキルの `references/` |
-  | 2 つ以上のスキルが正として参照する決まり | 決まりを作る成果物を受け持つスキルの `references/` に 1 つ置き、ほかは指す。どのスキルの受け持ちとも言えなければ、リポジトリやプロジェクトの文書 |
-  | 環境の決まり（フォルダ・名前・作る順・チームやプロジェクトの語の定義） | スキルを置くリポジトリやプロジェクトの文書 |
-  | 毎回のセッションで守らせたい書き方・決まり | リポジトリの規則やプロジェクトの指示ファイルなど、セッションの始めに読み込まれる場所 |
-  | ツールの使い方・呼び方 | 環境にツールの案内があれば、その項目（観点 3）。無ければ環境の文書 |
-  | ツールのコード | `scripts/`（スキルの中か、リポジトリの `scripts/`） |
-  | 作り手向けの保守の手順、決定事項と理由、退けた案 | スキルの中の README・設計の文書（使うときには読まない場所） |
-  | 決まりの出所（人から受けた指摘の原文と日付、定めた経緯）、出来事の記録 | スキルの外の記録（変更履歴・設計の資料・指摘の記録） |
+  | Behavior of the agent that uses the skill (purpose, scope, prerequisites, policy) | SKILL.md |
+  | Detailed forms, checkpoints, and where examples are, needed only when using this skill | The skill's `references/` |
+  | A rule that two or more skills treat as authoritative | One place in the `references/` of the skill that covers the deliverable the rule produces, with the others pointing to it. If no skill clearly covers it, the documents of the repository or project |
+  | Environment rules (folders, names, order of production, definitions of terms of the team or project) | The documents of the repository or project that holds the skill |
+  | Ways of writing and rules to keep in every session | A place loaded at the start of a session, such as the repository's rules or the project's instruction file |
+  | How to use and call tools | The environment's tool guide entry if one exists (checkpoint 3); otherwise the environment's documents |
+  | Tool code | `scripts/` (in the skill, or in the repository's `scripts/`) |
+  | Maintenance procedures for the maker, decisions and their reasons, rejected options | A README or design document in the skill (a place not read when the skill is used) |
+  | Origins of rules (the original wording and date of a person's feedback, how a rule was decided) and records of events | Records outside the skill (change history, design documents, feedback records) |
 
-- 移したら、SKILL.md からは移し先を指す
-- スキルとリポジトリやプロジェクトの文書の中身が食い違うときの扱いは、SKILL.md の「決まりの保ち方」の節のとおり
-- 節はスキルの中身に合わせて立てる。目的があれば目的を、前提があれば始める条件を記述する、というように、記述することがある節だけを立てる。決まった型にそろえる必要はなく、型を埋めるために立てた節や文は観点 4 に当たる
-- 名指しは役割で指す形にする（スキルを置くリポジトリ、そのリポジトリが従う上位の文書、環境のツールの案内）。同じリポジトリの中の文書は相対の場所で指せる。名指しが要るのは、役割では辿れないときだけ
+- After moving something, point to its destination from SKILL.md.
+- When the content of the skill and the documents of the repository or project conflict, handle it as described in the "Preserving the rules" section of SKILL.md.
+- Set up sections to fit the content of the skill. Create only sections that have something to write: a purpose section if there is a purpose, a starting conditions section if there are prerequisites. There is no need to follow a fixed template; a section or sentence created to fill a template matches checkpoint 4.
+- Replace named references with references by role (the repository that holds the skill, the higher-level document that the repository follows, the environment's tool guide). A document in the same repository can be pointed to by relative location. Use a name only when the role does not lead to the target.
 
-## 9. 事実の鮮度
+## 9. Freshness of facts
 
-### 確認方法
+### How to check
 
-- 置き場所・ファイル名・ツールの動き・ツールが読む名前の書き方を、今のフォルダ・文書・ツールのコードで 1 つずつ確かめる。1 か所にしか記述されていない古い事実は、重なりを探しても見つからない
-- 移行期の記述（いつから変わった、前はこうだった、古い案件ではこうする）、一度だけの移し替えの手順、使わなくなった流れが本体に残っていないか
-- 新旧 2 つの流れが並ぶスキルで、今主に使われている流れが本体として記述されているか（作られた成果物の数や最近の使われ方で確かめる）
-- 見本として指すファイルが、今もそのパスにあり、今の決まりに合っているか
-- 動かないツール・無くなったツールを指していないか
-- 並べた項目や手順の数を本文に書いていないか。項目を足し引きしたときに、数だけが古くなる
+- Check locations, file names, tool behavior, and the way of writing names that tools read, one by one, against the current folders, documents, and tool code. An outdated fact written in only one place will not be found by looking for overlaps.
+- Does the body keep text about a transition period (since when it changed, how it used to be, what to do for old cases), one-time migration steps, or flows no longer used?
+- In a skill with an old flow and a new flow side by side, is the flow mainly used now written as the body? (Check by the number of deliverables made and recent use.)
+- Does a file pointed to as an example still exist at that path, and does it match current rules?
+- Does the skill point to a tool that does not work or no longer exists?
+- Does the body state the number of listed items or steps? When items are added or removed, only the number goes stale.
 
-### 修正方法
+### How to fix
 
-- 古い事実は今の事実に修正し、何で確かめたかを所見に記載する
-- 並べた項目や手順の数は消し、数を使わずに並びを指す。上限や回数のように数そのものが決まりのときだけ残す
-- 移行が済んだ記述は消す。移行の途中なら、今の流れを本体にし、古い流れは、古い成果物を扱うときだけ読むと場面を限って references に移す
-- 使わなくなった手順を比べるためだけに残すなら、設計の文書か references の末尾に、使わないことが分かる形で置く
-- 見本は今の決まりに合う最新の成果物を指すか、探し方（前の回の同じ資料、など）で指す
+- Correct outdated facts to current facts, and record in the findings what you checked them against.
+- Delete the number of listed items or steps and point to the list without a number. Keep a number only when the number itself is the rule, such as a limit or a count of times.
+- Delete text about a migration that is finished. If the migration is in progress, make the current flow the body and move the old flow to references, limited to when old deliverables are handled.
+- If an unused procedure is kept only for comparison, put it in a design document or at the end of a reference, in a form that shows it is not used.
+- Point to the latest deliverable that matches current rules as the example, or point by how to find it (for example, the previous round of the same material).
 
-## 10. スキルどうしの整合
+## 10. Consistency between skills
 
-### 確認方法
+### How to check
 
-- 同じ決まり（完了の判定、質問の文のそろえ方、渡し方など）を複数のスキルが記述していないか。記述していれば、言い換えのずれで食い違っていないか
-- 作る順に並んで分担するスキル（リポジトリの文書で、どのスキルが何を作るかが表などで決まっているもの）の間で、前のスキルの出力が、後のスキルの前提と合うか（後で作るものを前提にしていないか）
-- 同じツールの呼び方が複数のスキルに写されていないか
+- Do several skills describe the same rule (how to judge completion, how to align question sentences, how to hand over)? If so, have they diverged through differences in wording?
+- Among skills that divide work in order of production (where a repository document, such as a table, decides which skill produces what), does the earlier skill's output fit the later skill's prerequisites? Does any skill presuppose something produced later?
+- Is the same way of calling a tool copied into several skills?
 
-### 修正方法
+### How to fix
 
-- 決まりは 1 か所を正にし、ほかは指す（置き場所は観点 8 の表）
-- 食い違いの扱いは、SKILL.md の「決まりの保ち方」の節のとおり
-- 作る順の依存が逆なら、所見に記載し、どちらの順にするかを呼び出し元に返す
+- Make one place authoritative for each rule and point to it from the others (placement follows the table under checkpoint 8).
+- Handle conflicts as described in the "Preserving the rules" section of SKILL.md.
+- If the order of dependency is reversed, record it in the findings and return to the caller which order to use.
 
-## 11. 読み込む重さ
+## 11. Loading weight
 
-### 確認方法
+### How to check
 
-- SKILL.md の大きさと、どの場面でも必要な文の割合。ほかのスキルより大きければ、場面ごとの文が混ざっていないかを見る
-- references の 1 ファイルが大きすぎて、必要な所を読むために全部を読むことになっていないか
-- スキルがどの references をどの場面で読むかを記述しているか
+- The size of SKILL.md and the share of sentences needed in every situation. If it is larger than other skills, check whether situation-specific sentences are mixed in.
+- Is a single references file so large that reading the part you need means reading all of it?
+- Does the skill say which references to read in which situation?
 
-### 修正方法
+### How to fix
 
-- 場面ごとの詳しいこと（資料の種類ごとの基準、レビューを頼むときだけの決まり）を references に分け、SKILL.md からは、どの場面でどれを読むかが分かるようにする
-- 大きい references は場面や対象で分けるか、冒頭に目次と読み方を置く
+- Move detail specific to a situation (criteria per kind of material, rules needed only when requesting a review) into references, and make SKILL.md show which to read in which situation.
+- Split large references by situation or target, or put a table of contents and a reading guide at the top.
 
-## 12. 実行環境
+## 12. Execution environment
 
-### 確認方法
+### How to check
 
-- 想定する実行環境のどれでも記述されたとおりに動くか。特定のツールの名前・読み込み方（1 つのエージェントのツールにしか無い呼び方）に頼っていないか（スキルの書き方の決まりがあれば、それに従う）
-- 1 台の PC にしか無い資料（個人の記憶、その PC だけの設定）を出どころにしていないか。PC だけの値（接続先・ユーザーのパス・PC 名）を記述していないか
-- 秘密情報を記述していないか
-- フォルダ名と `name` が、環境のスキルの名前の付け方の決まり（あれば）に合うか
+- Does the skill work as written in every runtime it is meant for? Does it depend on a particular tool's name or on how it is loaded (a call form that exists only in one agent's tools)? (If the repository has rules for writing skills, follow them.)
+- Does it use material that exists on only one PC (personal memory, settings of that PC only) as a source? Does it state values that belong to one PC only (connection targets, user paths, PC names)?
+- Does it contain secrets?
+- Do the folder name and `name` match the environment's rules for naming skills (if any)?
 
-### 修正方法
+### How to fix
 
-- パスはスキルのフォルダからの相対で記述する。ほかのスキルは名前で指し、読み込み方は記述しない
-- 個人の資料に頼る決まりは、共有の場所に移すか、出どころから外す
+- Write paths relative to the skill's folder. Refer to other skills by name and do not describe how they are loaded.
+- Move a rule that relies on personal material to a shared place, or remove it from the sources.
 
-## 13. 戻せない操作
+## 13. Irreversible operations
 
-### 確認方法
+### How to check
 
-- 消す・上書きする・その場で書き換える操作が、自分の作業の分だけに当たるか。原本・人が編集した版・ほかのセッションの作業を巻き込みうるか
-- 共有されているもの（ほかのセッションも使う退避の場所など）で、ほかの作業によって変わりうるものに頼って対象を決定していないか
-- 安全策が、目的ではなく手段（使う命令や手順）で記述されていないか（観点 3）
-- 禁止や安全策が、残すべき決まりとして記述されているか、足りないか
+- Do operations that delete, overwrite, or edit in place affect only the agent's own work? Could they affect originals, versions people edited, or other sessions' work?
+- Does the skill decide its target by relying on shared things (such as a staging place that other sessions also use) that other work can change?
+- Are safeguards written as means (the command or procedure to use) instead of purpose? (Checkpoint 3.)
+- Are prohibitions and safeguards written as rules to keep, or are some missing?
 
-### 修正方法
+### How to fix
 
-- 巻き込んではいけないものと、満たすべき状態（自分の分だけを扱う、戻せる）を記述する。共有されていることのように、知らないと判断を誤る事実は残し、特定のしかたや使う命令は任せる
-- 足りない安全策は所見に記載する。業務の判断が要るなら呼び出し元に返す
+- Write what must not be involved and the state to satisfy (handle only your own work; keep it reversible). Keep facts that lead to wrong judgment if unknown, such as that something is shared, and leave the specific method and the commands to use to the agent.
+- Record missing safeguards in the findings. If a judgment about the skill's domain is needed, return it to the caller.
 
-## 14. 呼ばれ方
+## 14. How the skill gets invoked
 
-### 確認方法
+### How to check
 
-- description が、使う場面（利用者が何をしたいときか、どの成果物についてか）・使わない場面・隣のスキルとの分担を持つか
-- 場面を記述せずに、依頼の文だけを並べていないか。依頼の文だけだと、並べた文に合わせて呼ばれる場面が狭まったり、依頼をその型に当てはめて読んだりする。依頼の言い方の例は、エージェントがスキルを選ぶ手がかりになるので、場面を記述したうえで、場面を補う分だけ添えるなら残す。利用者やプロジェクトがふだん使う成果物や語は、場面を表す語として記述できる
-- 同じ依頼で呼ばれうるほかのスキルの description と突き合わせ、どちらが呼ばれるかが決まるか
-- description に記述した範囲と本文の範囲が食い違っていないか。本文を書き直したら description も合わせたか
-- 呼び出し元が人・自動の仕組み・ほかのエージェントのどれでも成り立つか。自動の仕組みの指示文がスキルの手順を番号で上書きしていないか。利用者に確かめる指示が、サブエージェントとして呼ばれたときに成り立つか
+- Does the description have the situations in which to use the skill (what the user wants to do, which deliverable it concerns), the situations in which not to, and the division of work with neighboring skills?
+- Does it list only request sentences without describing situations? With only request sentences, the situations in which the skill is called narrow to fit the listed sentences, or requests are read as fitting those patterns. Example phrasings of requests help the agent choose the skill. Keep them if situations are described and the examples only fill the situations in. Deliverables or terms that the users or the project usually use can be written as words that express situations.
+- Compare with the descriptions of other skills that could be called for the same request. Is it settled which one is called?
+- Do the scope in the description and the scope in the body disagree? If the body was rewritten, was the description updated to match?
+- Does the skill work whether the caller is a person, an automated mechanism, or another agent? Does an instruction from an automated mechanism override the skill's procedure by step number? Does an instruction to confirm with the user still make sense when the skill is called as a subagent?
 
-### 修正方法
+### How to fix
 
-- 本文の目的と受け持つ範囲から description を書き直す。本文の細目やツールの処理は本文にあれば足りるので、呼ばれ方の判断に必要なことに絞る
-- 依頼の文例だけで場面が記述されていなければ、文例から場面を取り出して記述する。文例は、場面を補う分だけ残す
-- 自動の仕組みが上書きする所は、手順の番号が変わっても崩れないよう、スキルの側に場面として記述する
-- 確認の相手は、人とは限らない呼び出し元として記述する
+- Rewrite the description from the purpose and scope in the body. Details and tool processing that are in the body need not be in the description; keep only what is needed to decide whether to call the skill.
+- If only request examples are given and situations are not described, extract the situations from the examples and write them. Keep examples only as far as they fill in situations.
+- Where an automated mechanism overrides the procedure, write the situation on the skill's side so that it still holds when step numbers change.
+- Write the party to confirm with as a caller that is not necessarily a person.
 
-## 15. 参照のつながり
+## 15. Reference links
 
-### 確認方法
+### How to check
 
-- 参照元：スキルの名前、節の名前と番号、references と `scripts/` のファイルの名前、モジュール名・関数名、出力の名前で、関係するリポジトリの文書・コード（import・パスの計算）・評価のシナリオ・自動で生成される案内や索引を検索する。表の列が節の番号を持つ所（指摘の記録で、どの節に当たるかを記述した列など）も見る
-- 参照先：このスキルが指すファイル・節・見本・ツールの出力の文が、今もあるか。すでに切れている参照も挙げる
-- ほかのスキルが拡げる元になっているスキルの節の名前と番号が、拡げるスキルとの約束になっていないか
+- Referrers: search the related repository's documents, code (imports and path computations), evaluation scenarios, and automatically generated guides and indexes for the skill's name, section names and numbers, the names of files in references and `scripts/`, module and function names, and output names. Also check places where a table column holds section numbers (for example, a feedback record with a column that states which section a feedback matches).
+- Referents: do the files, sections, examples, and tool output sentences that this skill points to still exist? Also list references that are already broken.
+- Are the section names and numbers of a skill that other skills extend an agreement with the skills that extend it?
 
-### 修正方法
+### How to fix
 
-- 名前や番号を変えるなら、参照元も同じ変更の中で修正する
-- 参照元が、書き直しを受け持つリポジトリなら同じ作業で修正する。ほかのリポジトリ（ほかのチームのものを含む）なら、元の名前を残し、修正する案を所見に記載する
-- 約束になっている節の名前と番号は、変えるなら参照元と一緒に変える
+- If you change a name or number, fix the referrers in the same change.
+- If a referrer is in the repository you are responsible for rewriting, fix it in the same work. If it is in another repository (including another team's), keep the original name and record a proposed fix in the findings.
+- If a section name or number is an agreement, change it only together with its referrers.
 
-## 16. 文章
+## 16. Wording
 
-### 確認方法と修正方法
+### How to check and how to fix
 
-- 指示ごとに目的を添え、選べる幅は幅として記述する（スキル `writing-rules` の `references/writing-instructions.md` に沿う。SKILL.md の分担の節のとおり）
-- 環境の文書が、使わない語や言い換えを独自に定めていれば（下の check-terms の一覧とは別のもの）、その言い換えに沿って中身を表す語にする
-- スキルの中で作った呼び名を、定義せずに使っていないか。使っていれば、定義するか、中身を表す語に替える
-- 日本語では使わない言い回しを避ける。wakariyasu のスキル `check-terms` に沿って確かめる。環境の文書で定義された語の扱いは、SKILL.md の「語の扱い」の節のとおり
-- 出力の書き方の規則（スキルが作る文書の文体や形の決まり）は業務の決まりとして扱い、そのまま残す
+- Attach a purpose to each instruction, and write the range of choices as a range (follow `references/writing-instructions.md` of the `writing-rules` skill, as in the division of work section of SKILL.md).
+- If the environment's documents define words not to use or rewordings of their own, follow those rewordings and use words that express the content.
+- Check whether names coined within the skill are used without being defined. If so, define them or replace them with words that express the content.
+- Apply the language pack's `skills.md` section for clarify-skill, if any. The language packs are in the `lang/` folder of the `writing-rules` skill. How to treat terms defined by the environment's documents is as in the "Handling terms" section of SKILL.md.
+- Treat rules for how output is written (rules on style or form of documents the skill produces) as domain rules and keep them as they are.
 
-## 書き直したあとの読み直し
+## Re-reading after a rewrite
 
-- 記述した側の理解で補わずに読めるかを確かめるため、書き直したスキルを、作った文脈を持たない別のエージェントに読ませ、迷った所を修正する。渡すのは目的と書き直したファイルで、書き直す前のファイルと書き直した理由は渡さない（理由を知ると、文に無いことを補って読むため）。review-for-readers スキルを使える
+- To check that the skill can be read without the writer's understanding filling gaps, have an agent that does not have the context in which it was made read the rewritten skill, and fix the places where that agent was unsure. Hand over the purpose and the rewritten files. Do not hand over the files from before the rewrite or the reasons for the rewrite (knowing the reasons, the reader would fill in what the text does not say). The review-for-readers skill can be used.
 
-## 複数のスキルを任せるとき
+## Delegating several skills
 
-- 自分の委任にも観点 6・7 を当てる。共有事項（観点 7 の修正方法に挙げたもの）は 1 度だけ渡し、点検役が独立に見つけるべきもの（予想している所見、前の点検の結論）は渡さない
-- 書き直しを任せるなら、受け持つファイルを分ける（同じファイルへの書き込みがぶつかるため）
-- 点検役の人数・種類・モデルは、観点 6 の目安（スキルの数と長さ、独立した目が要るか、重い推論が要るか、使える環境と利用枠）で選ぶ
+- Apply checkpoints 6 and 7 to your own delegation. Hand over shared items (listed in the fix for checkpoint 7) once, and do not hand over what the reviewer should find independently (the findings you expect, conclusions of an earlier review).
+- If you delegate rewriting, split the files each agent is responsible for (writes to the same file would collide).
+- Choose the number, kind, and model of reviewers by the criteria in checkpoint 6 (the number and length of skills, whether an independent view is needed, whether heavy reasoning is needed, the available runtime and usage quota).

@@ -1,209 +1,338 @@
 <!-- wakariyasu:AGENTS.snippet.md -->
 
-# wakariyasu のファイルの場所
+# wakariyasu: file locations and language packs
 
-この本文には、規則（writing-to-user.md・writing-documents.md・polishing.md）、リファレンスの styles.md・asking.md、言い回しの一覧（terms.tsv・terms-caution.tsv）が入っている。各ファイルの本文は、ファイル名を書いたコメントの行から始まる。この本文にあるファイルは開き直さなくてよい。本文に入っていないファイルは、wakariyasu のスキルのフォルダにある。
+This text holds the rules (writing-to-user.md, writing-documents.md, polishing.md), asking.md, and every language pack. Each file starts after a comment line with its name. Files in this text need not be opened again. Other files are in the folders of the wakariyasu skills.
 
-- リファレンス（writing-instructions.md・readme.md・changelog.md）: スキル writing-rules のフォルダの references/。読む場面は規則 writing-documents.md にある
-- 言い回しの一覧と、ファイルに記述した文書を検査するスクリプト: スキル check-terms のフォルダ
+Language packs follow the rules, one section per language. Read the pack of a language before you write a reply or a document in it. A language without a pack here has none; follow the rules alone.
+
+- References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them
+- The check-terms skill (phrase lists and a checker used by the ja pack): its own skill folder
 
 <!-- writing-to-user.md -->
 
-# ユーザーへの返答は、経緯を追っていない人が読んで分かるように記述する
+# Write replies that someone who has not followed the session can understand
 
-ユーザーはセッションの経緯を追わずに返答を読むことがある。何が起きていて、
-ユーザーに判断してもらうことがあれば何を判断してもらうのかが、返答だけで分かるようにする。報告・判断の問いかけ・
-後続の質問への返答を含め、ユーザーへの返答はすべて、下に続く節に従って記述する。
+The user may read a reply without having followed the history of the session. Make the reply tell them, on its own, what is happening and, if they must decide something, what they must decide. Every reply to the user follows the sections below, including reports, decision questions, and answers to follow-up questions.
 
-## 記述する内容を選ぶ
+## Choose what to write
 
-記述する内容は、ユーザーが状況を理解し判断するのに要るかどうかで選ぶ。経緯は状況の理解に
-必要な分だけ記述する。何をしたかには、何のためにしたかを添える。
+Include what the user needs in order to understand the situation and decide. Include the history of the work only as far as the user needs it to understand the situation. When you say what you did, say what it was for.
 
-- 確かめた結果は確かめた範囲と一緒に記載する。実行した検査は数や出力で示し、実行していない検査は
-  実行していないと記載する。問題が無いと記載する前に、報告する項目を実際に確かめたかを振り返る。
-- 結論を短くまとめるときも、結論に掛かっている条件は落とさない。条件の消えた結論は、確かめたことより強い主張になる。
-- 手元の事実に無いこと（原因・予定・影響・今後の扱い）を書き足さない。推し量って記述するなら、
-  推定だと分かる形で記述する。
-- 推定や仮置きで進めたことと、エージェントが選んで進めたことは、推定・仮置き・エージェントの選択だと分かる形で記述する。
-  ユーザーが知らないまま前提になっているものを残さない。
+- State the result of a check together with its scope. Show the checks you ran with a count or the output, and say which checks you did not run. Before you write that nothing is wrong, look back and confirm that you actually checked each item you report on.
+- When you shorten a conclusion, keep the conditions it depends on. A conclusion without its conditions claims more than you verified.
+- Do not add what you have no facts for (causes, schedules, effects, future handling). If you must infer, write it so that it reads as an inference.
+- Label anything you filled in by inference, any placeholder, and any choice you made yourself, as an inference, a placeholder, or your own choice. Do not leave an assumption in your work without telling the user.
 
-## ユーザーに通じる用語と言い回しを選んで記述する
+## Use words the user knows
 
-作業中に使い続けた語は書き手には説明済みに見えても、ユーザーには意味が分からず、ユーザーは聞き返すことになる。
+A word you kept using during the work looks explained to you, but the user may not know what it means and will have to ask.
 
-- 自分で付けた呼び名、読んだファイルやツールの出力に出てきた語、案の記号のような略称を
-  使ったら、ユーザーがセッションの中で使った語かを確かめる。使っていなければ、語が示すものを、
-  ユーザーが使った言葉か一般に通じる言葉で言い直す。同じ語を何度も使うなら、最初に出す文で
-  意味を添えてから使う。
-- ファイル名・コマンド名・スキル名のように、正確さが必要な固有名は言い直さず、正確に記述し、
-  何のためのものかを添える。
-- 同じ対象を呼ぶ語は、一度定めたら、同じ返答の中でも次の返答でも変えない。別の語で呼び直すと、ユーザーは別のものだと受け取る。
-- 動作を名詞にまとめて、誰が何をするかを文から消さない。動作は、誰が何をどうするかが分かる文で記述する。
+- When you use a name you made up, a term from a file you read or a tool's output, or a shorthand such as an option label, check whether the user used that word in the session. If they did not, say what the word refers to, in words the user used or in words that are generally understood. If you use the word repeatedly, give its meaning in the first sentence that uses it.
+- Keep proper names that must be exact (file names, command names, skill names) as they are, and add what each is for.
+- Once you name something, keep the same word for it within the reply and in later replies. A different word makes the user think it is a different thing.
+- Do not turn an action into a noun when that hides who does what. Write each action as a sentence that shows who does what.
 
-## 判断してもらうことだけを問いかけ、経緯を読まずに答えられる形にする
+## Ask only what the user must decide, in a form they can answer without the history
 
-ユーザーに判断してもらうのは、依頼から読めない意図、ユーザーしか知らない事実、承認が必要な作業（外に出る作業・元に戻せない作業・
-費用がかかる作業・ユーザーの環境を変える作業・ユーザーの予算や期限に影響するほど時間や費用が変わる作業）だ。依頼の範囲の中の手段・順序・書式はエージェントが
-判断して進め、何を選んだかと理由を報告に記載する。ユーザーは報告を読み、違っていれば言える。問いかけて
-答えを待つあいだは作業が止まるので、ユーザーに判断してもらうことだけを問いかけにする。
+The user decides what cannot be read from the request: their intent, facts only they know, and work that needs approval. Work that needs approval is work that affects people or systems outside the session, cannot be undone, costs money, changes the user's environment, or changes time or cost enough to affect the user's budget or deadline.
 
-返答の中でユーザーに何かを判断してもらうときは、`asking.md` の形で記述する。
+Decide the means, order, and format within the scope of the request yourself, and report what you chose and why. The user reads the report and can object. Work stops while you wait for an answer, so turn only what the user must decide into a question.
 
-## 語が示す対象を読み取れる書き方にする
+When a reply asks the user to decide something, write it in the form of `asking.md`.
 
-読み手は文頭から順に読み、前に戻って補うことはしない。表の1行や1つの段落だけを拾って
-読むこともあるので、語が示す対象は、語を含む行や段落の中で読み取れるようにしておく。
+## Make clear what each word refers to
 
-- 指示語（こそあど言葉、this・that）は使わず、示す対象の名前を記載する。
-- 何のものか・誰のものかを添えないと決まらない一般語を使ったら、同じ文の中で、何の・誰のものかを添える。
-  誰でも知っている語は、書き手には特定済みに思えるので、見落としやすい。一般語に理由・限定・
-  比較・否定・逆接を掛ける文では、掛ける前に添える。
+Readers go through a text from the start and do not go back to fill in gaps. They may also pick out a single table row or paragraph. Make what each word refers to readable within the row or paragraph that contains the word.
 
-日本語の文で示す対象が欠けていないかは、規則 `polishing.md` の「示す対象と動く人の欠落を確認する」の節で確かめる。
+- Do not use demonstratives such as "this" and "that". Write the name of what they point to.
+- When you use a general word that does not say what it is about or whose it is, give that information in the same sentence. Words everyone knows look already settled to the writer, so they are easy to miss. When a sentence applies a reason, limit, comparison, negation, or contrast to a general word, state what or whose it is first.
 
-## 報告と判断の問いかけは session-status の形で記述する
+The language pack's `polishing.md` may add checks specific to the language you write in.
 
-次のどれかに当たったら、`session-status` スキルを使う。状況を問われたとき以外の場面では、ユーザーに言われなくても使う。
+## Use session-status for reports and decision questions
 
-- 状況を問われたとき。
-- 複数のタスクにまたがる作業が一区切りつき、結果と残りを報告するとき。
-- ユーザーに判断を求めて、手を止めるとき。
-- 長い作業の途中で、作業の進み具合を伝えるとき。
+Use the `session-status` skill in the cases below. In every case except the first, use it even if the user did not ask.
 
-1つの作業の完了を知らせるだけの報告や、手を止めずに続けながら伝える一言は、普段どおりに記述する。
+- The user asks about the status.
+- Work that spans several tasks reaches a break, and you report the results and what remains.
+- You stop work to ask the user to decide.
+- You report progress in the middle of long work.
 
-## 長い返答は送る前に整える
+Write a report that only announces the completion of a single task, and a short note you give while you continue working without stopping, in the normal way, without the skill.
 
-3段落以上の返答や、ユーザーが読んで判断する返答（報告・説明し直し・判断の問いかけ）は、
-規則 `polishing.md` に沿って整えてから送る。
-短い返答は整えずに送る。
+## Polish long replies before sending
+
+Before sending, polish a reply of three or more paragraphs, and any reply the user reads in order to decide (a report, a re-explanation, a decision question), following rule `polishing.md`. Send a short reply without polishing it.
 
 <!-- writing-documents.md -->
 
-# エージェントが記述する文書は、文書だけで通じるように記述する
+# Write documents that make sense on their own
 
-README・仕様書・設計書・手順書・規則・SKILL.md・プロンプトのような文書は、作成したときの
-やり取りを知らない人が読む。読み手が文書だけを読んで分かるように記述する。
+A document such as a README, specification, design document, procedure, rule, SKILL.md, or prompt is read by people who were not part of the exchange in which it was written. Write it so that a reader can understand it from the document alone.
 
-## 文章の種類で経緯の扱いが変わる
+## How the history of the work is handled depends on the kind of text
 
-| 文章の種類 | 載せる内容 | 作業の経緯 |
+| Kind of text | What to include | History of the work |
 |---|---|---|
-| ユーザーへの返答 | 状況と、ユーザーに判断してもらうことがあれば、判断してもらう内容 | 状況の理解に必要な分だけ、何をしたか・何のためかを記述する。規則 `writing-to-user.md` に従う |
-| 文書の本文 | 対象自体 | 記述しない。文書だけを読む人に向けて記述する |
-| コミットメッセージ・PR の本文 | 何を変えたか、なぜ変えたか | 変えた理由は記述する。試した順番や苦労は記述しない |
-| 公開する変更履歴 | 新しいバージョンで、使う人に届く変化 | 記述しない。作り方や内部の手順も記述しない |
-| コードのコメント | コードが今の形になっている理由 | 記述しない。経緯はバージョン管理の履歴に任せる |
-| 作業記録・進行記録 | 何をして、何が分かり、何が残っているか | 記述する。作業自体を記録する文書なので、作業の途中の出力も残す |
+| Reply to the user | The situation and, if the user must decide something, what they must decide | Include only what the user needs to understand the situation: what you did and what for. Follow rule `writing-to-user.md` |
+| Body of a document | The subject itself | Leave it out. Write for someone who reads only the document |
+| Commit message, PR description | What changed and why | Include the reason for the change. Leave out the order of attempts and the difficulties |
+| Published changelog | The changes in the new version that reach the people who use it | Leave it out. Leave out how the version was made and internal steps too |
+| Code comment | Why the code has its current form | Leave it out. Leave the history to version control |
+| Work log | What was done, what was learned, what remains | Include it. A work log records the work itself, so keep intermediate output of the work too |
 
-どれに当たるか迷ったら、やり取りを知らない人が、渡した文章だけを読むことがあるかで判断する。
-読むなら文書として記述する。返答の中に文書の全文を載せるときは、全文の部分を文書として記述する。
+When you are unsure which kind applies, ask whether someone who knows nothing of the exchange may read the text you hand over on its own. If that person may read it on its own, write it as a document. When a reply contains the full text of a document, write that part as a document.
 
-## 文書の本文の書き方
+## Writing the body of a document
 
-- 対象自体を語る。文書自身の構成、作った経緯、指示への応答は記述しない。
-- 文書の外にあるものを前提にしない。会話の中で決定した事項・別の文書・会話の場での合意が要るなら、
-  必要な分を本文に記載する。
-- ファイルやフォルダは、読み手の環境でも辿れる形で示す。文書と同じリポジトリの中は、リポジトリや文書からの相対の場所で示し、
-  リポジトリの外のものは役割や名前で示す。書き手の PC にしか無い場所は記述しない。読み手の環境では、その場所が無いか、別の物を示す。
-- 語が示す対象は、規則 `writing-to-user.md` の「語が示す対象を読み取れる書き方にする」の節と同じ書き方で、語と一緒に読まれる範囲の中に置く。文書では、節・表の1行・スライドの1枚が、読み手が拾って読む範囲になる。前の状態を示す語は状態自体を記述し、何と比べたかの無い「だけ」には、比べた相手を記載する。
-- 書き手が作った呼び名を説明なしに続けて使わない。中身が決まらない語で済ませず、何をどうするかを記述する。
-- 動く人を文に残す。誰が何をするかを受け身や名詞の並びで消さない。
-- 数には確かさを添える。測った値か見積もりか、何を含まないかを記載する。
-- 件数・大きさ・最新のバージョンのように時間が経つと変わる値は、読み手が判断に使うときだけ記載し、いつの値かを添える。読み手が判断に使わない値は、文書が古くなる原因になるだけなので記載しない。
-- 次の文書は記述・修正する前に、文書の種類のリファレンスを読んで沿う。
-  - エージェントが読んで動く文書（スキル・規則・プロンプト）：`writing-instructions.md`
-  - ツールを外部に公開するリポジトリの最上位の README：`readme.md`
-  - 公開するツールの変更履歴：`changelog.md`
+- Speak about the subject itself. Do not write about the document's own structure, how it came to be, or responses to instructions.
+- Do not rely on anything outside the document. If the reader needs a decision made in conversation, the content of another document, or an agreement reached in conversation, put the necessary part in the body.
+- Point to files and folders in a form the reader can follow in their own environment. Inside the same repository as the document, give the location relative to the repository or the document. Outside the repository, give the role or the name. Do not write locations that exist only on the writer's machine, because in the reader's environment they are missing or point to something else.
+- Make clear what each word refers to within the range that the reader reads together with the word, as in the "Make clear what each word refers to" section of `writing-to-user.md`. In a document, a section, a table row, or a single slide is the range a reader picks out and reads. Describe the state itself instead of using a word that points to a previous state. When "only" has no stated comparison, name what it is compared with.
+- Do not keep using a name you made up without explaining it. Do not use a word that has no defined content. Write what is done and how.
+- Keep the actor in the sentence. Do not hide who does what behind a passive verb or a noun phrase made from a verb.
+- State how certain each number is. Say whether it is a measured value or an estimate, and what it excludes.
+- Include a value that changes over time (a count, a size, the latest version) only when the reader uses it to decide, and say as of when it holds. A value the reader does not use to decide only makes the document go stale.
+- Write dates and weekdays in the form used for the document's language and the readers' region, because readers misread unfamiliar forms (month/day order, weekday abbreviations). In files that machines read, and in documents that already use another form, match that form.
+- Before writing or revising the following kinds of document, read the reference for its kind and follow it.
+  - Documents that agents read and act on (skills, rules, prompts): `writing-instructions.md`
+  - The top-level README of a repository that publishes a tool externally: `readme.md`
+  - The changelog of a published tool: `changelog.md`
 
-## 書き終えたら
+## When you finish writing
 
-仕上げは、文書を人やエージェントに提示するたびに、提示する時点の文書に対して行う。試作や書きかけの文書でも、見た人は見た文書で判断するので行う。
-一部を修正した文書では、修正した箇所と、修正した箇所を参照している箇所や同じ事柄を述べている箇所に実施する。提示するときの返答には、行った手順と、行わなかった手順を理由と一緒に記載する。
-省いた手順が返答から分かれば、ユーザーは省いた手順を求められる。
+Finish a document every time you present it to a person or an agent. Finish it as it stands at that moment. Finish prototypes and drafts too, because people judge by what they see. For a partly revised document, finish the revised parts, the parts that refer to them, and the parts that state the same matter.
 
-仕上げの手順は次のとおり。
+In the reply that presents the document, state which finishing steps you took and which you did not take, with the reasons. When the reply shows which finishing steps you skipped, the user can ask for them.
 
-1. `remove-meta-narrative` スキルで、作業の経緯や文書自身を語る文と、作業の途中の出力を探して修正する。
-2. 人に渡す・公開する文書は、`review-for-readers` スキルで、経緯を知らない読み手の視点で読み直す。
-3. 規則 `polishing.md` に沿って整える。
+The finishing steps are as follows.
 
-手順 2 を行ったときは、手順 3 は `review-for-readers` スキルの中で済む。
+1. With the `remove-meta-narrative` skill, find and fix sentences that talk about the history of the work or the document itself, and intermediate output of the work.
+2. For a document you hand to people or publish, reread it from the viewpoint of a reader who does not know the history, with the `review-for-readers` skill.
+3. Polish it by rule `polishing.md`.
 
-文書の種類に応じて、手順の前にすることと、行う手順を選ぶ。
+When you do finishing step 2, the `review-for-readers` skill does finishing step 3 inside it.
 
-| 文書の種類 | 仕上げ方 |
+Choose the finishing steps by the kind of document. The table also says what to do before the steps.
+
+| Kind of document | How to finish |
 |---|---|
-| スキル（SKILL.md と、スキルが読むリファレンス） | `clarify-skill` スキルで、スキルを読んだエージェントがスキルの目的から判断できる指示文かを点検して修正してから、手順 1〜3 |
-| 公開する変更履歴 | 手順 3。変更履歴は前のバージョンとの差を伝える文書で、手順 1 は前のバージョンとの差を記述した文を修正してしまうので、行わない |
-| コミットメッセージ・PR の本文 | 手順 3 |
-| そのほかの文書 | 手順 1〜3 |
+| Skill (SKILL.md and the references the skill reads) | With the `clarify-skill` skill, check and fix the instructions so that an agent reading the skill can decide from the skill's purpose. Then do finishing steps 1 to 3 |
+| Published changelog | Finishing step 3 only. A changelog states the difference from the previous version. Finishing step 1 would fix the sentences that describe that difference, so do not do it |
+| Commit message, PR description | Finishing step 3 only |
+| Any other document | Finishing steps 1 to 3 |
 
 <!-- polishing.md -->
 
-# 記述した文章は、渡す前に整える
+# Polish what you wrote before handing it over
 
-整えるのは読みやすさのため。主張・条件・数値・言い切りの強さは変えない。
+Polish for readability. Do not change the claims, conditions, numbers, or the strength of assertions.
 
-## どの言語でも確かめること
+## Checks for every language
 
-- 1つの文には1つのことだけを記述する。2つ以上のことを述べた長い文は、切る。
-- 主語と述語、修飾する語とされる語が離れていたら、近づける。
-- 比喩・飾りの語・宣伝のような言い回しは、消しても読み手の理解が変わらなければ消し、変わるなら中身を表す言葉に置き換える。
-- 予告だけの文は続く中身の文とまとめる。
-- 結論や要約が続くことを予告するだけの前置きの句は外す。
-- 見出しは、読み手が見出しだけを拾って読む節を選べるように、その節に何が記述してあるかを表す語句にする。ユーザーに判断してもらう問いかけの見出しは、問いかけの形のままにする。
-- 太字の見出し語とコロンで始まる箇条書きは、値が短い事実のときだけ使う。説明の文が続くなら、
-  地の文にする。
-- 否定してから言い直す文は、言いたい側だけで通じるなら、言いたい側だけを記述する。
-- 同じ文末が続いて単調になっていたら、文のつなぎ方を変える。
-- 並べた項目や手順の数は書かない。項目を足し引きするたびに数も更新する必要があり、更新し忘れると本文と食い違う。上限や回数のように、数そのものが決まりのときだけ書く。
-- 丸括弧 `（）` の補足と、鉤括弧 `「」` で囲んだ例は、1つずつ、読み手に必須の中身か、括弧を外して地の文として記述できないか、除けないかを確かめる。除いても読み手の理解が変わらなければ除き、必須なら地の文に組み込む。丸括弧を残すのは、地の文に組み込むと文の筋が追えなくなるときだけにする。鉤括弧は、文字そのものに意味があるもの（見出し・画面の項目・コマンドの出力のように、読み手やツールがその文字で探すもの）を示すときに残す。括弧や記号そのものを本文で示すときは、地の文の括弧と見分けられるように、インラインのコードの書式で示す。
+- Put one point in each sentence. Split a long sentence that states two or more points.
+- When a subject and its predicate, or a modifier and the word it modifies, are far apart, bring them closer.
+- Delete metaphors, decorative words, and promotional phrases if deleting them does not change what the reader understands. If deleting them does change it, replace them with words that state the content.
+- Merge a sentence that only announces what follows with the sentence that carries the content.
+- Remove introductory phrases that only announce that a conclusion or summary follows.
+- Make a heading a phrase that says what the section contains, so that a reader who picks out only headings can choose the section to read. Keep the heading of a question that asks the user to decide in the form of a question.
+- Use a bold lead-in term followed by a colon in a bullet only when the text after the colon is a short fact. If an explanatory sentence follows the term, write plain prose.
+- When a sentence denies something and then restates it, write only the side you mean if that side stands on its own.
+- When consecutive sentences repeat the same pattern (the same opening, the same ending, or the same structure) and read monotonously, change how the sentences connect.
+- Do not state the number of listed items or steps. Every time you add or remove an item, you would have to update the number, and a forgotten update makes the text contradict itself. State a number only when the number itself is the rule, such as a limit or a count of times.
+- Check each parenthetical remark and each quoted example, one at a time. Ask whether its content is essential to the reader. If it is not essential, remove it.
+  - If it is essential, work it into the main text.
+  - Keep parentheses only when working the content into the sentence would make the sentence hard to follow.
+  - Keep quotation marks when they mark text whose exact characters matter, such as headings, screen labels, and command output that readers or tools search for.
+  - When you show a bracket or symbol itself in the text, show it in inline code format so that it is distinct from brackets in the prose.
 
-## 日本語で記述したときに足すこと
+## Checks for the language you wrote in
 
-### 表記を文章ごとに選ぶ
+Apply the `polishing.md` in the language pack for the language of the text. If the pack has a `styles.md`, choose notation by it. The language packs are in `lang/<code>/` of the `writing-rules` skill's folder. A language with no pack gets only the checks for every language.
 
-表記は `styles.md` の順番で選び、選んだ書き方にそろえる。語の選び方も、和語と漢語のどちらにも寄せない標準表記と、漢語を中心に記述する漢語表記のどちらかを、`styles.md` に沿って選ぶ。
+## Read it through at the end
 
-### 示す対象と動く人の欠落を確認する
+Read the text through yourself from the start. If you went back to an earlier place while reading, fix the sentence that made you go back.
+
+<!-- asking.md -->
+
+# How to write a decision question
+
+Write each point the user must decide in a reply as a decision question, one question per answer the user returns, in the form below.
+Number the heading even when there is only one question, so that the user can answer with only the question number and the option letter.
+Number questions continuously across what you know of the session, and do not reuse the number of a question that has been answered.
+
+```markdown
+### 1. <Question sentence stating what the user must decide>
+
+<Paragraph stating what the work is aiming at, what the work ran into that requires a decision, and why the user and not the agent decides>
+
+| Option | Background and what happens if chosen |
+|---|---|
+| A | … |
+| B | … |
+```
+
+- Make the question a sentence that shows what is being decided without the rest of the reply. Include the proper name of the subject if there is one.
+- State the purpose of the work, as far as it can be read from the user's request. Stating the purpose lets the writer and the user keep the same purpose in mind while the decision is pending. It also lets the writer check that the question is a step toward the purpose and that the options line up against the purpose.
+- State why the user decides. Say, in words the user understands, which of the situations in rule `writing-to-user.md` where the user must decide applies.
+- Give each option one row, and order the rows from most to least recommended. The number of options depends on the question.
+- Put the letter used to answer in the option column. For a list of options, use A, B, C… from the top. For a yes-or-no choice, use the pair Y and N. If letters alone make the options hard to tell apart, add a short word to the letter.
+- In the "Background and what happens if chosen" column, state the content of the option instead of only its label. Then state what happens toward the purpose of the work if the option is chosen. When the content of the option alone does not show why it is a choice at all, state the background that led to the option too.
+- If one option is especially recommended, write "(recommended)" after the letter of the top option. End the "Background and what happens if chosen" column of that row with the reason for recommending it.
+- For a question that cannot list options, omit the table and state in the question what you want answered.
+- The column names in the template and "(recommended)" are the English labels. Use them as written in an English reply. In a reply in another language, use the names that the language pack's `conventions.md` defines for that language. If the pack has no `conventions.md`, write the labels in the reply's language. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
+- When there are several questions, put first the question whose answer changes the later work the most.
+- Even for a question with a recommendation, the user decides which option to choose. You list what happens for each option.
+
+<!-- lang/en: read only when writing in this language -->
+
+<!-- lang/en/polishing.md -->
+
+# Checks to add when writing in English
+
+Apply these checks in addition to the "Checks for every language" section of `polishing.md`.
+
+## Prefer plain words
+
+Use the common word when it carries the same meaning as the formal one. Readers who use English as a second language, and readers outside the field, misread rare words and idioms. Keep a technical term when it is the name readers will search for, and give its meaning the first time it appears.
+
+## Pass documents for people through a reviewer skill, if one is available
+
+Documents written in English that people will read or that will be published (READMEs, manuals, specifications, proposals) can be passed through an English reviewer skill after you polish them yourself. If the skill avoid-ai-writing is among the available skills, use it. Check that the reviewed text keeps every claim, condition, number, and level of certainty of your text. Where the reviewer changed the meaning, restore your original wording.
+
+Do not pass replies to the user, work reports, commit messages, pull request descriptions, or code comments through a reviewer skill.
+
+<!-- lang/ja: read only when writing in this language -->
+
+<!-- lang/ja/conventions.md -->
+
+# 日本語の読み手が見慣れた名前
+
+日本語で記述する返答と文書では、見出し・列名・状態の語に、この節の名前を使う。読み手は見慣れた名前を手がかりに読む所を探し、エージェントが毎回訳した名前では探せない。
+
+## README
+
+README は、人が手で保守している日本語の README で見慣れた章の名前・組み立て・言葉で記述する。各章の方針に無い章の名前や言い回しは、ファイルやウェブを読めるなら、同じ分野で人が日本語の README を保守しているツールをいくつか開き、ツールの README で使われている形に合わせる。
+
+`readme.md` の各章は、日本語の README では次の名前で記述する。
+
+| `readme.md` の章 | 日本語の章の名前 |
+|---|---|
+| Opening description | （見出しを立てず、README の冒頭に記述する） |
+| Features | 機能 |
+| Strengths | 特長 |
+| Suitable uses | 向いている用途 |
+| Disclaimer | 免責事項 |
+| Supported environments | 対応環境 |
+| Required disk space and additional software | 必要なディスク容量・別途必要なソフトウェア |
+| Installation | インストール方法 |
+| Usage | 使い方 |
+| Developer guide and license | 開発者ガイド・ライセンス |
+
+`readme.md` の「Wording」の節に加えて、日本語の README では次のようにする。
+
+- 一般の語：日本語では使わない言い回しと、代わりに使う語は、wakariyasu のスキル `check-terms` の一覧（`references/terms.tsv`）にある。一覧に無い語も同じ考え方で選ぶ。
+- 作業の章と節の名前：インストールや設定のように読み手が手を動かす章と節は、「インストール方法」「セットアップ方法」「アップデートの手順」のような、日本語の README で見慣れた名前にする。和語に言い換えた名前では、読み手は探している章だと気付かない。本文の語も見出しと同じ語でそろえる。
+
+## 変更履歴
+
+Keep a Changelog の日本語の版（https://keepachangelog.com/ja/1.1.0/）とセマンティック バージョニングの日本語の版（https://semver.org/lang/ja/）を参照する。変更の種類の小見出しは「追加」「変更」「非推奨」「削除」「修正」「セキュリティ」にする。
+
+## session-status の報告
+
+| 英語の名前 | 日本語で記述するときの名前 |
+|---|---|
+| Current goal | 現在のゴール |
+| Latest instruction | 直近の指示 |
+| Tasks | タスク |
+| Latest status | 直近のステータス |
+| Decisions needed | 判断を求めていること |
+| Task（タスクの表の列） | タスク |
+| State（タスクの表の列） | 状態 |
+| Background and notes（タスクの表の列） | 背景・補足 |
+
+状態欄の語は次のとおり。絵文字は変えない。
+
+| 英語の表記 | 日本語の表記 |
+|---|---|
+| ✅ Done | ✅ 完了 |
+| 🚧 In progress | 🚧 作業中 |
+| ⏳ Waiting on a process | ⏳ 処理待ち |
+| 🙋 Waiting for your decision | 🙋 判断待ち |
+| 📝 Not started | 📝 未着手 |
+| ❗ Problem | ❗ 問題あり |
+| ⛔ Cancelled | ⛔ 中止 |
+
+## 判断の問いかけ
+
+| 英語の名前 | 日本語で記述するときの名前 |
+|---|---|
+| Option（表の列） | 案 |
+| Background and what happens if chosen（表の列） | 背景・選ぶと起きること |
+| (recommended) | （お勧め） |
+
+<!-- lang/ja/polishing.md -->
+
+# 日本語で記述したときに足す確認
+
+日本語で記述した返答と文書は、規則 `polishing.md` の「Checks for every language」の節の確認に加えて、次の節の確認をしてから渡す。
+
+## 表記を文章ごとに選ぶ
+
+表記は、この言語パックの `styles.md` の順番で選び、選んだ書き方にそろえる。語の選び方も、和語と漢語のどちらにも寄せない標準表記と、漢語を中心に記述する漢語表記のどちらかを、`styles.md` に沿って選ぶ。
+
+## 示す対象と動く人の欠落を確認する
 
 日本語の文は主語や目的語を省いても文になるので、示す対象（目的語が表すもの）や動く人（主語）が欠けていても、書き手は気付きにくい。
 主語や目的語を省いた文のうち、前後の文から補えるか迷う文は、主語と目的語を省けない英語に一語ずつ訳すつもりで読み、訳すのに補う語が要るかを確認する。
 補う語が要るなら、補った語が示す対象を、日本語の文として自然な言い方で記述する。
 英語に訳すのは欠落を見つけるための手段で、訳した英文の語の選び方や語順を日本語の文に写すと、翻訳調の言い方になる。
 
-### 読点を確かめる
+## 読点を確かめる
 
 間を取るだけの読点は外す。条件や場面の区切り、並べた語の区切り、
 外すと掛かり先が変わる所の読点は残す。
 
-### 日本語では使わない言い回しを探す
+## 日本語では使わない言い回しを探す
 
 翻訳調の語や作業の中で生まれた造語が混ざると、読み手は意味を取り違え、文書を信頼しにくくなる。
 英語の語句や名前を日本語にするときは、語ごとに置き換えず、文脈に合わせて日本語の書き手が使う言い方を選ぶ。
-使わない言い回しの一覧（`terms.tsv`）の語は作成する時点から避け、文脈で確かめる言い回しの一覧（`terms-caution.tsv`）の語は
-作成する時点から候補の語と比べる。
+
+言い回しの一覧は、wakariyasu のスキル `check-terms` のフォルダの `references/` にある。使わない言い回しの一覧（`terms.tsv`）の語は作成する時点から避け、文脈で確かめる言い回しの一覧（`terms-caution.tsv`）の語は作成する時点から候補の語と比べる。
+2つの一覧の本文が会話に無ければ、セッションで初めて日本語を記述する前に読む。
 
 一覧に無い語も、同じ観点で確認する。和語は意味の幅が広く、作業の中で使い続けると、書き手にだけ通じる意味を帯びる。
 文書の中で、和語の動詞や名詞を日常の具体的な意味から離れて使っているときは、示す対象を正確に表す漢語に言い換えられないかを確認する。
 標準表記の文書では、日常の具体的な意味で使う和語と、漢語にすると硬くなって読み手に通じにくくなる語は残す。漢語表記の文書では、それらの語も、意味と読みやすさを失わずに漢語にできるかを確認する。
 
-ファイルに保存した文書は、wakariyasu のスキル `check-terms` に沿って、言い回しの一覧の語を探して替える。
+ファイルに保存した文書は、スキル `check-terms` に沿って、言い回しの一覧の語を探して替える。
 
-### 人に渡す文書は、yomiyasu があれば yomiyasu に通す
+## 人に渡す文書は、yomiyasu があれば yomiyasu に通す
 
 README・手順書・仕様書・提案書のように、人が読むために渡す・公開する日本語の文書は、自分で整え、`check-terms` で確かめたあとで、使えるスキルの中に yomiyasu があれば yomiyasu スキルに通す。
 yomiyasu には文書と、`styles.md` の表の「種類」の列にある文章の種類の名前を渡す。読み手の詳しさが分かっていれば、expert（同じ分野の人）・informed（分野は違うが、技術や業務に詳しい人）・general（専門の知識が無い人）のどれかも渡す。
 漢語表記の文書は、yomiyasu を通したあとで、選んだ漢語が和語に言い換えられていないかを確かめ、言い換えられていれば漢語に戻す。
 ユーザーへの返答・作業の報告・コミットメッセージ・PR・コードのコメントには通さない。返答に文書の全文を載せるときは、全文の部分だけを文書として扱う。
 
-## 最後に読み直す
+<!-- lang/ja/skills.md -->
 
-自分で文頭から順に読み直す。読み直す途中で前に戻った箇所があれば、前に戻る原因になった文を修正する。
+# 日本語で記述したときに、スキルごとに足すこと
 
-<!-- styles.md -->
+wakariyasu のスキルを日本語の文書や返答に使うときは、スキルの本文に加えて、そのスキルの名前の節に従う。
+
+## review-for-readers
+
+日本語の文書なら、読み手に、迷った文を英語に直訳させる。主語・目的語・冠詞を補わないと英文にならないなら、元の日本語の文は示す対象が足りない。
+
+日本語の文書で、読み手が理解を妨げる箇所を挙げなくなったら、使えるスキルの中に yomiyasu があれば yomiyasu スキルを呼び出し、文書と文章の種類を渡して整える。種類の名前は、この言語パックの `styles.md` の表の「種類」の列にある。
+
+## clarify-skill
+
+観点 16「Wording」では、日本語では使わない言い回しを避ける。wakariyasu のスキル `check-terms` に沿って確かめる。環境の文書で定義された語の扱いは、clarify-skill の SKILL.md の「Handling terms」の節のとおりにする。
+
+<!-- lang/ja/styles.md -->
 
 # 日本語の表記の選び方
 
@@ -246,50 +375,10 @@ yomiyasu には文書と、`styles.md` の表の「種類」の列にある文�
 - 分野の違う人や、専門の知識が無い人には、用語を言い換えるか、初めて出すところで意味を添える。
 - 読み手の分野が分からなければ、読み手に合わせた言い換えはしない。用語は言い換えずに使い、意味の要りそうな語に説明を添える。
 
-## 日付と曜日
-
-日付と曜日は、文書の言語と、読み手のいる地域で使われている書き方で記述する。読み手は見慣れない形の日付を読み違える（月と日の順・曜日の略し方）。機械が読むファイルや、すでに別の形で書かれた文書では、その形に合わせる。
-
 ## 種類で変えないもの
 
 数字・英字の全角と半角、外来語の長音（サーバとサーバー）、送り仮名は、種類では定めない。
 同じ文書の中でそろえ、そろえ方は、冒頭に挙げた選ぶ順番の 1（ユーザーの指示）と 2（すでに使われている書き方）で選ぶ。
-
-<!-- asking.md -->
-
-# 判断の問いかけの書き方
-
-返答の中でユーザーに判断してもらうことは、答えを1つ返してもらう問いかけごとに、次の形で記述する。
-ユーザーが問いかけの番号と案の記号だけで答えられるよう、問いかけが1つだけでも見出しに番号を付ける。
-番号はセッションの中で把握している範囲の通し番号とし、答えをもらった問いかけの番号も使い回さない。
-
-```markdown
-### 1. <判断してもらうことを記述した問いかけの文>
-
-<何を目指す作業の途中か、作業で何に行き当たって判断が必要になったか、エージェントではなくユーザーが判断する理由を記述した段落>
-
-| 案 | 背景・選ぶと起きること |
-|---|---|
-| A | … |
-| B | … |
-```
-
-- 問いかけは何を判断するのかが問いかけだけで分かる文にする。対象の固有名があれば入れる。
-- 何を目指す作業の途中かは、ユーザーの依頼から読める作業の目的で記述する。判断を求めているあいだも、書き手と
-  ユーザーが同じ目的を思い出せるようにするためだ。目的を記載すると、問いかけが目的に向かう途中の判断になっているか、
-  案が目的に照らして並んでいるかを、書き手が確かめられる。
-- ユーザーが判断する理由は、規則 `writing-to-user.md` が挙げるユーザーに判断してもらう場面のどれに当たるかを、ユーザーに通じる文で記述する。
-- 案は1つにつき1行とし、お勧めの度合いの高い順に並べる。案の数は問いかけに合わせる。
-- 案の列には答えに使う記号を記載する。案を並べるときは、上から A・B・C… を使える。
-  はいかいいえかの二択には Y と N の組を使える。記号だけでは案が見分けにくければ、記号に短い語を添えられる。
-- 「背景・選ぶと起きること」の列には、案の中身を呼び名だけで済ませずに記載し、選ぶと作業の目的に向けて何が起きるかを続ける。
-  なぜ選択肢になるのかが案の中身だけでは分からないときは、案を挙げた背景も記載する。
-- 特にお勧めの案があれば、いちばん上の案の記号のあとに「（お勧め）」と記載し、
-  「背景・選ぶと起きること」の列の最後にお勧めする理由を記載する。
-- 案を並べられない問いかけは表を省き、答えてほしい中身を問いかけに記載する。
-- 表の列名と「（お勧め）」は返答と同じ言語で記載する。
-- 問いかけが複数あるときは、答えによって後の作業が大きく変わる問いかけから並べる。
-- お勧めを付けた問いかけでも、表のどの案を選ぶかはユーザーが判断する。エージェントが受け持つのは、案ごとに選ぶと起きることを並べるところまでだ。
 
 # 日本語では使わない言い回し
 

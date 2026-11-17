@@ -1,35 +1,35 @@
 ---
 name: show-changes
-description: 変更前と変更後の差分を、1つ以上の対象（git のリポジトリの2つのコミット、2つのフォルダやファイル、既にある unified diff）にまたがって1つの HTML のページにし、人がブラウザで変更の全体と中身を確かめられるようにする。「差分を見せて」「変更を見せて」「変更内容を表示して」「変更をページにして」「レビュー用に差分をまとめて」と頼まれたとき、レビュー・承認・マージ・差し替えの前に人へ変更を見せるとき、複数のリポジトリやフォルダにまたがる変更をまとめて見せるときに使う。エージェントがファイルを変更する作業を終えて、何を変えたかをユーザーに見せるときは、頼まれなくても使う。エージェントが自分で差分を読むだけのときと、変更の良し悪しを点検するときには使わない。
+description: Turn the before and after of a change, across one or more targets (two commits of a git repository, two folders or files, or an existing unified diff), into a single HTML page so a person can check the whole change and its details in a browser. Use when asked to show the diff, show the changes, display what changed, put the changes on a page, or collect the diff for review; when showing changes to a person before review, approval, merge or replacement; and when showing changes that span several repositories or folders. Also use, without being asked, when you finish work that changed files and show the user what you changed. Do not use when you only read a diff yourself or when you check whether a change is good. Also applies when the user says the same thing in another language.
 ---
 
-# スキルの目的
+# Purpose of the skill
 
-変更前と変更後の差分を、ブラウザで開く1つの HTML のページにする。ページを見る人（レビューや承認をする人。依頼したユーザー自身のこともある）が、何がどれだけ変わったか（全体）と、どう変わったか（中身）を、リポジトリやフォルダをまたいで1か所で確かめられるようにする。ページは変更を見せるためのもので、変更の良し悪しは判断しない。呼び出し元は、このスキルを頼んだユーザー、またはこのスキルを呼んだエージェントだ。
+Turn the before and after of a change into one HTML page that opens in a browser. The person viewing the page (a reviewer or approver, sometimes the user who asked) must be able to check two things in one place, across repositories and folders: how much changed (the whole) and how it changed (the details). The page shows the change. It does not judge whether the change is good. The caller is the user who asked for this skill, or the agent that invoked it.
 
-ページは同梱の `scripts/build.py` で作る。Python 3.9 以上（`python3` などのコマンド）がある環境では `build.py` を実行してページを作り、無い環境では、ページを作れないことを呼び出し元に伝える。ページを作る前に、呼び方と引数を記載した `references/usage.md` を読む。スキルの中のパス（`scripts/`・`references/`）は、このスキルのフォルダからの相対パスで記述してある。
+Build the page with the bundled `scripts/build.py`. If Python 3.9 or later (`python3` or similar) is available, run `build.py`. If it is not available, tell the caller that the page cannot be built. Before building, read `references/usage.md`, which gives the invocation and the arguments. Paths inside the skill (`scripts/`, `references/`) are relative to the skill's folder.
 
-## 比較対象の指定
+## Specify what to compare
 
-- 見る人が確かめたい変更に合わせて、比べる対象の種類を選ぶ。git で管理している変更なら2つのコミット、git で管理していないファイルの前後（変更前に控えた複製と今のもの、2つの版のフォルダなど）なら2つのフォルダ、ほかのツールが作った差分ならその unified diff を比べる。種類は1つのページの中で混ぜられる。
-- ブランチの変更を見せるなら、取り込み先のブランチとの分岐点からブランチの先までを比べる（`--merge-base`）。取り込み先のブランチに後から入った変更が、ページに混ざらない。
-- git の2つのコミットで比べられるのは、コミットされた変更だけだ。作業中の変更をコミットするかはユーザーが判断する。コミットしていない作業中の変更を見せるなら、`git diff HEAD` の出力を unified diff として渡すか（git にまだ追加していない新しいファイルは入らない）、変更前の複製と今のものを2つのフォルダとして比べる。2つのフォルダの比較は、git が無視するファイル（依存物・ビルドの出力・接続情報のファイルなど）も比べるので、比べるフォルダには見せたいファイルだけを入れる。
-- unified diff の対象は差分に記載された行の範囲しか持たない。ファイルの全文を見せたいときは、ほかの種類の対象にする。
-- ページの題とデータの版（`--data-version`。ページのヘッダーにそのまま出る文字列）は、見る人が何を見ているかを後から言えるように付ける。題には何の変更か、データの版には比べた状態（コミット・日付・版の名前）が分かるものを入れる。
+- Choose the kind of target to match the change the viewer needs to check. For changes managed by git, compare two commits. For files that git does not manage (a copy made before the change and the current version, or two versions of a folder), compare two folders. For a diff made by another tool, use that tool's unified diff. One page can mix kinds.
+- To show a branch's changes, compare from the point where the branch diverged from the target branch to the tip of the branch (`--merge-base`). Changes added to the target branch later then stay out of the page.
+- A comparison of two git commits covers only committed changes. The user decides whether to commit work in progress. To show uncommitted work, use one of two ways. One is to pass the output of `git diff HEAD` as a unified diff; new files not yet added to git are not included. The other is to compare a copy made before the change with the current files as two folders. A two-folder comparison also compares files that git ignores (dependencies, build output, files with credentials), so put only the files to show in the folders you compare.
+- A unified diff holds only the line ranges it lists. To show the whole of a file, use another kind of target.
+- Give the page a title and a data version (`--data-version`, a string shown as is in the page header), so that the viewer can later say what they were looking at. Put what changed in the title. Put something that identifies the compared states (a commit, a date, a version name) in the data version.
 
-## 全文表示の選択
+## Decide whether to include full text
 
-全文を入れると、見る人は変わった行の前後だけでなく、ファイル全体の流れの中で変更を読める。その代わり、ページは変わったファイルの大きさの分だけ大きくなる。依頼から、見る人が前後の流れまで読む必要があると読めるとき（文書の書き直し、設定ファイルの一部の変更など）に全文を入れ、変更の量や箇所を見るだけなら差分だけにする。どちらとも読めなければ差分だけにし、全文を入れたページも作れることを渡すときに添える。
+Full text lets the viewer read a change in the flow of the whole file, not only the lines around the changed lines. With full text, the page grows by the size of the changed files. Include full text when the request suggests the viewer needs the surrounding flow (a rewritten document, a partial change to a configuration file). Use the diff alone when the viewer only needs the amount or location of changes. If the request suggests neither, use the diff alone. When you hand over the page, say that a page with full text can also be built.
 
-## 出力ファイルの提示方法
+## Hand over the page
 
-ページは、見る人がその場で開いて見られる形で渡す。HTML ファイルを作って保存先や添付を示すだけでは、見る人がファイルを取り出して開くまでページを見られない。Claude が動く環境では、ページをアーティファクトとして示すことを既定にする。
+Hand over the page in a form the viewer can open on the spot. If you only save an HTML file and point to its location or attachment, the viewer must fetch and open the file before seeing the page. In environments where Claude runs, present the page as an artifact by default.
 
-- ローカルの HTML ファイルをそのままアーティファクトとして公開できるツールがあれば、作ったファイルを公開する。Claude のアーティファクトは公開するときにページに文書の骨組み（DOCTYPE・html・head・body）を付けるので、`build.py` に `--artifact` を付けて、骨組みを省いて書き出す。ページには差分のデータがすべて入っていて大きくなることがあるので、ページの中身を書き写さずにファイルのまま公開する。
-- アーティファクトを中身から作る環境（ファイルを公開するツールが無く、アーティファクトの中身をエージェントが記述する環境）では、`build.py` が書き出したページを、書き換えずにアーティファクトの中身にする。手で書き換えると、ページの差分が元の変更と合わなくなる。ページが大きく中身にしきれないときは、全文を入れないページにする。
-- アーティファクトを使えない環境では、HTML ファイルを保存して、ファイルの場所を呼び出し元に伝える。保存する場所を呼び出し元が言っていなければ、比べるどのリポジトリやフォルダにも入らない場所に置く。比べる対象の中を出力先にすると、`build.py` は止まる。
-- 公開先に大きさの上限があってページが上限を超えるなら、全文を入れないページにするか、HTML ファイルで渡す。
+- If a tool can publish a local HTML file as an artifact as it is, publish the file you built. Claude publishes artifacts by wrapping the page in a document skeleton (DOCTYPE, html, head, body). So add `--artifact` to `build.py` to write the page without the skeleton. The page holds all the diff data and can be large, so publish the file as it is and do not copy its contents.
+- In environments that build an artifact from its contents (no tool publishes files, and the agent writes the artifact's contents), use the page `build.py` wrote, unmodified, as the artifact's contents. If you edit the page by hand, its diff no longer matches the actual change. If the page is too large to use as contents, build a page without full text.
+- In environments without artifacts, save the HTML file and tell the caller where it is. If the caller named no location, save it where none of the compared repositories or folders contains it. `build.py` stops if the output is inside a compared target.
+- If the publishing destination has a size limit and the page exceeds it, build a page without full text or hand over the HTML file.
 
-- `build.py` は、出力先に同じ名前のファイルがあっても、確かめずに上書きする。人が開いているページや、人が手を入れたページと同じ名前にしない。
-- 公開したページは外部のサービスに置かれる。ユーザーが秘密として扱っている対象や、持ち主が外へ出すことを認めていない情報がページに入っていそうな対象なら、公開せずに HTML ファイルで渡し、どこに置くかは呼び出し元に任せる。差分だけのページには変わった行とその前後の数行とコミットの件名が入り、全文を入れたページには変わったファイルの変わっていない所も全部入る。
-- 渡すときは、何と何を比べたか（対象、比べた2つの状態、分岐点から比べたか）と、全文を入れたかを短く添える。見る人が、ページに入っていない変更があるかを判断できるようにするため。
+- `build.py` overwrites a file of the same name at the output path without checking. Do not reuse the name of a page someone has open or has edited.
+- A published page is stored on an external service. If a target is one the user treats as confidential, or likely holds information that its owner has not allowed outside, hand over the HTML file instead of publishing it, and leave the location to the caller. A diff-only page holds the changed lines, a few lines around them, and the commit subjects. A page with full text also holds all the unchanged parts of the changed files.
+- When you hand over the page, add a short note of what was compared: the targets, the two states compared, and whether the comparison started from the divergence point. Also say whether full text is included. With the note, the viewer can judge whether any change is missing from the page.

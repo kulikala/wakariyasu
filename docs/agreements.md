@@ -6,12 +6,12 @@ wakariyasu のスキルや規則の中には、エージェントの判断に任
 
 ### 指摘抽出の4つの項目
 
-- 対象：`skills/summarize-session/SKILL.md` の「指摘抽出」の節
+- 対象：`skills/summarize-session/SKILL.md` の「Feedback extraction」の節
 - 拘束：まとめた指摘ごとに、指摘事項・意図・背景と対象・対応方針の4つを記述し、4つとも省かない。
 - 合意：2026-11-06、著者が指摘抽出の構成として4つの項目を指定した。
 
 ### 文書を作った元の記録の扱い
 
-- 対象：`skills/summarize-session/SKILL.md` の「文書の組み立て」の節
+- 対象：`skills/summarize-session/SKILL.md` の「Structuring the document」の節
 - 拘束：何から文書を作ったかは、読み手に必要なときだけ、本文とは別の節で記述する。
 - 合意：2026-11-06、著者が、作業記録を何から抽出したかは必要であれば別のセクションに記述するよう指定した。

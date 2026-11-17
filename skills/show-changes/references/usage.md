@@ -1,69 +1,69 @@
-# build.py の使い方
+# How to use build.py
 
-ページを作るときと、作り直すときに読む。
+Read this when you build or rebuild a page.
 
-## 動かすのに必要なもの
+## Requirements
 
-- Python 3.9 以上。標準のライブラリだけを使う
-- git は、git の2つのコミットの対象（`--repo`）を集めるときに要る。それ以外の対象と `--data` は git の無い環境でも動く。git があれば、2つのフォルダの対象の差分も git で作り、大きいファイルでも速く作れる
+- Python 3.9 or later. Only the standard library is used.
+- git is required to collect a git two-commit target (`--repo`). Other targets and `--data` work without git. When git is available, the diff of a two-folder target is also built with git, which is fast even for large files.
 
-## ページを作る
+## Build a page
 
 ```
-python3 -B scripts/build.py --repo <名前> <リポジトリの場所> <BASE> <TARGET> --data-version '<版>' -o <出力>.html
-python3 -B scripts/build.py --repo <名前> <場所> main <ブランチ> --merge-base <名前> --data-version '<版>' -o <出力>.html
-python3 -B scripts/build.py --dirs <名前> <変更前> <変更後> --data-version '<版>' -o <出力>.html
-python3 -B scripts/build.py --diff <名前> <差分ファイル> --data-version '<版>' -o <出力>.html
+python3 -B scripts/build.py --repo <name> <repository path> <BASE> <TARGET> --data-version '<version>' -o <output>.html
+python3 -B scripts/build.py --repo <name> <path> main <branch> --merge-base <name> --data-version '<version>' -o <output>.html
+python3 -B scripts/build.py --dirs <name> <before> <after> --data-version '<version>' -o <output>.html
+python3 -B scripts/build.py --diff <name> <diff file> --data-version '<version>' -o <output>.html
 ```
 
-| 引数 | 意味 |
+| Argument | Meaning |
 |---|---|
-| `--repo NAME PATH BASE TARGET` | git の2つのコミットの対象。`PATH` はリポジトリの中のどこでもよい。`BASE` が変更前、`TARGET` が変更後で、どちらもブランチ・コミット・タグで渡す |
-| `--dirs NAME BEFORE AFTER` | ふつうのフォルダ 2 つ、またはファイル 2 つの対象。`.git` の中は見ないが、git が無視するファイルは比べる。シンボリックリンクは辿らず、リンク先のパスを比べる。通常のファイルとシンボリックリンクの入れ替わりは、種類の変更（T）として出す |
-| `--diff NAME FILE` | 既にある unified diff の対象。`git diff` の形（接頭辞の無い `--no-prefix` の形を含む）でも、`diff -u`・`diff -ru` の `---`・`+++` だけの形でもよい |
-| `--merge-base NAME` | `--repo` に付けた名前が `NAME` の対象を、`BASE` と `TARGET` の分岐点から `TARGET` までで比べる（`git diff BASE...TARGET` と同じ範囲） |
-| `--data-version` | ヘッダーにそのまま出るデータの版。形は自由。新しく集めるときは必須 |
-| `--title` | ページの題。渡さなければ「差分レビュー」 |
-| `--group-depth N` | ファイルの一覧をまとめるディレクトリの深さ。既定は 2、0 でまとめない |
-| `--full-text` | 変わったファイルの全文も入れる |
-| `--artifact` | DOCTYPE・html・head・body のタグを省いて HTML を書き出す。Claude のアーティファクトのように、公開するときに文書の骨組みを付ける公開先に渡すときに付ける。付けないと、ファイルとしてそのまま開ける完全な HTML になる |
-| `-o`／`--output` | HTML の出力先。`-` で標準出力 |
-| `--json-out` | 差分のデータを JSON に書き出す。`-` で標準出力。`-o` と一緒に使える |
-| `--data <JSON>` | 書き出した JSON から、集め直さずにページを作る。`-` で標準入力 |
-| `--template` | 表示に使うテンプレートを替える。既定は `scripts/template.html` |
+| `--repo NAME PATH BASE TARGET` | A target made of two git commits. `PATH` can be anywhere inside the repository. `BASE` is the before state and `TARGET` is the after state; pass each as a branch, commit or tag. |
+| `--dirs NAME BEFORE AFTER` | A target made of two ordinary folders or two files. It does not look inside `.git`, but it compares files that git ignores. It does not follow symbolic links and compares the link target paths. A change between a regular file and a symbolic link appears as a type change (T). |
+| `--diff NAME FILE` | A target made of an existing unified diff. The format can be the `git diff` form (including the `--no-prefix` form without prefixes) or the `diff -u` / `diff -ru` form with only `---` and `+++`. |
+| `--merge-base NAME` | Compare the target whose `--repo` name is `NAME` from the divergence point of `BASE` and `TARGET` to `TARGET` (the same range as `git diff BASE...TARGET`). |
+| `--data-version` | The data version, shown as is in the header. Any form. Required when collecting new data. |
+| `--title` | The page title. If omitted, the title is `差分レビュー`. |
+| `--group-depth N` | The directory depth at which the file list is grouped. Default 2; 0 means no grouping. |
+| `--full-text` | Also include the full text of changed files. |
+| `--artifact` | Write the HTML without the DOCTYPE, html, head and body tags. Add it when handing the page to a destination that wraps pages in a document skeleton on publishing, as Claude artifacts do. Without it, the output is a complete HTML file that opens as is. |
+| `-o` / `--output` | The HTML output path. `-` writes to standard output. |
+| `--json-out` | Write the diff data as JSON. `-` writes to standard output. Can be used together with `-o`. |
+| `--data <JSON>` | Build the page from a previously written JSON without collecting again. `-` reads standard input. |
+| `--template` | Replace the template used for display. The default is `scripts/template.html`. |
 
-- `--repo`・`--dirs`・`--diff` は混ぜて何度でも付けられる。対象の名前はページの絞り込みの選択肢になるので、重ならないように付ける
-- 比べる対象には書き込まない（git は読むだけ）。出力先が比べる対象の中なら止まる
-- 終了コードは、作れたら 0、引数・git・入力・JSON の誤りなら 2。UTF-8 として読めないバイトは止まらずに `\xNN` の形で表示し、そのファイルに説明を付ける。誤りは標準エラーに出る（git の誤りは git のメッセージ）
-- HTML にも JSON にも、比べた対象のこの PC での場所は入らない。ページをそのまま人に渡せる
+- `--repo`, `--dirs` and `--diff` can be mixed and repeated. Target names become the choices of the page's filter, so give names that do not overlap.
+- The compared targets are never written to (git is only read). The script stops if the output path is inside a compared target.
+- The exit code is 0 when the page was built and 2 for an error in arguments, git, input or JSON. Bytes that are not valid UTF-8 do not stop the build. They are shown in the form `\xNN`, and the file gets a notice. Errors go to standard error (git errors are git's own messages).
+- Neither the HTML nor the JSON contains the location of the compared targets on this computer. The page can be handed to people as is.
 
-## JSON から作り直す
+## Rebuild from JSON
 
-集めたデータを JSON に書き出しておくと、題や表示のテンプレートを替えて、集め直さずにページを作り直せる。
+If you write the collected data to JSON, you can change the title or the display template and rebuild the page without collecting again.
 
 ```
-python3 -B scripts/build.py --repo <名前> <場所> <BASE> <TARGET> --data-version '<版>' --json-out <出力>.json
-python3 -B scripts/build.py --data <出力>.json --title '<題>' -o <出力2>.html
+python3 -B scripts/build.py --repo <name> <path> <BASE> <TARGET> --data-version '<version>' --json-out <output>.json
+python3 -B scripts/build.py --data <output>.json --title '<title>' -o <output2>.html
 ```
 
-- 題・データの版・まとめる深さは、引数で渡さなければ JSON の値のまま。全文の有無は JSON で決まる
-- `--data` には、集める側の引数（`--repo`・`--dirs`・`--diff`・`--merge-base`・`--full-text`）は付けられない
-- 出力先は、どの git のリポジトリにも管理されない場所（リポジトリの外か、リポジトリが無視する作業用のフォルダ）にする。JSON は比べた対象の場所を持たず、出力先が比べた対象の中かを確かめられないので、管理される場所と `.git` の中への出力は止まる
-- JSON の形は `references/data-format.md` にある。自分で JSON を作る・読むときだけ読む
+- The title, data version and grouping depth keep the JSON's values unless passed as arguments. Whether full text is included is decided by the JSON.
+- `--data` cannot be combined with the collecting arguments (`--repo`, `--dirs`, `--diff`, `--merge-base`, `--full-text`).
+- Put the output where no git repository manages it (outside any repository, or in a work folder the repository ignores). The JSON does not hold the location of the compared targets, so the script cannot check whether the output is inside one. It therefore stops for output in a managed location and for output inside `.git`.
+- The JSON format is in `references/data-format.md`. Read it only when you write or read JSON yourself.
 
-## ページを見る人ができること
+## What the viewer can do on the page
 
-渡すときに、見る人へ使い方を添える材料。
+Use this to tell the viewer how to use the page when handing it over. The page's own text (buttons, labels) is in Japanese.
 
-- 対象の選択と、ファイル名・行の本文での絞り込み（`@@` の行や行頭の `+`・`-` には当たらない）。入力した文字列は、入力欄の右端の ✕ ボタンか Esc キーで消せる
-- ファイルごとの開閉と、すべて開く・すべて閉じる。ファイルの途中までスクロールしてから見出しで閉じると、次のファイルの見出しが見える位置にスクロールする
-- ファイル名の横のボタンで、そのファイルのパスをクリップボードにコピーする
-- 文字列を選ぶと、選んだ所の上に小さなボタンが出て、押すと選んだ文字列をコピーする
-- 配置（変更前と変更後を上下に並べるか、左右に並べるか）、範囲（差分・全文。データに全文があるときだけ出る）、配色（ライト・ダーク・ミックス（周りはダーク、差分の部分だけライト）。初めは OS やブラウザの設定に合わせる）
-- コミットの一覧（git の2つのコミットの対象だけ。新しい順に日ごとにまとめる）
-- 広い画面では、ファイルの一覧と差分の境目をドラッグして一覧の幅を変えられ（ダブルクリックで元の幅）、操作の帯の左端のボタンで一覧を隠せる。幅と隠したかは、見る人のブラウザに残る
-- スマートフォンの幅では、ファイルの一覧から選ぶと差分の画面に移り、戻るボタンで一覧に戻る
+- Select a target, and filter by file name or by the text of lines (the filter does not match `@@` lines or the leading `+` and `-`). Clear the entered text with the ✕ button at the right end of the input or with the Esc key.
+- Open and close each file, and open all or close all. If the viewer scrolls partway into a file and closes it by its heading, the page scrolls so that the next file's heading is visible.
+- A button next to a file name copies the file's path to the clipboard.
+- When the viewer selects text, a small button appears above the selection, and pressing it copies the selected text.
+- Layout (before and after stacked vertically or side by side), range (diff or full text; shown only when the data has full text) and color scheme (light, dark, or mixed, where the surroundings are dark and only the diff part is light). The color scheme starts from the OS or browser setting.
+- The commit list (only for git two-commit targets; newest first, grouped by day).
+- On wide screens, dragging the boundary between the file list and the diff changes the list's width (double-click restores it), and the button at the left end of the control bar hides the list. The width and the hidden state are kept in the viewer's browser.
+- On smartphone widths, choosing from the file list moves to the diff screen, and the back button returns to the list.
 
-## ページの大きさ
+## Page size
 
-差分だけのページは差分の行数に応じて、全文を入れたページは変わったファイルの大きさの合計に応じて大きくなる。ページはファイルを画面に近づいたものから描くので、大きいページでも開くまでの時間は伸びにくい。
+A diff-only page grows with the number of diff lines. A page with full text grows with the total size of the changed files. The page renders files nearest the screen first, so even a large page opens in about the same time.

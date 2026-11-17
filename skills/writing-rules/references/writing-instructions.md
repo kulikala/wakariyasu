@@ -1,16 +1,14 @@
-# エージェント向けの指示文の書き方
+# How to write instructions for agents
 
-スキル・規則・プロンプトのように、エージェントが読んで動く文書には、指示ごとに、何のために指示するのか、
-何が満たされればよいのかを記述する。目的が分かれば、読むエージェントは指示文に記載していない場面でも、
-目的に合う振る舞いを選べる。
+In a document that an agent reads and acts on, such as a skill, a rule, or a prompt, state the purpose of each instruction and the condition it must meet. When the agent knows the purpose, it can choose behavior that fits the purpose in situations the instructions do not cover.
 
-- 決まった形が要らないところは、エージェントが選べる幅を「〜できる」「〜を使える」の形で記述する。
-- 避けたい振る舞いや望む形も、目的として記述する。目的で記述すると、禁止した場面の外や例に無い形にも当てはまる。
-- 語や文の具体的な例を「」で囲んで記述せず、何を指すかが伝わるように内容を言葉で書き下す。具体的な例は、読むエージェントがそのまま写したり、例の範囲に振る舞いを狭めたりする。「」は、文字そのものに意味があるもの（入力の中から照合する語、見出しや列の名前のようにほかの人やツールがその名前で読む出力）にだけ使う。
-- 括弧の中や「など」で並べる例の列挙も、読むエージェントは列挙した項目をそのまま使い、列挙の外の項目を考えなくなる。何を示すかは、項目を満たす条件や性質で記述する。項目を並べてよいのは、並べた項目が対象の全部で、並べること自体が規定になっているときだ。
-- 指示文が作らせる成果物の書き方は、読み手が成果物から何を読み取れればよいかという方針で記述し、どこに何を置くか、どう書き出すか、どの順序で並べるかは定めない。配置する場所や順序を定めた文は作業の指示になり、成果物ごとに合う構成をエージェントが選択できなくなる。書き方を定めるのは、ユーザーが出力の形式をはっきり指定したときと、ほかの人やツールがその形式で読むときだけにする。ユーザーが指定した形式は、書いている指示文を置くリポジトリやプロジェクトの、ユーザーと合意した拘束の記録に残し、点検で縛りすぎとして外されないようにする。
-- ユーザーが禁止や具体例をはっきり求めたときは、求められた禁止や具体例を記載し、何のためかを添える。
-- ユーザーとのやり取りや作業の経緯で決まったことは、結論と目的として記述する。
-- 指示文が定める振る舞いは、指示文が受け持つ範囲のものにする。
-- 指示文は読み込まれるたびにエージェントの文脈を使うので、記載しても記載しなくても振る舞いが変わらない文は除く。
-- 1つの事柄は1か所にだけ記述し、ほかの場所では記述した所を名前で指す。一緒に読み込まれる文書どうしも同じにする。同じ指示を2か所に書くと、片方だけを直したときに食い違い、読むエージェントはどちらに従うかで迷う。
+- Where no fixed form is needed, state the range the agent may choose from, as a permission.
+- State behaviors to avoid and forms to aim for as purposes too. A purpose also applies outside the situations a prohibition names and to forms no example shows.
+- Do not put concrete examples of words or sentences in quotation marks. Spell out in words what they stand for. An agent copies a concrete example as it is, or narrows its behavior to the range of the example. Use quotation marks only for text whose exact characters matter: words matched literally in the input, and output that other people or tools read by name, such as headings and column names.
+- A list of examples, in parentheses or with "and so on", has the same effect. The agent uses the listed items as they are and stops thinking of items outside the list. State what the items stand for by the condition or property they satisfy. List items only when the listed items are the whole of the subject and listing them is itself the rule.
+- For a deliverable that the instructions produce, state how it is to be written as a policy about what the reader should be able to read from the deliverable. Do not fix where things go, how to open, or in what order to arrange. A sentence that fixes places or order is an instruction about the work, and it stops the agent from choosing the structure that suits each deliverable. Fix the form only when the user explicitly specified the output format, or when other people or tools read the deliverable in that format. Record a format the user specified in the record of constraints agreed with the user. Keep that record in the repository or project that holds the instructions, so that a review does not remove the format as over-constraining.
+- When the user explicitly asks for a prohibition or a concrete example, include what was asked for and add what it is for.
+- State what was decided in exchanges with the user or in the history of the work as a conclusion with its purpose.
+- Limit the behaviors the instructions define to the matters the instructions are responsible for.
+- Instructions take up the agent's context every time they are loaded, so remove sentences whose presence or absence does not change behavior.
+- State each matter in one place, and in other places refer to that place by name. Apply the same practice across documents that are loaded together. The same instruction in two places contradicts itself when only one is fixed, and the agent hesitates over which to follow.

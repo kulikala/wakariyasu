@@ -65,12 +65,12 @@ Keep a Changelog の日本語の版（https://keepachangelog.com/ja/1.1.0/）と
 
 ## session-status のページ
 
-日本語の報告からページを作るときは、`lang` を `ja` にし、`labels` に次の語を渡す。見出し・列名・状態の語は、上の「session-status の報告」と「判断の問いかけ」の節の名前と同じにする。`{answered}`・`{total}`・`{title}` は、ページが値を入れる箇所なので、そのまま残す。
+日本語の報告からページを作るときは、`lang` を `ja` にし、`labels` に次の語を渡す。見出し・列名・状態の語は、上の「session-status の報告」と「判断の問いかけ」の節の名前と同じにする。`{asOf}`・`{n}`・`{answered}`・`{total}`・`{title}` は、ページが値を入れる箇所なので、そのまま残す。
 
 ```json
 {
   "pageKind": "セッションの状況",
-  "asOf": "時点",
+  "asOf": "{asOf} 時点",
   "goal": "現在のゴール",
   "instruction": "直近の指示",
   "tasks": "タスク",
@@ -82,6 +82,7 @@ Keep a Changelog の日本語の版（https://keepachangelog.com/ja/1.1.0/）と
   "colOption": "案",
   "colOptionDetail": "背景・選ぶと起きること",
   "recommended": "（お勧め）",
+  "decisionRef": "（{n}）",
   "stateDone": "完了",
   "stateInProgress": "作業中",
   "stateWaitingProcess": "処理待ち",

@@ -51,7 +51,7 @@
 
       <header class="flex flex-col gap-5">
         <p class="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-          <span>{{ L.pageKind }}</span><template v-if="data.asOf"><span aria-hidden="true"> · </span><span>{{ L.asOf }} {{ data.asOf }}</span></template>
+          <span>{{ L.pageKind }}</span><template v-if="data.asOf"><span aria-hidden="true"> · </span><span>{{ fill(L.asOf, { asOf: data.asOf }) }}</span></template>
         </p>
         <h1 class="text-3xl font-bold leading-tight tracking-tight [text-wrap:balance] md:text-4xl">{{ data.title }}</h1>
         <div v-if="tasks.length" class="flex flex-col gap-3">
@@ -188,7 +188,7 @@
     // English defaults. The report's data may replace any of them through "labels".
     const DEFAULT_LABELS = /*__LABELS__*/{
       "pageKind": "Session status",
-      "asOf": "As of",
+      "asOf": "As of {asOf}",
       "goal": "Current goal",
       "instruction": "Latest instruction",
       "tasks": "Tasks",
@@ -201,6 +201,7 @@
       "colOption": "Option",
       "colOptionDetail": "Background and what happens if chosen",
       "recommended": "(recommended)",
+      "decisionRef": " ({n})",
       "stateDone": "Done",
       "stateInProgress": "In progress",
       "stateWaitingProcess": "Waiting on a process",
@@ -284,7 +285,7 @@
           const known = typeof t.state === 'string' ? STATES[t.state] : null
           const emoji = known ? known.emoji : (t.state && t.state.emoji) || ''
           const baseLabel = known ? L[known.label] : (t.state && t.state.label) || ''
-          const stateLabel = t.decision ? `${baseLabel} (${t.decision})` : baseLabel
+          const stateLabel = t.decision ? baseLabel + fill(L.decisionRef, { n: t.decision }) : baseLabel
           return { ...t, emoji, stateLabel, baseLabel, key: known ? t.state : 'custom:' + emoji + baseLabel, tone: known ? known.tone : 'todo' }
         })
 
@@ -332,7 +333,7 @@
         /** The pasted text repeats each question so the agent can match answers without the page. */
         const answerText = computed(() => {
           const out = [fill(L.copyHeading, { title: data.title || '' })]
-          if (data.asOf) out.push(`${L.asOf} ${data.asOf}`)
+          if (data.asOf) out.push(fill(L.asOf, { asOf: data.asOf }))
           for (const d of decisions) {
             const a = answers[d.number]
             const option = d.options.find(o => o.letter === a.choice)
@@ -381,7 +382,7 @@
         }
 
         onMounted(() => { ready.value = true })
-        return { data, L, ready, tasks, summary, summaryLabel, decisions, answers, overall, isAnswered, clearAnswer, progressText, answerText, copyState, answerBox, copyAnswers, jump }
+        return { data, L, fill, ready, tasks, summary, summaryLabel, decisions, answers, overall, isAnswered, clearAnswer, progressText, answerText, copyState, answerBox, copyAnswers, jump }
       }
     }).mount('#app')
   </script>

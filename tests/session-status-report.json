@@ -1,0 +1,45 @@
+{
+  "title": "Docs site migration",
+  "lang": "en",
+  "asOf": "2026-03-12 14:20",
+  "goal": "Move the product documentation from the old wiki to a static site in the `docs/` folder of the main repository, so that documentation changes go through the same review as code.",
+  "instruction": "Convert the remaining wiki pages, set up the build, and prepare the site for the first public deploy. Do not deploy until the redirects are approved.",
+  "tasks": [
+    { "task": "Export the 214 wiki pages to Markdown", "state": "done", "notes": "All pages exported. 6 pages with embedded spreadsheets were exported as tables." },
+    { "task": "Fix broken internal links", "state": "done", "notes": "1,038 links rewritten; the link checker reports 0 broken links." },
+    { "task": "Set up the site build in CI", "state": "waiting_process", "notes": "The first CI run is building the site (about 8 minutes)." },
+    { "task": "Choose where old wiki URLs go", "state": "waiting_decision", "decision": 1, "notes": "Needed before the deploy, because search engines and bookmarks point to the old URLs." },
+    { "task": "Add the search box", "state": "waiting_decision", "decision": 2, "notes": "The two search services differ in cost and in where the index is hosted." },
+    { "task": "Write the contributor guide", "state": "in_progress", "notes": "Sections on local preview and review are written; the style section remains." },
+    { "task": "Import the API reference", "state": "problem", "notes": "The generator stops on 3 endpoints whose descriptions contain raw HTML. The pages are skipped for now." },
+    { "task": "Translate the getting-started pages", "state": "not_started", "notes": "Starts after the English pages are reviewed." },
+    { "task": "Keep the wiki's comment threads", "state": "cancelled", "notes": "The documentation owners decided the threads are not moved; the wiki stays read-only for a year." }
+  ],
+  "status": "The export and link fixes are done, and CI is building the site for the first time. Next, I will finish the contributor guide while the build runs, then look into the 3 API endpoints that stop the generator.\n\nThe deploy waits for decision 1. Search (decision 2) can be added after the deploy if needed.",
+  "decisions": [
+    {
+      "number": 1,
+      "question": "Where should the old wiki URLs send readers after the docs site goes live?",
+      "context": "The goal is to move readers to the new site without losing them. About 40% of visits come from search engines and saved bookmarks that point to wiki URLs. Redirects are public and hard to take back once search engines index them, so they need your approval.",
+      "options": [
+        { "letter": "A", "label": "Page by page", "recommended": true, "text": "Each wiki page redirects to the page with the same content on the new site. Readers land where they expected. Recommended because it keeps search rankings for the 30 most visited pages." },
+        { "letter": "B", "label": "Home page", "text": "Every wiki URL redirects to the new site's home page. Quick to set up, but readers have to search again for the page they wanted." },
+        { "letter": "C", "label": "Keep the wiki", "text": "The wiki stays online with a banner linking to the new site. Nothing breaks, but two copies of the docs exist until the wiki is closed." }
+      ]
+    },
+    {
+      "number": 2,
+      "question": "Which search service should the docs site use?",
+      "context": "Readers asked for search in the last survey. The services differ in monthly cost and in whether the search index is stored outside the company, which the agent cannot decide.",
+      "options": [
+        { "letter": "A", "label": "Hosted search", "text": "A hosted service indexes the site. Results are better for typos. Costs about $50 per month, and the index is stored by the service." },
+        { "letter": "B", "label": "Built-in search", "text": "The site generator builds a search index into the site itself. Free and nothing leaves the site, but results for typos are weaker." }
+      ]
+    },
+    {
+      "number": 3,
+      "question": "Is there a date the docs site must be live by?",
+      "context": "The deploy order (redirects, then search, then translations) depends on whether a fixed date exists, such as a product launch. Only you know this."
+    }
+  ]
+}

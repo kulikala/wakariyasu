@@ -62,3 +62,49 @@ Keep a Changelog の日本語の版（https://keepachangelog.com/ja/1.1.0/）と
 | Option（表の列） | 案 |
 | Background and what happens if chosen（表の列） | 背景・選ぶと起きること |
 | (recommended) | （お勧め） |
+
+## session-status のページ
+
+日本語の報告からページを作るときは、`lang` を `ja` にし、`labels` に次の語を渡す。見出し・列名・状態の語は、上の「session-status の報告」と「判断の問いかけ」の節の名前と同じにする。`{answered}`・`{total}`・`{title}` は、ページが値を入れる箇所なので、そのまま残す。
+
+```json
+{
+  "pageKind": "セッションの状況",
+  "asOf": "時点",
+  "goal": "現在のゴール",
+  "instruction": "直近の指示",
+  "tasks": "タスク",
+  "status": "直近のステータス",
+  "decisions": "判断を求めていること",
+  "colTask": "タスク",
+  "colState": "状態",
+  "colNotes": "背景・補足",
+  "colOption": "案",
+  "colOptionDetail": "背景・選ぶと起きること",
+  "recommended": "（お勧め）",
+  "stateDone": "完了",
+  "stateInProgress": "作業中",
+  "stateWaitingProcess": "処理待ち",
+  "stateWaitingDecision": "判断待ち",
+  "stateNotStarted": "未着手",
+  "stateProblem": "問題あり",
+  "stateCancelled": "中止",
+  "noteLabel": "添えるメッセージ（任意）",
+  "notePlaceholder": "条件や理由など、エージェントに伝えたいこと",
+  "freeAnswerLabel": "回答",
+  "freeAnswerPlaceholder": "回答を記入してください",
+  "clearAnswer": "この回答を消す",
+  "overallLabel": "報告全体へのメッセージ（任意）",
+  "overallPlaceholder": "ほかにエージェントに伝えたいこと",
+  "previewLabel": "セッションに貼り付ける文",
+  "progress": "{total} 問中 {answered} 問に回答済み",
+  "copy": "回答をコピー",
+  "copied": "コピーしました",
+  "copyFailed": "ここではコピーできませんでした。上の欄の文を選んでコピーしてください。",
+  "copyHeading": "「{title}」の判断を求めていることへの回答",
+  "copyAnswer": "回答",
+  "copyNoAnswer": "（未回答）",
+  "copyNote": "メッセージ",
+  "copyOverall": "報告全体へのメッセージ"
+}
+```

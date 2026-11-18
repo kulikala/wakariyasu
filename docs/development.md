@@ -15,12 +15,14 @@ skills/check-terms/references/   日本語では使わない言い回しの一�
 skills/check-terms/scripts/      check-terms（言い回しを文書から探す）と terms-table（一覧を、フックと AGENTS.snippet.md に入れる表にする）
 tests/terms-cases.txt            check-terms が当たる例と当たらない例
 tests/caution-cases.txt          check-terms が「（文脈で確かめる）」を付けて出す例と出さない例
+tests/session-status-report.json session-status のページを作るテストに使う、架空の報告
 hooks/                           セッションの始めに規則を読み込ませ、言語パックの場所を伝えるフック（load-rules.sh・lang-index.sh）
 AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（dev/build が作る）
 dev/build                        規則・asking.md・言語パック・言い回しの一覧をつなげて、AGENTS.snippet.md を作る
 dev/test                         リポジトリのルールを検査する
 dev/test-show-changes.py         show-changes の build.py と template.html を改修したあとのテスト（docs/show-changes.md）
 dev/test-show-changes-page.mjs   show-changes のページをブラウザで開いて操作を試すテスト
+dev/test-session-status.py       session-status のページを作る build.py と template.html、日本語の言語パックのページの語を改修したあとのテスト
 .github/workflows/test.yml       push と pull request のたびに dev/test を実行する GitHub Actions の設定
 evals/                           スキルが呼ばれるかを測る claude plugin eval のケース
 docs/                            開発の手引き
@@ -31,6 +33,8 @@ CHANGELOG.md                     バージョンごとの変更
 フック・`dev/build`・`check-terms`・`terms-table` は `sh` と標準のコマンドだけで動きます。`dev/test` は、さらに `git` を使います。Python などのほかの処理系は要りません。
 
 スキル `show-changes` のページを作る `build.py` は、Python 3 の標準のライブラリで動きます。`build.py` を改修したあとのテストには、さらに node と Chrome を使います。改修の手順は [show-changes の改修方法](show-changes.md) にあります。
+
+スキル `session-status` のページを作る `build.py` も、Python 3 の標準ライブラリで動きます。`build.py`・`template.html`・日本語の言語パックにあるページの語を改修したあとは、`python3 dev/test-session-status.py` を実行します。
 
 ## 本文を修正する
 

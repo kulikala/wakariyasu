@@ -1,6 +1,6 @@
 ---
 name: session-status
-description: Use when the user asks about the current state of the session, such as "What's the status?", "What are you doing now?", "How far along are you?" or "What's left?", and when the user says the same thing in another language. Also use without being asked when reporting at a break in work that spans several tasks, when stopping to ask the user to decide, and when giving progress during long work. Report the session's situation as the current goal, the latest instruction, a task list with states, and the latest status. Add numbered decision questions if the user has something to decide. Keep it to the key points, but give enough background and intent to understand them.
+description: Use when the user asks about the current state of the session, such as "What's the status?", "What are you doing now?", "How far along are you?" or "What's left?", and when the user says the same thing in another language. Also use without being asked when reporting at a break in work that spans several tasks, when stopping to ask the user to decide, and when giving progress during long work. Report the session's situation as the current goal, the latest instruction, a task list with states, and the latest status. Add numbered decision questions if the user has something to decide. Keep it to the key points, but give enough background and intent to understand them. The report can also be shown as an HTML page on which the user chooses options for the decisions and copies the answers to paste back.
 ---
 
 # Purpose
@@ -62,6 +62,10 @@ If the user has asked you not to use emoji, write only the state word.
 For a state that fits none of the seven, you may make a new pair of an emoji and a word that expresses the state. Do not use the seven emoji for any other meaning.
 
 The emoji in the state column carry meaning, so keep them when polishing.
+
+## Showing the report as a page
+
+The report can also be shown as an HTML page, on which the user chooses options and writes messages for the decisions, then copies the answers to paste into the session. Make the page when the user asks to see the status as a page, or when the user's instructions say that what they look at should be shown as an artifact or a page. Make it only where you can publish a page or hand over an HTML file. The page shows the same report as the reply, so the same rules and the same polishing apply to its text. Before making the page, read `references/status-page.md`, which describes the steps, how to describe the report for the page, and what the reply that hands the page over contains.
 
 ## Check before sending
 

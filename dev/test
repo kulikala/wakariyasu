@@ -69,9 +69,9 @@ srcs="skills/writing-rules/rules/*.md skills/writing-rules/references/*.md skill
     grep -qxF "## $h" "$t" || grep -qxF "# $h" "$t" || grep -qxF "### $h" "$t" || { echo "NG: $t has no heading \"$h\"" >&2; exit 1; }
 done || fail=1
 
-# 7. The files in the repository that README links to exist
-grep -o '](\([^)#:]*\))' README.md | sed 's/^](//; s/)$//' | while read -r p; do
-    [ -e "$p" ] || { echo "NG: $p, linked from README.md, is missing" >&2; exit 1; }
+# 7. The files in the repository that README.md and README.ja.md link to exist
+for readme in README.md README.ja.md; do grep -o '](\([^)#:]*\))' "$readme" | sed 's/^](//; s/)$//'; done | while read -r p; do
+    [ -e "$p" ] || { echo "NG: $p, linked from a README, is missing" >&2; exit 1; }
 done || fail=1
 
 # 8. The .editorconfig settings (git handles UTF-8; this checks line endings and whitespace)
@@ -133,9 +133,9 @@ for d in skills/check-terms/lang/*/; do
     fi
 done
 
-# 10. The Japanese text outside the language pack (README and the development docs) uses no phrase to avoid.
-# CHANGELOG.md records past versions, so it is not checked.
-for f in README.md docs/*.md; do
+# 10. The Japanese README uses no phrase to avoid.
+# CHANGELOG.ja.md records past versions, so it is not checked.
+for f in README.ja.md; do
     sh "$T" --lang ja --no-caution "$f" >&2 || ng "$f uses a phrase to avoid in Japanese (fix the lines above)"
 done
 

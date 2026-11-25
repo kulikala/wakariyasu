@@ -11,10 +11,10 @@ skills/<name>/scripts/           Scripts that skill runs
 skills/writing-rules/rules/      Rules (writing-to-user, writing-documents, polishing)
 skills/writing-rules/references/ References the rules point to (questions for a decision, how to write instructions, how to write a README, how to write a changelog)
 skills/writing-rules/lang/<language>/ Per-language additions (language packs; ja is Japanese, en is English)
-skills/check-terms/references/   The list of phrases Japanese does not use (terms.tsv) and the list of phrases to check in context (terms-caution.tsv)
+skills/check-terms/lang/<code>/  For each language, the list of phrases the language does not use (terms.tsv) and the list of phrases to check in context (terms-caution.tsv)
 skills/check-terms/scripts/      check-terms (searches documents for phrases) and terms-table (turns the lists into the table put into the hook and AGENTS.snippet.md)
-tests/terms-cases.txt            Examples that check-terms matches and examples it does not
-tests/caution-cases.txt          Examples that check-terms prints marked "(check in context)" and examples it does not
+tests/lang/<code>/terms-cases.txt   Examples that check-terms matches (deny) and examples it does not (allow)
+tests/lang/<code>/caution-cases.txt Examples that check-terms prints marked "(check in context)" (flag) and examples it does not (allow)
 tests/session-status-report.json A fictional report used by the test that builds the session-status page
 hooks/                           Hooks that load the rules at the start of a session and tell where the language packs are (load-rules.sh, lang-index.sh)
 AGENTS.snippet.md                The body of the rules to paste into agents other than Claude Code (made by dev/build)
@@ -79,8 +79,8 @@ dev/test
 - Language pack files have one of the fixed names.
 - When a rule, reference, language pack or skill refers by name to a section of another rule or reference (in English bodies in the form ``the "<heading>" section of `x.md` ``, in Japanese bodies in the form ``（`x.md`）の「<見出し>」の節``), the named heading exists in the rule or reference it refers to.
 - The files in the repository that the README links to exist.
-- `check-terms` matches and does not match as the examples in `tests/terms-cases.txt` say.
-- `check-terms` prints marked "(check in context)" as the examples in `tests/caution-cases.txt` say, and does not make the exit code 1.
+- `check-terms` matches and does not match as the examples in `tests/lang/<code>/terms-cases.txt` say, for each language.
+- `check-terms` prints marked "(check in context)" as the examples in `tests/lang/<code>/caution-cases.txt` say, for each language, and does not make the exit code 1.
 - The Japanese language pack, the SKILL.md of `check-terms`, the README and the guide contain no phrases Japanese does not use.
 - There is no `bin/` at the top level. With a `bin/`, claude.ai and Cowork (the feature of the Claude desktop app for handing over work in bulk) do not accept the whole plugin. Development scripts are placed in `dev/`.
 - Line endings and whitespace match the `.editorconfig` settings (files registered in git are checked).

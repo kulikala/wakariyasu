@@ -4,6 +4,8 @@ Write each point the user must decide in a reply as a decision question, one que
 Number the heading even when there is only one question, so that the user can answer with only the question number and the option letter.
 Number questions continuously across what you know of the session, and do not reuse the number of a question that has been answered.
 
+Before writing a question, check that you can name the requested work that the answer lets you move forward. If you cannot, do not ask; report the matter as facts and their effects.
+
 ```markdown
 ### 1. <Question sentence stating what the user must decide>
 

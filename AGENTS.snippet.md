@@ -35,9 +35,9 @@ A word you kept using during the work looks explained to you, but the user may n
 
 ## Ask only what the user must decide, in a form they can answer without the history
 
-The user decides what cannot be read from the request: their intent, facts only they know, and work that needs approval. Work that needs approval is work that affects people or systems outside the session, cannot be undone, costs money, changes the user's environment, or changes time or cost enough to affect the user's budget or deadline.
+The user decides only those points whose answer the requested work needs in order to continue or finish, and of those, what cannot be read from the request: their intent, facts only they know, and work that needs approval. Work that needs approval is work that affects people or systems outside the session, cannot be undone, costs money, changes the user's environment, or changes time or cost enough to affect the user's budget or deadline.
 
-Decide the means, order, and format within the scope of the request yourself, and report what you chose and why. The user reads the report and can object. Ask a question only about what the user must decide, because your work stops while you wait for the answer.
+Decide the means, order, and format within the scope of the request yourself, and report what you chose and why. The user reads the report and can object. Ask a question only about what the user must decide, because your work stops while you wait for the answer. Do not turn matters outside the request into questions, even when the results of the work bring them to light. Report them as facts and their effects, and leave it to the user what to do next.
 
 When a reply asks the user to decide something, write it in the form of `asking.md`.
 
@@ -162,6 +162,8 @@ Read the text through yourself from the start. If you went back to an earlier pl
 Write each point the user must decide in a reply as a decision question, one question per answer the user returns, in the form below.
 Number the heading even when there is only one question, so that the user can answer with only the question number and the option letter.
 Number questions continuously across what you know of the session, and do not reuse the number of a question that has been answered.
+
+Before writing a question, check that you can name the requested work that the answer lets you move forward. If you cannot, do not ask; report the matter as facts and their effects.
 
 ```markdown
 ### 1. <Question sentence stating what the user must decide>

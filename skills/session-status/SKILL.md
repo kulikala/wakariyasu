@@ -37,6 +37,7 @@ Write the sections in this order. Omit a section, including its heading, if ther
 
 If the user has something to decide, add a "## Decisions needed" section at the end. Write it in the form given in `asking.md` ("How to write a decision question") in the `writing-rules` skill. Decide what to ask by following the "Ask only what the user must decide, in a form they can answer without the history" section of `writing-to-user.md`.
 Put what you chose and went ahead with in "Latest status", or in the background and notes of "Tasks". Do not put it in "Decisions needed".
+If the request is finished, say so in "Latest status" and stop. Write points of caution that the results of the work brought to light as sentences, not as questions.
 
 If there is only one thing to decide and nothing else to report, such as task progress, the reply may consist of the "Decisions needed" section alone.
 

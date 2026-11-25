@@ -1,6 +1,6 @@
 #!/bin/sh
-# Build AGENTS.snippet.md (for agents other than Claude Code) from the rules, asking.md, the language packs and the phrase lists of check-terms.
-# dev/build --check fails if AGENTS.snippet.md differs from the sources (it does not rewrite the file).
+# Build AGENTS.snippet.md (for agents other than Claude Code) from the rules and asking.md, and one AGENTS.snippet.<code>.md per language pack, with that language's phrase lists of check-terms.
+# dev/build --check fails if a snippet differs from the sources (it does not rewrite the files).
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -11,9 +11,10 @@ trap 'rm -r -- "$TMP"' EXIT
 {
     printf '<!-- wakariyasu:AGENTS.snippet.md -->\n'
     printf '\n# wakariyasu: file locations and language packs\n\n'
-    printf 'This text holds the rules (writing-to-user.md, writing-documents.md, polishing.md), asking.md, and every language pack. Each file starts after a comment line with its name. Files in this text need not be opened again. Other files are in the folders of the wakariyasu skills.\n\n'
-    printf 'Language packs follow the rules, one section per language. Read the pack of a language before you write a reply or a document in it. A language without a pack here has none; follow the rules alone.\n\n'
+    printf 'This text holds the rules (writing-to-user.md, writing-documents.md, polishing.md) and asking.md. Each file starts after a comment line with its name. Files in this text need not be opened again. Other files are in the folders of the wakariyasu skills.\n\n'
+    printf 'What to add when writing in a particular language is in that language'"'"'s pack. A pack pasted next to this text, as AGENTS.snippet.<code>.md, starts with a comment line naming it. Read the pack of a language before you write a reply or a document in it. A language without a pack follows the rules alone.\n\n'
     printf -- '- References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them\n'
+    printf -- '- Language packs: lang/<code>/ in the folder of the writing-rules skill\n'
     printf -- '- The check-terms skill (a checker, and phrase lists per language in its lang/ folder): its own skill folder\n'
     for r in writing-to-user writing-documents polishing; do
         printf '\n<!-- %s -->\n\n' "$r.md"
@@ -21,9 +22,16 @@ trap 'rm -r -- "$TMP"' EXIT
     done
     printf '\n<!-- asking.md -->\n\n'
     cat "$W/references/asking.md"
-    for d in "$W"/lang/*/; do
-        code="$(basename "$d")"
-        printf '\n<!-- lang/%s: read only when writing in this language -->\n' "$code"
+    printf '\n<!-- /wakariyasu:AGENTS.snippet.md -->\n'
+} > "$TMP/AGENTS.snippet.md"
+
+for d in "$W"/lang/*/; do
+    code="$(basename "$d")"
+    name="AGENTS.snippet.$code.md"
+    {
+        printf '<!-- wakariyasu:%s -->\n' "$name"
+        printf '\n# wakariyasu: the language pack for %s\n\n' "$code"
+        printf 'Read this pack, together with the rules in AGENTS.snippet.md, before you write a reply or a document in this language. Each file starts after a comment line with its name.\n'
         for f in "$d"*.md; do
             printf '\n<!-- lang/%s/%s -->\n\n' "$code" "$(basename "$f")"
             cat "$f"
@@ -32,12 +40,17 @@ trap 'rm -r -- "$TMP"' EXIT
             printf '\n'
             sh "$ROOT/skills/check-terms/scripts/terms-table" "$code"
         fi
-    done
-    printf '\n<!-- /wakariyasu:AGENTS.snippet.md -->\n'
-} > "$TMP/AGENTS.snippet.md"
+        printf '\n<!-- /wakariyasu:%s -->\n' "$name"
+    } > "$TMP/$name"
+done
 
 if [ "${1:-}" = "--check" ]; then
-    cmp -s "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md" || { echo "differs from the sources: AGENTS.snippet.md" >&2; exit 1; }
+    for f in "$TMP"/AGENTS.snippet*.md; do
+        cmp -s "$f" "$ROOT/$(basename "$f")" || { echo "differs from the sources: $(basename "$f")" >&2; exit 1; }
+    done
+    for f in "$ROOT"/AGENTS.snippet*.md; do
+        [ -e "$TMP/$(basename "$f")" ] || { echo "no source for: $(basename "$f")" >&2; exit 1; }
+    done
     # No other skill holds a file with the same name as a rule, a reference, a phrase list or a check-terms script
     ok=0
     for f in "$ROOT"/skills/*/references/* "$ROOT"/skills/*/rules/* "$ROOT"/skills/*/scripts/*; do
@@ -51,5 +64,10 @@ if [ "${1:-}" = "--check" ]; then
     done
     exit "$ok"
 fi
-cp "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md"
-echo "built: AGENTS.snippet.md"
+for f in "$ROOT"/AGENTS.snippet*.md; do
+    [ -e "$TMP/$(basename "$f")" ] || { rm -- "$f"; echo "removed: $(basename "$f")"; }
+done
+for f in "$TMP"/AGENTS.snippet*.md; do
+    cp "$f" "$ROOT/$(basename "$f")"
+    echo "built: $(basename "$f")"
+done

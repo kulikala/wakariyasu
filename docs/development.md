@@ -12,13 +12,14 @@ skills/writing-rules/rules/      Rules (writing-to-user, writing-documents, poli
 skills/writing-rules/references/ References the rules point to (questions for a decision, how to write instructions, how to write a README, how to write a changelog)
 skills/writing-rules/lang/<language>/ Per-language additions (language packs; ja is Japanese, en is English)
 skills/check-terms/lang/<code>/  For each language, the list of phrases the language does not use (terms.tsv) and the list of phrases to check in context (terms-caution.tsv)
-skills/check-terms/scripts/      check-terms (searches documents for phrases) and terms-table (turns the lists into the table put into the hook and AGENTS.snippet.md)
+skills/check-terms/scripts/      check-terms (searches documents for phrases) and terms-table (turns the lists into the table put into the hook and the language snippets)
 tests/lang/<code>/terms-cases.txt   Examples that check-terms matches (deny) and examples it does not (allow)
 tests/lang/<code>/caution-cases.txt Examples that check-terms prints marked "(check in context)" (flag) and examples it does not (allow)
 tests/session-status-report.json A fictional report used by the test that builds the session-status page
 hooks/                           Hooks that load the rules at the start of a session and tell where the language packs are (load-rules.sh, lang-index.sh)
 AGENTS.snippet.md                The body of the rules to paste into agents other than Claude Code (made by dev/build)
-dev/build                        Joins the rules, asking.md, the language packs and the phrase lists to make AGENTS.snippet.md
+AGENTS.snippet.<code>.md         The language pack of one language, with its phrase lists, to paste after AGENTS.snippet.md (made by dev/build)
+dev/build                        Joins the rules and asking.md into AGENTS.snippet.md, and each language pack with its phrase lists into AGENTS.snippet.<code>.md
 dev/test                         Checks the repository's rules
 dev/test-show-changes.py         Test to run after changing build.py and template.html of show-changes (docs/show-changes.md)
 dev/test-show-changes-page.mjs   Test that opens the show-changes page in a browser and tries operating it
@@ -41,7 +42,7 @@ The hooks, `dev/build`, `check-terms` and `terms-table` run with only `sh` and s
 The rules and references are in the skill `writing-rules`, and the phrase lists and `check-terms` are in the skill `check-terms`; the other skills read from these two folders.
 Even with a method that installs only the skill folders, such as `gh skill install`, `--all` installs all the skills side by side, so the other skills can read the two folders.
 
-After changing a rule, a reference or a phrase list, rebuild `AGENTS.snippet.md` with `dev/build`.
+After changing a rule, a reference or a phrase list, rebuild the snippets with `dev/build`.
 
 ```sh
 dev/build
@@ -71,7 +72,7 @@ dev/test
 
 `dev/test` checks the following without calling a model.
 
-- `AGENTS.snippet.md` matches the body, and no other skill has a file with the same name as a rule, a reference or a phrase list.
+- `AGENTS.snippet.md` and every `AGENTS.snippet.<code>.md` match the body, and no other skill has a file with the same name as a rule, a reference or a phrase list.
 - The version is the same in `plugin.json`, `marketplace.json` and `CHANGELOG.md`.
 - The marketplace (`marketplace.json`) lists only one plugin.
 - For each skill, `SKILL.md` starts with frontmatter and has a `name` equal to the folder name and a `description`.

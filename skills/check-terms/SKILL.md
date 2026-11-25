@@ -25,7 +25,7 @@ Phrase lists are kept per language in `lang/<code>/` of this skill's folder, whe
 - `terms.tsv` holds phrases to avoid. Always replace a phrase used in the listed sense.
 - `terms-caution.tsv` holds phrases that are not wrong, but for which another word is often more natural. Its second column gives candidate words. Replace a phrase only when, in its context, a candidate word is clearer to the reader. When in doubt, keep the phrase.
 
-When you write a document yourself, read the first two columns of the lists for its language before you write, and avoid the phrases from the start. The language pack of the `writing-rules` skill (`lang/<code>/` of that skill's folder) may say more about using the lists for its language. In environments that load wakariyasu's AGENTS.snippet.md, the lists appear as tables in the section of their language. If those tables are in the conversation, you need not read the lists again. When you use this skill after writing, start from the steps below.
+When you write a document yourself, read the first two columns of the lists for its language before you write, and avoid the phrases from the start. The language pack of the `writing-rules` skill (`lang/<code>/` of that skill's folder) may say more about using the lists for its language. In environments that load wakariyasu's language snippet for a language (AGENTS.snippet.<code>.md), the lists for that language appear there as tables. If those tables are in the conversation, you need not read the lists again. When you use this skill after writing, start from the steps below.
 
 ## Find and replace
 

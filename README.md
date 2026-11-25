@@ -204,7 +204,7 @@ In chat, the skills in the table of the "[When each is used](#when-each-is-used)
 
 In chat, the rules are not loaded automatically. To make the rules apply to the "Ordinary replies" and "Having the agent write a document" situations in the table of the "When each is used" section, paste them as follows.
 
-- Paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md) into "Your Claude" > "Instructions" in the web or desktop app's settings (your name at the bottom left > Settings), or into the instructions of a claude.ai project.
+- Paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md) into "Your Claude" > "Instructions" in the web or desktop app's settings (your name at the bottom left > Settings), or into the instructions of a claude.ai project. If you write in a language that has a language pack, also paste the whole of that language's file after it, such as [`AGENTS.snippet.ja.md`](AGENTS.snippet.ja.md) for Japanese.
 - If it does not fit in the instructions field, paste only the section with the heading "Write replies that someone who has not followed the session can understand" in `AGENTS.snippet.md` (the rules for how to write replies). The rules for writing replies alone work for the "Ordinary replies" situation.
 - When pasting only a section, also put the first and last lines of `AGENTS.snippet.md` (comments marking the pasted range) before and after the section. They show which range to replace when updating.
 
@@ -214,7 +214,9 @@ Methods 1 to 3 install only the skills. A skill reads the rules from the folder 
 
 Paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md), the file that gathers wakariyasu's rules (it is at the top level of the wakariyasu repository on GitHub), into the instruction file the agent reads every time (AGENTS.md for Codex, custom instructions for other agents). The first line of the whole, `<!-- wakariyasu:AGENTS.snippet.md -->`, and the last line, `<!-- /wakariyasu:AGENTS.snippet.md -->`, are comments that mark the pasted range.
 
-The update commands of methods 1 to 3 do not update the pasted rules. After updating wakariyasu, replace the pasted range (the two comment lines and everything between them) with the whole of the latest `AGENTS.snippet.md` on GitHub.
+The language packs are in separate files, one per language: [`AGENTS.snippet.ja.md`](AGENTS.snippet.ja.md) for Japanese and [`AGENTS.snippet.en.md`](AGENTS.snippet.en.md) for English. Paste, after `AGENTS.snippet.md`, the file of each language the agent writes in. Each file also starts and ends with comment lines that mark its range.
+
+The update commands of methods 1 to 3 do not update the pasted rules. After updating wakariyasu, replace the pasted range (the two comment lines and everything between them) with the whole of the latest `AGENTS.snippet.md` on GitHub, and do the same for each language file you pasted.
 
 ## For people who modify wakariyasu
 

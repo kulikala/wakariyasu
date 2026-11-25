@@ -1,0 +1,104 @@
+# Cases for check-terms --lang ja with the list terms.tsv.
+# deny: the line contains a phrase to avoid, so check-terms reports it and exits 1.
+# allow: the line contains no such phrase, so check-terms reports nothing.
+deny JSON の束を書き出す。
+deny `kikitori bundle` を打ちます。
+deny コマンドを打ち直す。
+deny 利用者に打ってもらいます。
+deny 流す前に打つコマンドを書く。
+deny --verbose の旗を設定する。
+deny 問い 3 に答える。
+deny 選べる案（勧め）。
+deny プラグインを導入する。
+deny 1行の導入を走らせる。
+deny OpenSSH の導入はまだ終わっていない。
+deny 導入スクリプトを直す。
+deny 要る分だけ書く。
+deny 要るようになった。
+deny 端末で実行する。
+deny 端末が無いときは止まる。
+allow 仮想端末と疑似端末と端末エミュレータ。
+allow 花束と約束。収束した。束ねる。
+allow 壁打ちをする。打ち合わせ。キーを打つ。タグを打つ。
+allow 国旗を掲げる。旗振り役。
+allow 問いかけを書く。問い合わせ先。
+allow お勧めの案。推奨の案。案を勧めます。勧められた。
+allow 導入事例と導入企業。新制度の導入。
+allow 要らない。必要なら要る。
+allow ほかの端末に届く。携帯端末。
+allow 「束」は使わない。`旗` も使わない。
+deny 直した版を公開する。
+deny 版を上げる。
+deny 0.4.0 の版に入れる。
+deny rust の枝にコミットする。
+deny 右下に案内の窓が出る。
+deny 見張りのコマンドを張る。
+deny 写しは dev/build が作る。
+deny モデルを手元に落とす。
+deny テストを走らせる。
+deny デーモンが生きていれば使う。
+deny 古いセッションを殺す。
+deny 別のエージェントに依頼を投げる。
+deny 図の箱に短い文を出す。
+allow 英語版と Windows 版と旧版と最新版。版画と版元。
+allow 枝豆と枝分かれと枝番。
+allow 窓口に問い合わせる。窓際の席。
+allow 書類を写し取る。住民票の写し。
+allow 見落としに気づく。
+allow 車を走らせる。
+allow 受信箱とゴミ箱。
+allow 生きた心地がしない。
+deny 1 段ずつやり直す。
+deny 段 0 から始める。
+deny 3段の流れで進める。
+deny 段を上げる。
+allow 階段を上る。手段と段階と段落と段取り。
+allow 柔道二段、空手三段。初段を取る。
+allow 値段と段差と段ボール。一段と速い。普段の作業。
+allow 上段と下段。前段の処理。
+deny 要る作業と要るもの。
+allow 要るので書く。要るか確かめる。要るかもしれない。要ると思う。
+deny 速さを計る台を作る。
+deny 評価の台で比べる。
+deny 直しを入れる。
+deny この直しは小さい。
+deny 0.5.2 を出す。
+deny リリースを出した。
+deny プラグインを出す前に検査する。
+allow 台風と台所と舞台。2台のサーバー。荷物を台に載せる。
+allow 誤字を直した。直してから送る。直し方を書く。
+allow 見直しと手直しとやり直し。説明し直しを頼む。日本語に直し、送る。
+allow 案を出す。エラーを出す。PR を出す。
+deny 検査の限りを書く。
+deny この方法の限りは、目的語の無い文を探せないことだ。
+allow できる限り短く書く。知る限りでは無い。この限りでない。力の限り走る。
+deny 回した検査は3件。
+deny テストを回してから送る。
+deny 回していない検査を書く。
+allow PDCA を回す。仕事を回す。ハンドルを回す。2回した。
+deny 確かめの手順を書く。
+deny 直したら流す確かめ。
+allow 動作を確かめる。
+allow 結果を確かめた。
+allow 表を確かめずに渡す。
+allow 値を確かめ、表に書く。
+deny 先に調べの結果を見る。
+allow 下調べをしておく。
+allow 原因を調べた。
+deny 入れ方を説明する。
+deny プラグインで入るもの。
+deny 使うエージェントを選ぶ。
+allow 力の入れ方。お茶の入れ方。
+allow スキルを使うエージェントの振る舞い。
+deny CLI の包みを書く。
+deny 包みのスクリプトから kikitori を呼ぶ。
+deny API を薄い包みで覆う。
+allow 包み紙と小包みと風呂敷包み。
+allow 布で包み、袋に入れる。手紙を包みます。
+allow 全体を包み込む。包み隠さず話す。
+deny 状態の札を見出しの横に置く。
+deny 担当者を札にして並べる。
+deny 全項目で同じ札は何も見分けさせない。
+allow 名札と表札と荷札。千円札を出す。
+allow 改札を出て札幌へ向かう。入札と落札。
+allow 最後の切り札。札束を数える。

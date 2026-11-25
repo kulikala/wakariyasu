@@ -1,6 +1,6 @@
 #!/bin/sh
-# リポジトリのルールを検査する。モデルは呼ばず、sh と標準のコマンドだけで動く。
-# 失敗した項目を標準エラーに出し、1つでも失敗すれば終了コード 1 を返す。
+# Check the repository's rules. Calls no model; runs with sh and standard commands only.
+# Prints each failed check to standard error, and exits 1 if any check fails.
 set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -8,116 +8,139 @@ cd "$ROOT" || exit 1
 fail=0
 ng() { echo "NG: $*" >&2; fail=1; }
 
-# 1. AGENTS.snippet.md が本文と一致し、本文と同じ名前のファイルがほかのスキルに無い
-dev/build --check >/dev/null || ng "AGENTS.snippet.md が本文と食い違っているか、本文と同じ名前のファイルがほかのスキルにある（dev/build --check の出力を見る）"
+# 1. AGENTS.snippet.md matches the sources, and no other skill holds a file with a source file's name
+dev/build --check >/dev/null || ng "AGENTS.snippet.md differs from the sources, or another skill holds a file with a source file's name (see the output of dev/build --check)"
 
-# 2. 版が plugin.json・marketplace.json・CHANGELOG.md でそろっている
+# 2. plugin.json, marketplace.json and CHANGELOG.md have the same version
 version_of() { sed -n 's/^ *"version": "\([^"]*\)".*/\1/p' "$1"; }
 v_plugin="$(version_of .claude-plugin/plugin.json)"
 v_market="$(version_of .claude-plugin/marketplace.json)"
-[ -n "$v_plugin" ] || ng "plugin.json に version が無い"
-[ "$v_plugin" = "$v_market" ] || ng "版が食い違っている: plugin.json $v_plugin / marketplace.json $v_market"
-grep -q "^## \[$v_plugin\]" CHANGELOG.md || ng "CHANGELOG.md に $v_plugin の節が無い"
+[ -n "$v_plugin" ] || ng "plugin.json has no version"
+[ "$v_plugin" = "$v_market" ] || ng "versions differ: plugin.json $v_plugin / marketplace.json $v_market"
+grep -q "^## \[$v_plugin\]" CHANGELOG.md || ng "CHANGELOG.md has no section for $v_plugin"
 
-# 3. 入手先に載せるのは wakariyasu だけ
+# 3. The marketplace lists wakariyasu only
 n="$(grep -c '"source":' .claude-plugin/marketplace.json)"
-[ "$n" = 1 ] || ng "marketplace.json に wakariyasu 以外のプラグインが載っている"
+[ "$n" = 1 ] || ng "marketplace.json lists a plugin other than wakariyasu"
 
-# 4. スキルごとに、フォルダ名と同じ name と、description がある
+# 4. Each skill has a name equal to its folder name, and a description
 for d in skills/*/; do
     s="${d%/}"; name="${s#skills/}"
-    head -1 "$s/SKILL.md" | grep -qx -- '---' || ng "$s/SKILL.md が frontmatter で始まっていない"
-    grep -qx "name: $name" "$s/SKILL.md" || ng "$s/SKILL.md の name がフォルダ名 $name と違う"
-    grep -q '^description: .' "$s/SKILL.md" || ng "$s/SKILL.md に description が無い"
+    head -1 "$s/SKILL.md" | grep -qx -- '---' || ng "$s/SKILL.md does not start with frontmatter"
+    grep -qx "name: $name" "$s/SKILL.md" || ng "the name in $s/SKILL.md differs from the folder name $name"
+    grep -q '^description: .' "$s/SKILL.md" || ng "$s/SKILL.md has no description"
 done
 
-# 5. フックが規則と asking.md を出し、言語パックは中身を出さずに場所だけを伝える
-out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh が失敗した"
+# 5. The hook prints the rules and asking.md, and gives only the location of each language pack, not its content
+out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh failed"
 for r in writing-to-user writing-documents polishing; do
-    printf '%s\n' "$out" | grep -qxF "$(head -1 "skills/writing-rules/rules/$r.md")" || ng "フックの出力に skills/writing-rules/rules/$r.md が無い"
+    printf '%s\n' "$out" | grep -qxF "$(head -1 "skills/writing-rules/rules/$r.md")" || ng "the hook output lacks skills/writing-rules/rules/$r.md"
 done
-printf '%s\n' "$out" | grep -qxF "$(head -1 skills/writing-rules/references/asking.md)" || ng "フックの出力に skills/writing-rules/references/asking.md が無い"
+printf '%s\n' "$out" | grep -qxF "$(head -1 skills/writing-rules/references/asking.md)" || ng "the hook output lacks skills/writing-rules/references/asking.md"
 for f in readme writing-instructions changelog; do
-    [ -e "skills/writing-rules/references/$f.md" ] || ng "フックが場所を伝える skills/writing-rules/references/$f.md が無い"
+    [ -e "skills/writing-rules/references/$f.md" ] || ng "skills/writing-rules/references/$f.md, whose location the hook gives, is missing"
 done
-printf '%s\n' "$out" | grep -q "$ROOT/skills/writing-rules/references/" || ng "フックの出力に、リファレンスの場所が無い"
+printf '%s\n' "$out" | grep -q "$ROOT/skills/writing-rules/references/" || ng "the hook output lacks the location of the references"
 for d in skills/writing-rules/lang/*/; do
     code="$(basename "$d")"
-    printf '%s\n' "$out" | grep -q "^- $code: $ROOT/${d%/}/ (" || ng "フックの出力に、言語パック $code の場所が無い"
+    printf '%s\n' "$out" | grep -q "^- $code: $ROOT/${d%/}/ (" || ng "the hook output lacks the location of language pack $code"
     for f in "$d"*.md; do
-        printf '%s\n' "$out" | grep -qxF "$(head -1 "$f")" && ng "フックの出力に、言語パックの中身（$f）が入っている"
+        printf '%s\n' "$out" | grep -qxF "$(head -1 "$f")" && ng "the hook output contains the content of a language pack ($f)"
     done
 done
 
-# 5b. 言語パックのファイルは、決まった名前（受け口）のどれか
+# 5b. Each language pack file has one of the fixed names
 for f in skills/writing-rules/lang/*/*; do
     case "$(basename "$f")" in
         polishing.md | styles.md | conventions.md | skills.md) ;;
-        *) ng "言語パックに、決まった名前でないファイルがある: $f" ;;
+        *) ng "a language pack has a file without a fixed name: $f" ;;
     esac
 done
 
-# 6. 規則・リファレンス・言語パック・スキルが別の規則やリファレンスの節を名指すとき、名指した見出しが参照先にある。
-# 英語の本文は the "<見出し>" section of `x.md`、日本語の本文は `x.md`）の「<見出し>」の節 の形で名指す
+# 6. When a rule, reference, language pack or skill names a section of a rule or reference, the named heading exists there.
+# English text names it as the "<heading>" section of `x.md`; Japanese text as `x.md`）の「<heading>」の節
 srcs="skills/writing-rules/rules/*.md skills/writing-rules/references/*.md skills/writing-rules/lang/*/*.md skills/*/SKILL.md skills/*/references/*.md"
 {
     grep -ho '`[a-z-]*\.md`）の「[^」]*」の節' $srcs | sed 's/^`\([^`]*\)`）の「\(.*\)」の節$/\1|\2/'
     grep -ho 'the "[^"]*" section of `[a-z-]*\.md`' $srcs | sed 's/^the "\(.*\)" section of `\([^`]*\)`$/\2|\1/'
 } | sort -u | while IFS='|' read -r f h; do
     t=skills/writing-rules/rules/$f; [ -e "$t" ] || t=skills/writing-rules/references/$f
-    [ -e "$t" ] || { echo "NG: $f が skills/writing-rules の rules/ にも references/ にも無い" >&2; exit 1; }
-    grep -qxF "## $h" "$t" || grep -qxF "# $h" "$t" || grep -qxF "### $h" "$t" || { echo "NG: $t に見出し「$h」が無い" >&2; exit 1; }
+    [ -e "$t" ] || { echo "NG: $f is in neither rules/ nor references/ of skills/writing-rules" >&2; exit 1; }
+    grep -qxF "## $h" "$t" || grep -qxF "# $h" "$t" || grep -qxF "### $h" "$t" || { echo "NG: $t has no heading \"$h\"" >&2; exit 1; }
 done || fail=1
 
-# 7. README から指すリポジトリ内のファイルがある
+# 7. The files in the repository that README links to exist
 grep -o '](\([^)#:]*\))' README.md | sed 's/^](//; s/)$//' | while read -r p; do
-    [ -e "$p" ] || { echo "NG: README.md が指す $p が無い" >&2; exit 1; }
+    [ -e "$p" ] || { echo "NG: $p, linked from README.md, is missing" >&2; exit 1; }
 done || fail=1
 
-# 8. .editorconfig の設定（UTF-8 は git が扱う。ここでは改行・空白を見る）
+# 8. The .editorconfig settings (git handles UTF-8; this checks line endings and whitespace)
 git ls-files | while read -r f; do
     [ -s "$f" ] || continue
-    [ -z "$(tail -c1 "$f")" ] || echo "NG: 末尾に改行が無い: $f" >&2
-    if grep -q "$(printf '\r')" "$f"; then echo "NG: CR がある: $f" >&2; fi
+    [ -z "$(tail -c1 "$f")" ] || echo "NG: no newline at end of file: $f" >&2
+    if grep -q "$(printf '\r')" "$f"; then echo "NG: contains CR: $f" >&2; fi
     case "$f" in
         *.tsv) ;;
-        *) if grep -q "$(printf '\t')" "$f"; then echo "NG: タブがある: $f" >&2; fi ;;
+        *) if grep -q "$(printf '\t')" "$f"; then echo "NG: contains a tab: $f" >&2; fi ;;
     esac
     case "$f" in
         *.md) ;;
-        *) if grep -q '[[:blank:]]$' "$f"; then echo "NG: 行末に空白がある: $f" >&2; fi ;;
+        *) if grep -q '[[:blank:]]$' "$f"; then echo "NG: trailing whitespace: $f" >&2; fi ;;
     esac
 done 2>&1 | grep . >&2 && fail=1
 
-# 9. 使わない言い回しの検査が、試験の例のとおりに当たる・当たらない
-grep -v '^#' tests/terms-cases.txt | while IFS= read -r l; do
-    want=${l%% *}; body=${l#* }
-    if printf '%s\n' "$body" | sh skills/check-terms/scripts/check-terms >/dev/null; then got=×; else got=○; fi
-    [ "$want" = "$got" ] || { echo "NG: 使わない言い回しの検査が試験の例と違う（${want} のはずが ${got}）: $body" >&2; exit 1; }
-done || fail=1
+# 9. Phrase checks, per language. For each language with phrase lists in skills/check-terms/lang/<code>/,
+# the cases in tests/lang/<code>/ must give the expected results.
+T=skills/check-terms/scripts/check-terms
+for d in skills/check-terms/lang/*/; do
+    code="$(basename "$d")"
+    cases="tests/lang/$code"
+    [ -d "$cases" ] || { ng "no test cases for the phrase lists of $code (expected $cases/)"; continue; }
 
-# 9b. 文脈で確かめる言い回しの検査が、試験の例のとおりに出る・出ない。終了コードは 0 のまま
-grep -v '^#' tests/caution-cases.txt | while IFS= read -r l; do
-    want=${l%% *}; body=${l#* }
-    if printf '%s\n' "$body" | sh skills/check-terms/scripts/check-terms | grep -c '（文脈で確かめる）$' >/dev/null; then got=○; else got=×; fi
-    [ "$want" = "$got" ] || { echo "NG: 文脈で確かめる言い回しの検査が試験の例と違う（${want} のはずが ${got}）: $body" >&2; exit 1; }
-    printf '%s\n' "$body" | sh skills/check-terms/scripts/check-terms >/dev/null ||
-        { echo "NG: 文脈で確かめる言い回しだけの文で、終了コードが 0 でない: $body" >&2; exit 1; }
-done || fail=1
+    # 9a. terms-cases.txt: "deny" lines are reported and exit 1; "allow" lines are not reported.
+    if [ -e "$d/terms.tsv" ]; then
+        [ -e "$cases/terms-cases.txt" ] || ng "missing $cases/terms-cases.txt"
+        grep -v '^#' "$cases/terms-cases.txt" | while IFS= read -r l; do
+            want=${l%% *}; body=${l#* }
+            if printf '%s\n' "$body" | sh "$T" --lang "$code" --no-caution >/dev/null; then got=allow; else got=deny; fi
+            [ "$want" = "$got" ] || { echo "NG: [$code] terms check gave $got, expected $want: $body" >&2; exit 1; }
+        done || fail=1
+    fi
 
-# 9c. 言い回しの一覧の正規表現に、ASCII の外の文字の範囲指定が無い（C.UTF-8 の GNU sed と grep が受け付けない）。
-# 試験の例を通しても、検査が誤りを出さない
-LC_ALL=C grep -nE '\[[^]]*([^ -~]-|-[^ -~])[^]]*\]' skills/check-terms/references/*.tsv >&2 &&
-    ng "言い回しの一覧に、ASCII の外の文字の範囲指定がある（文字を並べて記述する）"
-err=$(grep -hv '^#' tests/terms-cases.txt tests/caution-cases.txt | sed 's/^[^ ]* //' | sh skills/check-terms/scripts/check-terms 2>&1 >/dev/null)
-[ -z "$err" ] || ng "言い回しの検査が誤りを出した: $err"
+    # 9b. caution-cases.txt: "flag" lines are reported with "(check in context)"; "allow" lines are not. The exit code stays 0.
+    if [ -e "$d/terms-caution.tsv" ]; then
+        [ -e "$cases/caution-cases.txt" ] || ng "missing $cases/caution-cases.txt"
+        grep -v '^#' "$cases/caution-cases.txt" | while IFS= read -r l; do
+            want=${l%% *}; body=${l#* }
+            if printf '%s\n' "$body" | sh "$T" --lang "$code" | grep -c ' (check in context)$' >/dev/null; then got=flag; else got=allow; fi
+            [ "$want" = "$got" ] || { echo "NG: [$code] caution check gave $got, expected $want: $body" >&2; exit 1; }
+            printf '%s\n' "$body" | sh "$T" --lang "$code" >/dev/null ||
+                { echo "NG: [$code] exit code is not 0 for a line with only phrases to check in context: $body" >&2; exit 1; }
+        done || fail=1
+    fi
 
-# 10. wakariyasu の日本語の本文（日本語パック・check-terms・README・手引き）に、使わない言い回しが無い（変更履歴は過去の版の記録なので除く）
-sh skills/check-terms/scripts/check-terms --no-caution skills/writing-rules/lang/ja/*.md skills/check-terms/SKILL.md README.md docs/*.md >&2 ||
-    ng "本文に日本語では使わない言い回しがある（上の行を直す）"
+    # 9c. The patterns use no ranges of non-ASCII characters (GNU sed and grep under C.UTF-8 reject them),
+    # and running the checker over every case prints no error.
+    LC_ALL=C grep -nE '\[[^]]*([^ -~]-|-[^ -~])[^]]*\]' "$d"*.tsv >&2 &&
+        ng "[$code] a phrase list has a range of non-ASCII characters (spell the characters out)"
+    err=$(cat "$cases"/*-cases.txt | grep -v '^#' | sed 's/^[^ ]* //' | sh "$T" --lang "$code" 2>&1 >/dev/null)
+    [ -z "$err" ] || ng "[$code] the phrase check printed an error: $err"
 
-# 11. 最上位に bin/ が無い（あると claude.ai と Cowork がプラグインを受け付けない）
-[ ! -e bin ] || ng "最上位に bin/ がある（claude.ai と Cowork で入れられなくなる）"
+    # 9d. The language pack of the same language uses no phrase to avoid.
+    if [ -d "skills/writing-rules/lang/$code" ]; then
+        sh "$T" --lang "$code" --no-caution "skills/writing-rules/lang/$code"/*.md >&2 ||
+            ng "[$code] the language pack uses a phrase to avoid (fix the lines above)"
+    fi
+done
 
-[ "$fail" = 0 ] && echo "検査はすべて通った"
+# 10. The Japanese text outside the language pack (README and the development docs) uses no phrase to avoid.
+# CHANGELOG.md records past versions, so it is not checked.
+for f in README.md docs/*.md; do
+    sh "$T" --lang ja --no-caution "$f" >&2 || ng "$f uses a phrase to avoid in Japanese (fix the lines above)"
+done
+
+# 11. No bin/ at the top level (claude.ai and Cowork reject a plugin that has one)
+[ ! -e bin ] || ng "bin/ exists at the top level (the plugin cannot be installed in claude.ai and Cowork)"
+
+[ "$fail" = 0 ] && echo "all checks passed"
 exit "$fail"

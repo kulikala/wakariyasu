@@ -1,26 +1,44 @@
 #!/bin/sh
-# 日本語の文章から、日本語では使わない言い回しと、文脈によっては別の語のほうが自然な言い回しを探す。
-# 使い方: check-terms [--no-caution] [ファイル...]   ファイルを省くか - を渡すと標準入力を読む。
-# 見つかった行を「ファイル:行: 語 → 言い換え」の形で出す。文脈で確かめる言い回しには「（文脈で確かめる）」を付ける。
-# 日本語では使わない言い回しが1件でもあれば終了コード 1 で終わる。文脈で確かめる言い回しは終了コードに数えない。
-# --no-caution を付けると、文脈で確かめる言い回しを探さない。
+# Find phrases to avoid, and phrases to check in context, in a text, using the phrase lists of each language.
+# Usage: check-terms [--lang CODE] [--no-caution] [FILE...]
+#   Reads standard input when FILE is omitted or is -.
+#   --lang CODE   use only the lists in lang/CODE/ (default: every language that has lists)
+#   --no-caution  skip the lists of phrases to check in context (terms-caution.tsv)
+# Prints each match as "FILE:LINE: phrase -> what to use instead". Matches from terms-caution.tsv end with "(check in context)".
+# Exits 1 if any phrase from terms.tsv is found. Matches from terms-caution.tsv do not change the exit code.
+# Exits 2 for an unknown option, a language without lists, or a file that cannot be read.
 set -eu
 
 DIR=$(cd "$(dirname "$0")/.." && pwd)
-TERMS="$DIR/references/terms.tsv"
-CAUTION="$DIR/references/terms-caution.tsv"
-# 日本語の1文字を正規表現の1文字として扱うため、UTF-8 のロケールで動かす（名前の綴りは OS ごとに違う）。
-# C.UTF-8 は ASCII の外の文字の範囲指定（[０-９] など）を受け付けないので、一覧の正規表現は文字を並べて記述する
+# Run in a UTF-8 locale so that one multibyte character counts as one character in the patterns
+# (the locale name is spelled differently on each OS).
+# C.UTF-8 does not accept ranges of non-ASCII characters (such as [０-９]), so the lists spell such characters out.
 for l in C.UTF-8 C.utf8 en_US.UTF-8 en_US.utf8 ja_JP.UTF-8 ja_JP.utf8; do
     if [ "$(LC_ALL=$l locale charmap 2>/dev/null)" = UTF-8 ]; then LC_ALL=$l; export LC_ALL; break; fi
 done
 
-lists="$TERMS"
-if [ "${1:-}" = --no-caution ]; then
-    shift
-elif [ -e "$CAUTION" ]; then
-    lists="$TERMS $CAUTION"
+langs=
+caution=1
+while [ $# -gt 0 ]; do
+    case $1 in
+        --lang) [ $# -ge 2 ] || { echo "check-terms: --lang needs a language code" >&2; exit 2; }
+            langs=$2; shift 2 ;;
+        --no-caution) caution=0; shift ;;
+        --) shift; break ;;
+        -?*) echo "check-terms: unknown option: $1" >&2; exit 2 ;;
+        *) break ;;
+    esac
+done
+if [ -z "$langs" ]; then
+    for d in "$DIR"/lang/*/; do [ -d "$d" ] && langs="$langs $(basename "$d")"; done
 fi
+
+lists=
+for code in $langs; do
+    [ -d "$DIR/lang/$code" ] || { echo "check-terms: no phrase lists for language: $code" >&2; exit 2; }
+    [ -e "$DIR/lang/$code/terms.tsv" ] && lists="$lists $DIR/lang/$code/terms.tsv"
+    [ "$caution" = 1 ] && [ -e "$DIR/lang/$code/terms-caution.tsv" ] && lists="$lists $DIR/lang/$code/terms-caution.tsv"
+done
 
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
@@ -29,14 +47,17 @@ found=0
 
 [ $# -eq 0 ] && set -- -
 for f in "$@"; do
+    [ "$f" = - ] || [ -r "$f" ] || { echo "check-terms: cannot read: $f" >&2; exit 2; }
+done
+for f in "$@"; do
     name=$f
-    [ "$f" = - ] && name='(標準入力)'
-    # コードブロックの行は空にし、インラインのコードと「」の中身を消す。行の数は変えない。
+    [ "$f" = - ] && name='(stdin)'
+    # Blank out code block lines, and remove inline code and the text inside 「」 quotes. Keep the line count.
     cat -- "$f" | awk '/^[ \t]*```/ { f = !f; print ""; next } f { print ""; next } { print }' |
         sed -E -e 's/`[^`]*`/CODE/g' -e 's/「[^」]*」/「」/g' >"$TMP/body"
     for list in $lists; do
         note=
-        [ "$list" = "$CAUTION" ] && note='（文脈で確かめる）'
+        case $list in */terms-caution.tsv) note=' (check in context)' ;; esac
         while IFS="$TAB" read -r term say hit skip; do
             case $term in '' | '#'*) continue ;; esac
             if [ "$skip" != - ]; then
@@ -47,7 +68,7 @@ for f in "$@"; do
             [ -n "$note" ] || found=1
             while IFS=: read -r n w; do
                 w=$(printf '%s' "$w" | sed 's/CODE/`…`/')
-                printf '%s:%s: %s → %s%s\n' "$name" "$n" "$w" "$say" "$note"
+                printf '%s:%s: %s -> %s%s\n' "$name" "$n" "$w" "$say" "$note"
             done <"$TMP/hits"
         done <"$list"
     done

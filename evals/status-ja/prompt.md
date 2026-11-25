@@ -1,8 +1,8 @@
 ---
-description: 日本語で状況を聞かれたときに session-status が呼ばれる
+description: When asked for the status in Japanese, session-status is invoked
 tags: [trigger, ja]
 runs: 3
 allowed_tools: [Read, Glob, Grep, Skill]
-expected_outcome: session-status スキルを呼び、見出しのある報告を日本語で返す
+expected_outcome: Invokes the session-status skill and returns a report with headings in Japanese
 ---
 現状は？

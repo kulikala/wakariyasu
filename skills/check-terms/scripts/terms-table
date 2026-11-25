@@ -1,15 +1,23 @@
 #!/bin/sh
-# references/terms.tsv と terms-caution.tsv の前の2列を、Markdown の表にして出す。フックと dev/build が使う。
+# Print the phrase lists of one language as Markdown tables, for dev/build.
+# Usage: terms-table CODE
+# Each list (lang/CODE/terms.tsv, then lang/CODE/terms-caution.tsv) becomes a section. The heading, the lead text and
+# the column names come from the list's "#title:", "#intro:" and "#columns:" lines; the rows are the first two columns.
 set -eu
 
 DIR=$(cd "$(dirname "$0")/.." && pwd)
-printf '# 日本語では使わない言い回し\n\n'
-printf '日本語の文章では、次の言い回しを使わずに、代わりの語で書く。翻訳調の語や作業の中で生まれた造語が混ざると、\n'
-printf '読み手は意味を取り違え、文書を信頼しにくくなる。括弧の中は、使わない意味を示す。\n\n'
-printf '| 言い回し | 代わりに使う語 |\n|---|---|\n'
-awk -F '\t' '$0 !~ /^#/ && NF >= 2 { printf "| %s | %s |\n", $1, $2 }' "$DIR/references/terms.tsv"
-printf '\n# 文脈によっては別の語のほうが自然な言い回し\n\n'
-printf '次の言い回しは誤りではないが、技術文書では日本語の書き手が別の語を選ぶ場面がある。文脈を見て、候補の語のほうが\n'
-printf '自然なら替える。括弧の中は、候補の語に替える意味を示す。\n\n'
-printf '| 言い回し | 候補の語 |\n|---|---|\n'
-awk -F '\t' '$0 !~ /^#/ && NF >= 2 { printf "| %s | %s |\n", $1, $2 }' "$DIR/references/terms-caution.tsv"
+[ $# -eq 1 ] || { echo "usage: terms-table CODE" >&2; exit 2; }
+first=1
+for list in "$DIR/lang/$1/terms.tsv" "$DIR/lang/$1/terms-caution.tsv"; do
+    [ -e "$list" ] || continue
+    [ "$first" = 1 ] || printf '\n'
+    first=0
+    awk -F '\t' '
+        /^#title: / { title = substr($0, 9); next }
+        /^#intro: / { intro = substr($0, 9); next }
+        /^#columns: / { split(substr($0, 11), c, "|"); next }
+        /^#/ || NF < 2 { next }
+        !head { printf "# %s\n\n%s\n\n| %s | %s |\n|---|---|\n", title, intro, c[1], c[2]; head = 1 }
+        { printf "| %s | %s |\n", $1, $2 }
+    ' "$list"
+done

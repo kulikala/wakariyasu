@@ -16,4 +16,4 @@ done
 printf '\n## Other files\n\n'
 printf -- '- Rules: %s/rules/\n' "$W"
 printf -- '- References: %s/references/ (writing-instructions.md, readme.md and changelog.md are not loaded; the rule writing-documents.md says when to read them)\n' "$W"
-printf -- '- check-terms skill (phrase lists and checker used by the ja pack): %s/\n' "$T"
+printf -- '- check-terms skill (a checker, and phrase lists per language in lang/<code>/): %s/\n' "$T"

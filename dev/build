@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build AGENTS.snippet.md (for agents other than Claude Code) from the rules, asking.md, the language packs and the Japanese phrase lists.
+# Build AGENTS.snippet.md (for agents other than Claude Code) from the rules, asking.md, the language packs and the phrase lists of check-terms.
 # dev/build --check fails if AGENTS.snippet.md differs from the sources (it does not rewrite the file).
 set -eu
 
@@ -14,7 +14,7 @@ trap 'rm -r -- "$TMP"' EXIT
     printf 'This text holds the rules (writing-to-user.md, writing-documents.md, polishing.md), asking.md, and every language pack. Each file starts after a comment line with its name. Files in this text need not be opened again. Other files are in the folders of the wakariyasu skills.\n\n'
     printf 'Language packs follow the rules, one section per language. Read the pack of a language before you write a reply or a document in it. A language without a pack here has none; follow the rules alone.\n\n'
     printf -- '- References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them\n'
-    printf -- '- The check-terms skill (phrase lists and a checker used by the ja pack): its own skill folder\n'
+    printf -- '- The check-terms skill (a checker, and phrase lists per language in its lang/ folder): its own skill folder\n'
     for r in writing-to-user writing-documents polishing; do
         printf '\n<!-- %s -->\n\n' "$r.md"
         cat "$W/rules/$r.md"
@@ -28,28 +28,28 @@ trap 'rm -r -- "$TMP"' EXIT
             printf '\n<!-- lang/%s/%s -->\n\n' "$code" "$(basename "$f")"
             cat "$f"
         done
-        if [ "$code" = ja ]; then
+        if [ -d "$ROOT/skills/check-terms/lang/$code" ]; then
             printf '\n'
-            sh "$ROOT/skills/check-terms/scripts/terms-table"
+            sh "$ROOT/skills/check-terms/scripts/terms-table" "$code"
         fi
     done
     printf '\n<!-- /wakariyasu:AGENTS.snippet.md -->\n'
 } > "$TMP/AGENTS.snippet.md"
 
 if [ "${1:-}" = "--check" ]; then
-    cmp -s "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md" || { echo "食い違い: AGENTS.snippet.md" >&2; exit 1; }
-    # 規則・リファレンス・言い回しの一覧と同じ名前のファイルが、ほかのスキルに置かれていないか
+    cmp -s "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md" || { echo "differs from the sources: AGENTS.snippet.md" >&2; exit 1; }
+    # No other skill holds a file with the same name as a rule, a reference, a phrase list or a check-terms script
     ok=0
     for f in "$ROOT"/skills/*/references/* "$ROOT"/skills/*/rules/* "$ROOT"/skills/*/scripts/*; do
         [ -e "$f" ] || continue
         rel="${f#"$ROOT"/}"
         case "$rel" in skills/writing-rules/* | skills/check-terms/*) continue ;; esac
         name="$(basename "$f")"
-        for home in "$W/rules" "$W/references" "$ROOT/skills/check-terms/references" "$ROOT/skills/check-terms/scripts"; do
-            [ -e "$home/$name" ] && { echo "本文と同じ名前のファイル: $rel" >&2; ok=1; }
+        for home in "$W/rules" "$W/references" "$ROOT"/skills/check-terms/lang/* "$ROOT/skills/check-terms/scripts"; do
+            [ -e "$home/$name" ] && { echo "same name as a source file: $rel" >&2; ok=1; }
         done
     done
     exit "$ok"
 fi
 cp "$TMP/AGENTS.snippet.md" "$ROOT/AGENTS.snippet.md"
-echo "作った: AGENTS.snippet.md"
+echo "built: AGENTS.snippet.md"

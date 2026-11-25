@@ -1,55 +1,55 @@
 ---
 name: check-terms
-description: 日本語の文書から、日本語では使わない言い回し（翻訳調の語や、作業の中で生まれた造語）と、文脈によっては別の語のほうが自然な言い回しを、一覧で探して替える。「言い回しを確かめて」「使わない語が無いか見て」と言われたときに使う。言われなくても、エージェントがファイルに記述した日本語の文書を人に渡す前に使う。wakariyasu の規則とほかのスキルも、言い回しの一覧と探すスクリプトをこのスキルのフォルダから使う。
+description: Find phrases that writers of a language do not use (translationese, or words coined during the work) and phrases for which another word is often more natural, using per-language phrase lists, and replace them. Use when asked to check the wording of a document or to look for phrases to avoid, and, even if not asked, before handing over a document the agent wrote to a file in a language that has phrase lists. The wakariyasu rules, language packs and other skills also use the phrase lists and the checker from this skill's folder.
 ---
 
-# スキルの目的
+# Purpose
 
-日本語の文書に、日本語では使わない言い回しが残っていると、読み手は意味を取り違え、文書を信頼しにくくなる。
-文書から一覧の言い回しを探し、一覧に記述した意味で使っている箇所を、別の語に替える。
+When a document keeps phrases that writers of its language do not use, readers misread it and trust it less. Find the listed phrases in a document, and replace the places that use a phrase in the sense the list describes.
 
-文書を書き換えてよいかは、誰が記述した文書かで決まる。
+Whether you may rewrite the document depends on who wrote it.
 
-- エージェントが自分で記述した文書（ユーザーの文書を依頼に沿って書き直したものを含む）なら、探して替えたうえで渡す。
-- ユーザーやほかの人・ほかのエージェントが記述した文書を確かめるように頼まれたなら、文書は書き換えない。下の手順で探し、替える箇所・言い回し・替える先の語の一覧を返す。修正を頼まれたら替える。
+- If you wrote it yourself (including a user's document you rewrote as asked), find and replace the phrases before you hand it over.
+- If you are asked to check a document written by the user, another person or another agent, do not rewrite it. Find the phrases with the steps below, and return a list of the places, the phrases and the words to use instead. Replace them only when asked to fix them.
 
-## このスキルのフォルダ
+## This skill's folder
 
-一覧とスクリプトは、この SKILL.md があるフォルダ（以下「このスキルのフォルダ」）の中にある。スキルを呼んだときにフォルダの場所が示されていればそれを使い、示されていなければ `check-terms/SKILL.md` を探して、そのフォルダを使う。
+The lists and scripts are in the folder that holds this SKILL.md (below, "this skill's folder"). If the location was given when the skill was invoked, use it. Otherwise look for `check-terms/SKILL.md` and use its folder.
 
-## 言い回しの一覧
+## Phrase lists
 
-このスキルのフォルダの `references/` に、言い回しの一覧が2つある。どちらもタブ区切りで、1行が1つの言い回しだ。
-1列目が言い回しで、どの行も、言い回しのあとの括弧の中に、替える対象になる意味を記述してある。言い回しを括弧の意味で使っている箇所だけが、替える対象になる。
-2列目が替える先の語だ。3列目と4列目は、スクリプトが探すときに使う正規表現なので、読まなくてよい。
+Phrase lists are kept per language in `lang/<code>/` of this skill's folder, where `<code>` is the two-letter ISO 639-1 code of the language. Each language can have two lists. Both are tab-separated, one phrase per line.
 
-- `terms.tsv`：日本語では使わない言い回し。2列目は代わりの語で、括弧の意味で使っていれば必ず替える。
-- `terms-caution.tsv`：誤りではないが、文脈によっては別の語のほうが自然な言い回し。2列目は候補の語で、文脈を見て、候補の語のほうが読み手に通じやすいときだけ替える。迷ったら替えない。
+- The first column is the phrase, followed by the sense in which it is to be replaced. Only places that use the phrase in that sense are to be replaced.
+- The second column is what to use instead. The third and fourth columns are the regular expressions the script uses to find the phrase, so you need not read them.
+- `terms.tsv` holds phrases to avoid. Always replace a phrase used in the listed sense.
+- `terms-caution.tsv` holds phrases that are not wrong, but for which another word is often more natural. Its second column gives candidate words. Replace a phrase only when, in its context, a candidate word is clearer to the reader. When in doubt, keep the phrase.
 
-自分で文書を記述するときは、記述する前に一覧の1列目と2列目を読み、記述するときから一覧の言い回しを避ける。wakariyasu をプラグインとして入れた Claude Code では、一覧が「日本語では使わない言い回し」「文脈によっては別の語のほうが自然な言い回し」という見出しの表として、セッションの始めに会話に読み込まれる。会話の中にその表があれば、読み直さなくてよい。記述し終えてからこのスキルを使うときは、下の手順から始める。
+When you write a document yourself, read the first two columns of the lists for its language before you write, and avoid the phrases from the start. The language pack of the `writing-rules` skill (`lang/<code>/` of that skill's folder) may say more about using the lists for its language. In environments that load wakariyasu's AGENTS.snippet.md, the lists appear as tables in the section of their language. If those tables are in the conversation, you need not read the lists again. When you use this skill after writing, start from the steps below.
 
-## 探して替える
+## Find and replace
 
-文書は、このスキルのフォルダの `scripts/check-terms` で探す。sh と標準のコマンドだけで動く。
+Find the phrases with `scripts/check-terms` in this skill's folder. It runs with sh and standard commands only.
 
 ```sh
-sh <このスキルのフォルダ>/scripts/check-terms <ファイル>...
+sh <this skill's folder>/scripts/check-terms --lang <code> <file>...
 ```
 
-スクリプトの出力と終了コードは次のとおり。
+The script's options, output and exit code are as follows.
 
-- スクリプトは、見つけた箇所を「ファイル:行: 言い回し → 2列目の語」の形で1行ずつ出す。`terms-caution.tsv` の言い回しには、行の終わりに「（文脈で確かめる）」を付ける。
-- `terms.tsv` の言い回しが1件でもあれば、終了コード 1 で終わる。何も見つからないときと、`terms-caution.tsv` の言い回しだけのときは 0 で終わる。
-- 「」の中と、インラインのコード・コードブロックの中は探さない。語そのものを示すときは、語を「」で囲む。
-- ファイルを省くか `-` を渡すと、標準入力を読む。ユーザーへの返答のようにファイルに記述していない文章も、確かめるように頼まれたら、標準入力で渡して探す。
-- `--no-caution` を付けると、`terms.tsv` の言い回しだけを探す。
+- `--lang <code>` uses only the lists of that language. Without it, the script uses the lists of every language that has them.
+- The script prints each match on its own line, as `file:line: matched text -> second column`. It does not print the whole line or the sense from the first column, so open the line to judge the sense. A match from `terms-caution.tsv` ends with `(check in context)`.
+- The script exits 1 if it finds any phrase from `terms.tsv`. It exits 0 when it finds nothing, and when it finds only phrases from `terms-caution.tsv`.
+- It blanks out code blocks fenced with ```, and the text inside 「」 quotes. It replaces each inline code span with the word `CODE`, so a phrase written as inline code is not found, but a pattern can still match the span as a whole (for example, a command written as code followed by a listed verb). To mention a phrase itself, put it in 「」 quotes or inline code.
+- With no file, or with `-`, it reads standard input. When asked to check text that is not in a file, such as a reply to the user, pass the text on standard input.
+- `--no-caution` searches only the phrases in `terms.tsv`.
 
-スクリプトは正規表現で探すので、見つけた箇所が一覧の意味で使われているとは限らない。見つけた箇所ごとに、1列目の括弧の意味で使っているかを文脈で確かめ、上の「言い回しの一覧」の節の扱いで替える。別の意味なら残す。
+The script searches with regular expressions, so a match is not always used in the listed sense. For each match, check in context whether it is used in the sense given in the first column, and handle it as the "Phrase lists" section above says. If it is used in another sense, keep it.
 
-一覧は、見つかった言い回しを集めたもので、言い換えるべき語のすべてではない。一覧に無い和語の言い換えは、スキル `writing-rules` の日本語の言語パック（`lang/ja/polishing.md`）の「日本語では使わない言い回しを探す」の節に沿って確認する。
-正規表現では見つからない用法もある。文書を読み直す中で一覧の言い回しに気づいたら、スクリプトに出なくても、括弧の意味で使っていれば替える。
-替えたら、スクリプトをもう一度実行する。前の実行で確かめて残すと判断した箇所（括弧とは別の意味の `terms.tsv` の言い回しと、替えないと判断した `terms-caution.tsv` の言い回し）は、また出ても残す。替えると行番号がずれるので、出た箇所は行の中身で見分ける。残すと判断した箇所のほかに出る箇所が無くなったら終える。残した `terms.tsv` の言い回しがあると終了コードは 1 のままなので、終わりは終了コードではなく、出た箇所で判断する。
+The lists collect phrases that have been found. They do not hold every phrase that should be replaced. The language pack of the `writing-rules` skill may say how to check words that are not in the lists. Some uses cannot be found with regular expressions. If you notice a listed phrase while rereading the document, replace it when it is used in the listed sense, even if the script did not report it.
 
-## スクリプトを動かせないとき
+After replacing, run the script again. Keep the places you already checked and decided to keep (a phrase from `terms.tsv` used in another sense, and a phrase from `terms-caution.tsv` you decided not to replace), even if the script reports them again. Line numbers shift as you replace, so tell the reported places apart by the content of the line. Stop when the script reports nothing except the places you decided to keep. If you kept a phrase from `terms.tsv`, the exit code stays 1, so decide that you are done by the reported places, not by the exit code.
 
-sh を実行できない環境（コマンドを実行するツールが無いなど）では、一覧の1列目と2列目を読み、文書を頭から読んで、一覧の言い回しを括弧の意味で使っている箇所を探す。スクリプトが終了コード 1 で終わるのは言い回しが見つかったときで、動かせなかったときとは違う。動かせなかったときは、標準エラーに誤りが出る。
+## When the script cannot run
+
+In an environment that cannot run sh (for example, one without a tool to run commands), read the first two columns of the lists, read the document from the start, and look for places that use a listed phrase in the listed sense. Exit code 1 means a phrase was found, not that the script failed. When the script fails, it prints an error on standard error and exits 2, for example for an unknown option, a language without lists, or a file it cannot read.

@@ -9,12 +9,12 @@ indent_style = space
 indent_size = 2
 
 [*.md]
-# 行末の2つの空白は Markdown の改行になるので、消さない
+# Two trailing spaces are a line break in Markdown, so keep them
 trim_trailing_whitespace = false
 
 [{dev/*,*.sh}]
 indent_size = 4
 
 [*.tsv]
-# 列をタブで区切る
+# Columns are separated by tabs
 indent_style = tab

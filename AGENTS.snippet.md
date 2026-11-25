@@ -7,7 +7,7 @@ This text holds the rules (writing-to-user.md, writing-documents.md, polishing.m
 Language packs follow the rules, one section per language. Read the pack of a language before you write a reply or a document in it. A language without a pack here has none; follow the rules alone.
 
 - References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them
-- The check-terms skill (phrase lists and a checker used by the ja pack): its own skill folder
+- The check-terms skill (a checker, and phrase lists per language in its lang/ folder): its own skill folder
 
 <!-- writing-to-user.md -->
 
@@ -240,7 +240,7 @@ README は、人が手で保守している日本語の README で見慣れた�
 
 `readme.md` の「Wording」の節に加えて、日本語の README では次のようにする。
 
-- 一般の語：日本語では使わない言い回しと、代わりに使う語は、wakariyasu のスキル `check-terms` の一覧（`references/terms.tsv`）にある。一覧に無い語も同じ考え方で選ぶ。
+- 一般の語：日本語では使わない言い回しと、代わりに使う語は、wakariyasu のスキル `check-terms` の一覧（`lang/ja/terms.tsv`）にある。一覧に無い語も同じ考え方で選ぶ。
 - 作業の章と節の名前：インストールや設定のように読み手が手を動かす章と節は、「インストール方法」「セットアップ方法」「アップデートの手順」のような、日本語の README で見慣れた名前にする。和語に言い換えた名前では、読み手は探している章だと気付かない。本文の語も見出しと同じ語でそろえる。
 
 ## 変更履歴
@@ -354,14 +354,14 @@ Keep a Changelog の日本語の版（https://keepachangelog.com/ja/1.1.0/）と
 翻訳調の語や作業の中で生まれた造語が混ざると、読み手は意味を取り違え、文書を信頼しにくくなる。
 英語の語句や名前を日本語にするときは、語ごとに置き換えず、文脈に合わせて日本語の書き手が使う言い方を選ぶ。
 
-言い回しの一覧は、wakariyasu のスキル `check-terms` のフォルダの `references/` にある。使わない言い回しの一覧（`terms.tsv`）の語は作成する時点から避け、文脈で確かめる言い回しの一覧（`terms-caution.tsv`）の語は作成する時点から候補の語と比べる。
+言い回しの一覧は、wakariyasu のスキル `check-terms` のフォルダの `lang/ja/` にある。使わない言い回しの一覧（`terms.tsv`）の語は作成する時点から避け、文脈で確かめる言い回しの一覧（`terms-caution.tsv`）の語は作成する時点から候補の語と比べる。
 2つの一覧の本文が会話に無ければ、セッションで初めて日本語を記述する前に読む。
 
 一覧に無い語も、同じ観点で確認する。和語は意味の幅が広く、作業の中で使い続けると、書き手にだけ通じる意味を帯びる。
 文書の中で、和語の動詞や名詞を日常の具体的な意味から離れて使っているときは、示す対象を正確に表す漢語に言い換えられないかを確認する。
 標準表記の文書では、日常の具体的な意味で使う和語と、漢語にすると硬くなって読み手に通じにくくなる語は残す。漢語表記の文書では、それらの語も、意味と読みやすさを失わずに漢語にできるかを確認する。
 
-ファイルに保存した文書は、スキル `check-terms` に沿って、言い回しの一覧の語を探して替える。
+ファイルに保存した文書は、スキル `check-terms` に沿って、`--lang ja` で言い回しの一覧の語を探して替える。
 
 ## 人に渡す文書は、yomiyasu があれば yomiyasu に通す
 
@@ -390,6 +390,10 @@ wakariyasu のスキルを日本語の文書や返答に使うときは、スキ
 
 - 日本語の発言は主語と目的語を省くので、知見の1文では、誰が何を何に対してするかを補う。補えないときは推定として扱うか、知見から落とす。
 - 日本語の文字起こしには同じ読みの別の語への誤変換が混ざる。固有名詞・数・専門の語は元の文章のほかの箇所や、呼び出し元が渡した資料と照らして戻す。
+
+## check-terms
+
+日本語の文書は `--lang ja` で探す。一覧に無い語の確かめ方はこの言語パックの `polishing.md` の「日本語では使わない言い回しを探す」の節にある。
 
 <!-- lang/ja/styles.md -->
 
@@ -441,8 +445,7 @@ wakariyasu のスキルを日本語の文書や返答に使うときは、スキ
 
 # 日本語では使わない言い回し
 
-日本語の文章では、次の言い回しを使わずに、代わりの語で書く。翻訳調の語や作業の中で生まれた造語が混ざると、
-読み手は意味を取り違え、文書を信頼しにくくなる。括弧の中は、使わない意味を示す。
+日本語の文章では、次の言い回しを使わずに、代わりの語で書く。翻訳調の語や作業の中で生まれた造語が混ざると、読み手は意味を取り違え、文書を信頼しにくくなる。括弧の中は、使わない意味を示す。
 
 | 言い回し | 代わりに使う語 |
 |---|---|
@@ -481,8 +484,7 @@ wakariyasu のスキルを日本語の文書や返答に使うときは、スキ
 
 # 文脈によっては別の語のほうが自然な言い回し
 
-次の言い回しは誤りではないが、技術文書では日本語の書き手が別の語を選ぶ場面がある。文脈を見て、候補の語のほうが
-自然なら替える。括弧の中は、候補の語に替える意味を示す。
+次の言い回しは誤りではないが、技術文書では日本語の書き手が別の語を選ぶ場面がある。文脈を見て、候補の語のほうが自然なら替える。括弧の中は、候補の語に替える意味を示す。
 
 | 言い回し | 候補の語 |
 |---|---|

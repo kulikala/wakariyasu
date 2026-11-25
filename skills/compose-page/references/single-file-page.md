@@ -2,7 +2,7 @@
 
 This is the starting point when nothing in the environment or the project sets the page's code. The page is one HTML file with no build step, so it opens directly in a browser and can be published as an artifact as it is. It uses Vue 3 for state (switching views, filtering, opening details), Tailwind CSS v4 for styling, and Lucide for icons, all loaded from jsDelivr.
 
-The library URLs below carry no version, so the page loads the latest release of each library. Where the environment requires exact versions, see "Publishing as a Claude artifact".
+The URLs name only the major versions of Vue (3) and Tailwind CSS (4), so the page loads the latest release within each major version. The Lucide URL names no version and loads the latest release.
 
 ## The file
 
@@ -16,12 +16,12 @@ The library URLs below carry no version, so the page loads the latest release of
   <script type="importmap">
     {
       "imports": {
-        "vue": "https://cdn.jsdelivr.net/npm/vue/dist/vue.esm-browser.js",
+        "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.js",
         "lucide-vue-next": "https://cdn.jsdelivr.net/npm/lucide-vue-next/+esm"
       }
     }
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
     @theme {
       /* Light values of the page's colors. Use them as bg-surface, text-ink and so on. */
@@ -49,8 +49,10 @@ The library URLs below carry no version, so the page loads the latest release of
 
   <script type="module">
     import { createApp, ref, computed, reactive } from 'vue'
+    import { Bell } from 'lucide-vue-next'
 
     const app = createApp({
+      components: { Bell },
       setup () {
         // Composition API state for the page
         return {}
@@ -84,12 +86,12 @@ Vue reads the template from the HTML in the page, which the browser parses first
 
 When the page is published as a Claude artifact, follow the environment's rules for artifacts (the instructions of the tool that publishes them); they take precedence over this file. The points below are where those rules touch this file.
 
-- The publishing step wraps the page in the document skeleton (DOCTYPE, `html`, `head`, `body`). Leave out those four parts and start the file with the `<title>`, followed by the import map, the Tailwind script and the style. With no `html` element to carry `lang`, put `lang` on the element with the id `app`.
-- Scripts load only from the hosts the environment allows (jsDelivr is one), and each URL must name an exact version. Before writing the URLs, look up the current release of each library that the environment's rules accept, and put that version in each URL.
-- The viewer can force a theme by setting `data-theme="dark"` or `data-theme="light"` on the root element, while the default leaves it unset and follows the device. Apply the dark values under `:root[data-theme="dark"]` as well, and guard the media query with `:root:not([data-theme="light"])`, so the page follows whichever applies. Use this block in place of the `@layer base` block of the file.
+- The publishing step wraps the page in the document skeleton (DOCTYPE, `html`, `head`, `body`). Leave out those four parts and start the file with the `<title>`, followed by the import map, the Tailwind script, the Tailwind style and the color-switching style described below. With no `html` element to carry `lang`, put `lang` on the element with the id `app`.
+- Scripts load only from the hosts the environment allows. jsDelivr, which the file uses, is one of them.
+- The viewer can force a theme by setting `data-theme="dark"` or `data-theme="light"` on the root element, while the default leaves it unset and follows the device. The publishing skeleton also sets `color-scheme: light` on `:root` outside any CSS layer, and a rule outside a layer wins over Tailwind's layered rules, so `color-scheme: dark` inside `@layer base` has no effect and form controls and scrollbars stay light. Remove the `:root` rule and the media query from the `@layer base` block, leaving only the `body` rule there, and put the color switching in a plain `<style>` element (without `type="text/tailwindcss"`) after the Tailwind style, guarded so that the page follows whichever applies.
 
-```css
-@layer base {
+```html
+<style>
   :root { color-scheme: light; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -103,6 +105,5 @@ When the page is published as a Claude artifact, follow the environment's rules 
     --color-ink: #e6e8eb;
     color-scheme: dark;
   }
-  body { @apply bg-surface text-ink; }
-}
+</style>
 ```

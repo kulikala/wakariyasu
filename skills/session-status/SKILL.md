@@ -1,6 +1,6 @@
 ---
 name: session-status
-description: Use when the user asks about the current state of the session, such as "What's the status?", "What are you doing now?", "How far along are you?" or "What's left?", and when the user says the same thing in another language. Also use without being asked when reporting at a break in work that spans several tasks, when stopping to ask the user to decide, and when giving progress during long work. Report the session's situation as the current goal, the latest instruction, a task list with states, and the latest status. Add numbered decision questions if the user has something to decide. Keep it to the key points, but give enough background and intent to understand them. Requests in Japanese that trigger it include 「現状は？」「現在のステータスは？」「今何してる？」「どこまで進んだ？」「何が残ってる？」.
+description: Use when the user asks about the current state of the session, such as "What's the status?", "What are you doing now?", "How far along are you?" or "What's left?", and when the user says the same thing in another language. Also use without being asked when reporting at a break in work that spans several tasks, when stopping to ask the user to decide, and when giving progress during long work. Report the session's situation as the current goal, the latest instruction, a task list with states, and the latest status. Add numbered decision questions if the user has something to decide. Keep it to the key points, but give enough background and intent to understand them.
 ---
 
 # Purpose

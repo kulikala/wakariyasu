@@ -241,13 +241,26 @@
     const fill = (text, values) => text.replace(/\{(\w+)\}/g, (all, key) => key in values ? values[key] : all)
 
     /**
-     * Split plain text into paragraphs and "- " lists, and each line into text and `code` parts.
+     * Split plain text into paragraphs and "- " lists, and each line into text, `code` and http(s) link parts.
      * Rendering these parts with interpolation keeps every character as text; nothing becomes markup.
      * @param {string} text
      * @returns {Array<{kind: 'p' | 'ul', lines: Array<Array<{code: boolean, text: string}>>}>}
      */
+    function links (text) {
+      const out = []
+      let last = 0
+      for (const m of text.matchAll(/https?:\/\/[^\s<>"'「」『』（）、。]+/g)) {
+        const url = m[0].replace(/[).,;:!?]+$/, '')
+        if (m.index > last) out.push({ text: text.slice(last, m.index) })
+        out.push({ url, text: url })
+        last = m.index + url.length
+      }
+      if (last < text.length) out.push({ text: text.slice(last) })
+      return out
+    }
+
     function toBlocks (text) {
-      const parts = line => line.split('`').map((piece, i) => ({ code: i % 2 === 1, text: piece })).filter(p => p.text)
+      const parts = line => line.split('`').flatMap((piece, i) => i % 2 === 1 ? [{ code: true, text: piece }] : links(piece)).filter(p => p.text)
       return String(text || '').replace(/\r\n?/g, '\n').split(/\n\s*\n/).map(chunk => chunk.split('\n').filter(l => l.trim())).filter(lines => lines.length).map(lines => {
         const list = lines.every(l => /^\s*[-*] /.test(l))
         return { kind: list ? 'ul' : 'p', lines: lines.map(l => parts(list ? l.replace(/^\s*[-*] /, '') : l)) }
@@ -260,9 +273,9 @@
       template: `<div class="flex flex-col gap-2">
         <template v-for="(b, i) in blocks" :key="i">
           <ul v-if="b.kind === 'ul'" class="flex list-disc flex-col gap-1 pl-5">
-            <li v-for="(line, j) in b.lines" :key="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-[var(--sunk)] px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><template v-else>{{ p.text }}</template></template></li>
+            <li v-for="(line, j) in b.lines" :key="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-[var(--sunk)] px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><a v-else-if="p.url" :href="p.url" target="_blank" rel="noopener noreferrer" class="text-[var(--accent)] underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-[var(--accent)]">{{ p.text }}</a><template v-else>{{ p.text }}</template></template></li>
           </ul>
-          <p v-else><template v-for="(line, j) in b.lines" :key="j"><br v-if="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-[var(--sunk)] px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><template v-else>{{ p.text }}</template></template></template></p>
+          <p v-else><template v-for="(line, j) in b.lines" :key="j"><br v-if="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-[var(--sunk)] px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><a v-else-if="p.url" :href="p.url" target="_blank" rel="noopener noreferrer" class="text-[var(--accent)] underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-[var(--accent)]">{{ p.text }}</a><template v-else>{{ p.text }}</template></template></template></p>
         </template>
       </div>`
     }

@@ -57,7 +57,7 @@ In this example, the second task waits for decision 1, so it has `"decision": 1`
 | `tasks` | The rows of the task table, in order. `task` is required. `state` is one of `done`, `in_progress`, `waiting_process`, `waiting_decision`, `not_started`, `problem` and `cancelled`, which stand for the seven states in the state table of `SKILL.md`, from ✅ to ⛔ in table order. For a state you made up under the rules of `SKILL.md`, give `{ "emoji": …, "label": … }`. `decision` is the number of the decision the task waits for, and goes only with `waiting_decision`. |
 | `decisions` | The decision questions, in the order of the reply. `number` is the number of the question in the reply. `question` is the question sentence, and `context` is the paragraph under it. Each option has the answer `letter` (from the "Option" column), an optional short `label` that names the option, and `text`, which is the "Background and what happens if chosen" column of that row. Mark at most one option `recommended`. The reply already puts the recommended option in the first row with letter A, so keep the options in the order of the reply. For a question without options, leave out `options`; the page then shows a box for a written answer. |
 
-Text fields are plain text. A blank line starts a new paragraph, lines that start with `- ` make a list, and text between backticks is shown as code. Any other markup is shown as written.
+Text fields are plain text. A blank line starts a new paragraph, lines that start with `- ` make a list, text between backticks is shown as code, and an http or https URL becomes a link that opens in a new tab. Write the full URL of an artifact or page the user should open to decide. Any other markup is shown as written.
 
 ## Words on the page
 

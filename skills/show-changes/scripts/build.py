@@ -568,10 +568,32 @@ def write(filename, content):
         Path(filename).expanduser().write_text(content, encoding='utf-8')
 
 
+def pack_labels(skill, lang):
+    """Read the page labels for a language from the writing-rules language pack.
+
+    The pack's conventions.md has a section whose heading names the skill and holds a JSON block of labels.
+    Returns None when the pack, the section or the block is missing (for example, when this skill was
+    installed without writing-rules), so the page keeps its English words.
+    """
+    path = Path(__file__).resolve().parents[2] / 'writing-rules' / 'lang' / lang / 'conventions.md'
+    if not lang or not path.is_file():
+        return None
+    for section in re.split(r'(?m)^(?=## )', path.read_text(encoding='utf-8')):
+        heading = section.split('\n', 1)[0]
+        block = re.search(r'```json\n(.*?)```', section, re.S)
+        if heading.startswith('## ') and re.search(r'(?<![\w-])' + re.escape(skill) + r'(?![\w-])', heading) and block:
+            return json.loads(block.group(1))
+    return None
+
+
 def apply_language(data, lang, labels):
     """Record the page language and the label words given on the command line (--data keeps the JSON's own when none are given)."""
     if lang is not None:
         data['lang'] = lang
+        pack = pack_labels('show-changes', lang)
+        if pack is None and lang != 'en' and not labels:
+            print(f'build.py: no labels for {lang} in the language pack; the page words stay English', file=sys.stderr)
+        labels = {**(pack or {}), **(labels or {})}
     if labels:
         data['labels'] = labels
 
@@ -589,8 +611,8 @@ def main(argv=None):
     parser.add_argument('--data-version', metavar='VERSION', help='the data version, any string; required when collecting new data; --data keeps the JSON\'s value')
     parser.add_argument('--group-depth', type=int, default=None, metavar='N', help='the directory depth for grouping the file list (default 2; 0 means no grouping)')
     parser.add_argument('--full-text', action='store_true', help='also include the full text of changed files')
-    parser.add_argument('--lang', metavar='CODE', help='the language of the page, such as ja; the page text is English unless --labels gives other words')
-    parser.add_argument('--labels', metavar='JSON', help='a JSON file of label words that replace the English ones on the page (the names are in the template\'s /*__LABELS__*/ block)')
+    parser.add_argument('--lang', metavar='CODE', help='the language of the page, such as ja; the words come from that language\'s pack in writing-rules, and --labels overrides them')
+    parser.add_argument('--labels', metavar='JSON', help='a JSON file of label words that replace the English or pack words on the page (the names are in the template\'s /*__LABELS__*/ block)')
     parser.add_argument('--template', type=Path, default=Path(__file__).with_name('template.html'), metavar='PATH', help='the HTML template')
     parser.add_argument('--json-out', metavar='PATH', help='write the diff data as JSON; - writes to standard output')
     parser.add_argument('--artifact', action='store_true', help='write the HTML without the DOCTYPE, html, head and body tags (for destinations that add a document skeleton)')

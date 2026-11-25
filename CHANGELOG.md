@@ -28,7 +28,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 - `AGENTS.snippet.md` now contains, after the rules, the contents of each language folder in a section per language. People who pasted it replace the whole.
 - README, CHANGELOG, the design documents and the plugin manifests are now in English. The Japanese README and changelog are `README.ja.md` and `CHANGELOG.ja.md`.
 - The lists of phrases to avoid moved to `skills/check-terms/lang/<language>/`, one folder per language. `check-terms` takes `--lang <code>` to search one language; without it, it searches every language that has a list. Its notes are in English (`(check in context)`), and it stops with exit code 2 on an unknown option, a language without a list, or a file it cannot read.
-- The `show-changes` page is in English by default. `build.py --lang ja --labels <file>` writes it in Japanese, with the labels from the Japanese folder.
+- The `show-changes` page is in English by default. With `build.py --lang <code>`, the page and the `session-status` page take their words from that language's folder; Japanese has them.
 
 ## [0.11.0] - 2026-11-11
 

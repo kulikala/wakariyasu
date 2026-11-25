@@ -128,7 +128,35 @@ def validate(report, labels):
     return report
 
 
+def pack_labels(skill, lang):
+    """Read the page labels for a language from the writing-rules language pack.
+
+    The pack's conventions.md has a section whose heading names the skill and holds a JSON block of labels.
+    Returns None when the pack, the section or the block is missing (for example, when this skill was
+    installed without writing-rules), so the page keeps its English words.
+    """
+    path = Path(__file__).resolve().parents[2] / 'writing-rules' / 'lang' / lang / 'conventions.md'
+    if not lang or not path.is_file():
+        return None
+    for section in re.split(r'(?m)^(?=## )', path.read_text(encoding='utf-8')):
+        heading = section.split('\n', 1)[0]
+        block = re.search(r'```json\n(.*?)```', section, re.S)
+        if heading.startswith('## ') and re.search(r'(?<![\w-])' + re.escape(skill) + r'(?![\w-])', heading) and block:
+            return json.loads(block.group(1))
+    return None
+
+
+def with_pack_labels(report):
+    """Fill the page words from the language pack of report['lang']; labels in the report override them."""
+    pack = pack_labels('session-status', report.get('lang')) if isinstance(report.get('lang'), str) else None
+    if pack:
+        given = report.get('labels') if isinstance(report.get('labels'), dict) else {}
+        report = {**report, 'labels': {**pack, **given}}
+    return report
+
+
 def make_html(report, template, artifact=False):
+    report = with_pack_labels(report)
     validate(report, default_labels(template))
     payload = json.dumps(report, ensure_ascii=False, separators=(',', ':'))
     # Keep the JSON from closing the script element or starting markup inside it.
@@ -166,7 +194,7 @@ def main(argv=None):
         report = json.loads(raw)
         template = args.template.read_text(encoding='utf-8')
         if args.check:
-            validate(report, default_labels(template))
+            validate(with_pack_labels(report), default_labels(template))
             print('ok')
             return 0
         page = make_html(report, template, args.artifact)

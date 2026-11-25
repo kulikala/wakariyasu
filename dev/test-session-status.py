@@ -74,5 +74,9 @@ if block:
     japanese = json.loads(json.dumps(report))
     japanese.update(lang='ja', labels=ja)
     build.validate(japanese, labels)
+    filled = build.with_pack_labels({**json.loads(json.dumps(report)), 'lang': 'ja', 'labels': {'copy': 'X'}})
+    check('lang ja takes the page words from the pack', filled['labels'].get('decisions') == ja.get('decisions'))
+    check('labels in the report override the pack', filled['labels'].get('copy') == 'X')
+    check('lang en takes no pack words', 'labels' not in build.with_pack_labels({k: v for k, v in report.items() if k != 'labels'} | {'lang': 'en'}))
 
 sys.exit(1 if failures else 0)

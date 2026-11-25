@@ -15,7 +15,7 @@ Build the page with the bundled `scripts/build.py`. If Python 3.9 or later (`pyt
 - To show a branch's changes, compare from the point where the branch diverged from the target branch to the tip of the branch (`--merge-base`). Changes added to the target branch later then stay out of the page.
 - A comparison of two git commits covers only committed changes. The user decides whether to commit work in progress. To show uncommitted work, use one of two ways. One is to pass the output of `git diff HEAD` as a unified diff; new files not yet added to git are not included. The other is to compare a copy made before the change with the current files as two folders. A two-folder comparison also compares files that git ignores (dependencies, build output, files with credentials), so put only the files to show in the folders you compare.
 - A unified diff holds only the line ranges it lists. To show the whole of a file, use another kind of target.
-- The page text is English by default. When the viewer reads another language, pass `--lang` and `--labels` (see `references/usage.md`, "The page language"). For Japanese, use the labels in the `show-changes` section of the Japanese language pack's `conventions.md`.
+- Pass `--lang` with the language you use with the viewer. The page's words then come from that language's pack (see `references/usage.md`, "The page language"); without it the page is in English.
 - Give the page a title and a data version (`--data-version`, a string shown as is in the page header), so that the viewer can later say what they were looking at. Put what changed in the title. Put something that identifies the compared states (a commit, a date, a version name) in the data version.
 
 ## Decide whether to include full text

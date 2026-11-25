@@ -50,7 +50,7 @@ In this example, the second task waits for decision 1, so it has `"decision": 1`
 | Key | Content |
 |---|---|
 | `title` | Required. The page title, shown at the top of the page and in the browser tab. Name what the session works on, such as the project or the task. |
-| `lang` | The language code of the report, such as `en` or `ja`. It marks the language of the page's text for the browser; it does not change the page's words, which come from `labels`. |
+| `lang` | The language code of the report, such as `en` or `ja`. It marks the language of the page's text, and `build.py` takes the page's words from that language's pack (see "Words on the page"). |
 | `asOf` | When the report was written, in the form the user reads dates. |
 | `labels` | The page's words that replace the English defaults (see "Words on the page"). |
 | `goal`, `instruction`, `status` | The text of "Current goal", "Latest instruction" and "Latest status". Leave out the key of a section that the report leaves out; the page then leaves out the section too. |
@@ -61,7 +61,7 @@ Text fields are plain text. A blank line starts a new paragraph, lines that star
 
 ## Words on the page
 
-The page's words have English defaults: the section headings, the column names, the state words, the buttons, and the words of the copied text. The defaults are the `DEFAULT_LABELS` object in `scripts/template.html`, and the key of each word in `labels` is its key there. When you write the report in another language, give every word in `labels`. If the language pack for that language (`skills/writing-rules/lang/<code>/conventions.md` in the plugin) has a section for the status page, copy its words. Otherwise write each word in the report's language, keeping the meaning of the English default. Keep words in braces inside a label, such as `{answered}`, as they are; the page fills them in.
+The page's words have English defaults: the section headings, the column names, the state words, the buttons, and the words of the copied text. The defaults are the `DEFAULT_LABELS` object in `scripts/template.html`, and the key of each word in `labels` is its key there. When you write the report in another language, set `lang`. If the language pack for that language (`skills/writing-rules/lang/<code>/conventions.md` in the plugin) has a section for the status page, `build.py` takes its words, and `labels` is needed only to change single words. Otherwise give every word in `labels`, written in the report's language and keeping the meaning of the English default. Keep words in braces inside a label, such as `{answered}`, as they are; the page fills them in.
 
 ## Build and hand over the page
 

@@ -26,8 +26,8 @@ python3 -B scripts/build.py --diff <name> <diff file> --data-version '<version>'
 | `--title` | The page title. If omitted, the title is "Diff review" (or the `defaultTitle` label when `--labels` is given). |
 | `--group-depth N` | The directory depth at which the file list is grouped. Default 2; 0 means no grouping. |
 | `--full-text` | Also include the full text of changed files. |
-| `--lang CODE` | The language of the page, such as `ja`. It sets the `lang` of the page. The page text stays English unless `--labels` gives the words of that language. |
-| `--labels FILE` | A JSON file of label words that replace the page's English words (buttons, headings, tooltips, notices and dates). The names are in the `/*__LABELS__*/` block of `scripts/template.html`. For Japanese, the words are in the language pack (see "The page language" below). An unknown name stops the build. |
+| `--lang CODE` | The language of the page, such as `ja`. It sets the `lang` of the page and takes the page's words from that language's pack (see "The page language"). |
+| `--labels FILE` | A JSON file of label words that replace the page's English words (buttons, headings, tooltips, notices and dates). The names are in the `/*__LABELS__*/` block of `scripts/template.html`. Use it only to change words that `--lang` takes from the pack. An unknown name stops the build. |
 | `--artifact` | Write the HTML without the DOCTYPE, html, head and body tags. Add it when handing the page to a destination that wraps pages in a document skeleton on publishing, as Claude artifacts do. Without it, the output is a complete HTML file that opens as is. |
 | `-o` / `--output` | The HTML output path. `-` writes to standard output. |
 | `--json-out` | Write the diff data as JSON. `-` writes to standard output. Can be used together with `-o`. |
@@ -68,13 +68,13 @@ Use this to tell the viewer how to use the page when handing it over. The page's
 
 ## The page language
 
-The page is in English by default. To write the page in another language, pass `--lang <code>` and `--labels <file>`. The file holds the words of that language; any name left out stays English. A language pack in `skills/writing-rules/lang/<code>/` can define the words in a page-labels section of its `conventions.md`. For Japanese, copy the JSON of the section "show-changes のページ" in `skills/writing-rules/lang/ja/conventions.md` to a file and pass it:
+The page is in English by default. Pass `--lang <code>` with the language of the conversation with the viewer. The script then takes the page's words from the section of `skills/writing-rules/lang/<code>/conventions.md` whose heading names `show-changes` and that holds a JSON block of labels. Japanese has one:
 
 ```
-python3 -B scripts/build.py --repo <name> <path> <BASE> <TARGET> --data-version '<version>' --lang ja --labels <labels>.json -o <output>.html
+python3 -B scripts/build.py --repo <name> <path> <BASE> <TARGET> --data-version '<version>' --lang ja -o <output>.html
 ```
 
-Choose the language from the language of the conversation with the viewer. The diff itself (file paths, lines, commit subjects) is shown as it is. The language and the labels are stored in the JSON that `--json-out` writes, so a rebuild with `--data` keeps them.
+If the pack or its section is missing (for example, when this skill was installed without `writing-rules`), the script says so on standard error and the words stay English. `--labels <file>` overrides single words. The diff itself (file paths, lines, commit subjects) is shown as it is. The language and the words are stored in the JSON that `--json-out` writes, so a rebuild with `--data` keeps them.
 
 ## Page size
 

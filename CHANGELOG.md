@@ -14,7 +14,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 - In the `session-status` page, http and https URLs in the text become links that open in a new tab.
 - Added 「包み」 (a translation of "wrapper") and 「札」 (meaning a tag or label) to the list of phrases Japanese does not use.
 - Language-specific additions can now be placed in `skills/writing-rules/lang/<language>/`. If a folder exists for the language of the reply or document being written, the agent reads and uses its files before writing. No setting for switching languages is needed. Folders for Japanese (`ja`) and English (`en`) exist.
-- Before handing over an English document, the agent runs it through the skill avoid-ai-writing if that skill is among the available skills.
+- In any language, before handing over a document for people, the agent passes it through a skill that refines prose in that language, if one is among the available skills. The rules no longer name a particular skill; the agent chooses one by its description.
 - The `session-status` report can now also be a single HTML page (an artifact). On the page, the user can pick options for the points that need a decision, write a message, and copy all the answers to paste into the session. The page is made when the user says they want to see it as a page, or when instructions ask for an artifact or a page.
 
 ### Changed
@@ -23,7 +23,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 - When a reply to the user explains a mechanism or a change, it states the whole first, and also states the facts confirmed between the reasons and the conclusion. The meaning of a name the agent coined is added again in each reply, and the content of an earlier reply or another file is written out where it is used rather than only pointed to.
 - Web pages, artifacts, slides and Office documents are now included in what gets finished before handover. The agent extracts the text a reader will see and finishes it.
 - Skill descriptions are now in English only. A request in Japanese still invokes the skill as a request of the same meaning.
-- The bodies of the rules and skills are now in English. The notation choices, phrasing checks and yomiyasu usage for writing in Japanese moved to the Japanese folder.
+- The bodies of the rules and skills are now in English. The notation choices, phrasing checks and what to give a prose-refining skill when writing in Japanese moved to the Japanese folder.
 - What is loaded at the start of a session is now the rules, the way to write a question for a decision, and the list of language folders. The agent reads the notation table and the phrasing tables from the Japanese folder before writing Japanese.
 - `AGENTS.snippet.md` now contains, after the rules, the contents of each language folder in a section per language. People who pasted it replace the whole.
 - README, CHANGELOG, the design documents and the plugin manifests are now in English. The Japanese README and changelog are `README.ja.md` and `CHANGELOG.ja.md`.

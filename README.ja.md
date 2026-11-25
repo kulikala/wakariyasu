@@ -92,7 +92,7 @@ wakariyasu はエージェントへの指示文でできていて、指示文に
 
 規則はもう1本、[`polishing.md`](skills/writing-rules/rules/polishing.md) があります。記述した文章を渡す前に整える方法を定めた規則です。
 
-規則とスキルは、どの言語の文章にも適用する内容を英語で記述しています。日本語で記述したときに足す内容（下の「表記の選び方」、言い回しの確かめ方、yomiyasu の使い方など）は、言語ごとのフォルダ [`skills/writing-rules/lang/ja/`](skills/writing-rules/lang/ja/) に分けてあります。言語を切り替える設定はありません。エージェントは、返答や文書を記述する言語のフォルダがあれば、記述する前にそのフォルダのファイルを読んで使います。英語のフォルダ [`skills/writing-rules/lang/en/`](skills/writing-rules/lang/en/) もあります。
+規則とスキルは、どの言語の文章にも適用する内容を英語で記述しています。日本語で記述したときに足す内容（下の「表記の選び方」、言い回しの確かめ方、日本語の文章を推敲するスキルに渡すものなど）は、言語ごとのフォルダ [`skills/writing-rules/lang/ja/`](skills/writing-rules/lang/ja/) に分けてあります。言語を切り替える設定はありません。エージェントは、返答や文書を記述する言語のフォルダがあれば、記述する前にそのフォルダのファイルを読んで使います。英語のフォルダ [`skills/writing-rules/lang/en/`](skills/writing-rules/lang/en/) もあります。
 
 言い回しの一覧は、スキル `check-terms` のフォルダに入っています。エージェントは一覧を見て記述し、ファイルに記述した文書は、一覧から言い回しを探すスクリプト `check-terms`（`sh skills/check-terms/scripts/check-terms <ファイル>` で実行）で確かめます。
 
@@ -113,16 +113,9 @@ wakariyasu はエージェントへの指示文でできていて、指示文に
 
 決まった書き方にしたいときは、CLAUDE.md に1行で指定してください。たとえば「数字は算用数字で記述する」「README は敬体で記述する」と指定すれば、指定した内容が既定より優先されます。
 
-## yomiyasu との組み合わせ
+## 文章を推敲するスキルとの組み合わせ
 
-wakariyasu の規則が見るのは、経緯を知らない人に通じる語と内容です。yomiyasu は不自然な比喩や主語と述語の食い違いのような、日本語の文の書き方を細かく修正します。エージェントは記述した日本語をまず wakariyasu の規則で整えます。[yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu。日本語の推敲スキル）が入っている環境では、README や手順書のように人に渡す文書を仕上げるときに、エージェントが頼まれなくても yomiyasu スキルを呼び出します。呼び出す場面は日本語のフォルダの [`polishing.md`](skills/writing-rules/lang/ja/polishing.md) に記載してあります。ユーザーへの返答では呼び出しません。yomiyasu が無くても、wakariyasu は動きます。
-
-yomiyasu は wakariyasu とは別のプラグインです。一緒に使うときは、作者のリポジトリの案内どおりにインストールします。Claude Code では次の2つです。
-
-```text
-/plugin marketplace add nanaism/yomiyasu
-/plugin install yomiyasu@yomiyasu
-```
+wakariyasu の規則が見るのは、経緯を知らない人に通じる語と内容です。文章を推敲するスキルは、不自然な比喩や主語と述語の食い違いのような、文の書き方を細かく修正します。エージェントは記述した文章をまず wakariyasu の規則で整えます。文書の言語の文章を推敲するスキルが入っている環境では、README や手順書のように人に渡す文書を仕上げるときに、エージェントが頼まれなくてもそのスキルに通します。通す場面は [`polishing.md`](skills/writing-rules/rules/polishing.md) に記載してあります。ユーザーへの返答は通しません。推敲のスキルが無くても、wakariyasu は動きます。
 
 ## インストール方法
 

@@ -92,7 +92,7 @@ wakariyasu is made of instructions to the agent, in two kinds.
 
 There is one more rule, [`polishing.md`](skills/writing-rules/rules/polishing.md), which states how to polish a piece of writing before handing it over.
 
-Rules and skills state in English the content that applies to writing in any language. Content added only when writing in Japanese (the "Choosing notation" section below, how to check phrasing, how to use yomiyasu and so on) is kept in a folder for each language, [`skills/writing-rules/lang/ja/`](skills/writing-rules/lang/ja/). There is no setting for switching languages. If a folder exists for the language of the reply or document being written, the agent reads and uses the files in that folder before writing. An English folder, [`skills/writing-rules/lang/en/`](skills/writing-rules/lang/en/), also exists.
+Rules and skills state in English the content that applies to writing in any language. Content added only when writing in Japanese (the "Choosing notation" section below, how to check phrasing, what to give a skill that refines Japanese prose and so on) is kept in a folder for each language, [`skills/writing-rules/lang/ja/`](skills/writing-rules/lang/ja/). There is no setting for switching languages. If a folder exists for the language of the reply or document being written, the agent reads and uses the files in that folder before writing. An English folder, [`skills/writing-rules/lang/en/`](skills/writing-rules/lang/en/), also exists.
 
 The lists of phrasing are in the folder of the skill `check-terms`. The agent writes with the lists in view, and checks a document written to a file with the script `check-terms`, which searches the document for phrases from the lists (run it with `sh skills/check-terms/scripts/check-terms <file>`).
 
@@ -113,16 +113,9 @@ For word choice too, the agent picks per document between standard notation and 
 
 To fix a particular style, specify it in one line in CLAUDE.md. For example, specifying "Write numbers in Arabic numerals" or "Write the README in polite style" takes precedence over the defaults.
 
-## Combining with yomiyasu
+## Combining with a skill that refines prose
 
-What wakariyasu's rules look at is words and content that someone who does not know the history can follow. yomiyasu finely corrects how Japanese sentences are written, such as unnatural metaphors and mismatched subjects and predicates. The agent first polishes the Japanese it writes with wakariyasu's rules. In an environment where [yomiyasu](https://github.com/nanaism/yomiyasu) (nanaism/yomiyasu, a Japanese proofreading skill) is installed, the agent calls the yomiyasu skill without being asked when it finishes a document for people, such as a README or a procedure. The situations in which it is called are in [`polishing.md`](skills/writing-rules/lang/ja/polishing.md) in the Japanese folder. It is not called for replies to the user. wakariyasu works without yomiyasu.
-
-yomiyasu is a separate plugin from wakariyasu. To use them together, install it as its author's repository describes. In Claude Code, run these two.
-
-```text
-/plugin marketplace add nanaism/yomiyasu
-/plugin install yomiyasu@yomiyasu
-```
+What wakariyasu's rules look at is words and content that someone who does not know the history can follow. A skill that refines prose finely corrects how sentences are written, such as unnatural metaphors and mismatched subjects and predicates. The agent first polishes what it writes with wakariyasu's rules. If a skill that refines prose in the document's language is installed, the agent passes a document for people, such as a README or a procedure, through that skill when it finishes the document, without being asked. The situations are in [`polishing.md`](skills/writing-rules/rules/polishing.md). Replies to the user are not passed through it. wakariyasu works without such a skill.
 
 ## Installation
 

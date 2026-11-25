@@ -156,6 +156,14 @@ Polish for readability. Do not change the claims, conditions, numbers, or the st
 
 Apply the `polishing.md` in the language pack for the language of the text. If the pack has a `styles.md`, choose notation by it. The language packs are in `lang/<code>/` of the `writing-rules` skill's folder. A language with no pack gets only the checks for every language.
 
+## Pass documents for people through a skill that refines prose, if one is available
+
+Documents that people will read or that will be published (READMEs, manuals, specifications, proposals) go through a skill that refines prose in the document's language, after you polish them yourself, if such a skill is among the available skills. A skill of this kind audits and rewrites text that AI wrote, to remove the patterns of AI writing (unnatural metaphors, unclear links between subject and predicate, skewed sentence patterns, decoration and promotional tone) while keeping the meaning and conditions. Choose it by its description: the skill must name the language of the document. If the skill takes the kind of document or how much the readers know, give them. The language pack's `styles.md`, if any, names the kinds of document.
+
+Check that the refined text keeps every claim, condition, number, and level of certainty of your text. Where the skill changed the meaning, restore your wording.
+
+Do not pass replies to the user, work reports, commit messages, pull request descriptions, or code comments through such a skill. When a reply carries the full text of a document, treat only that full text as a document.
+
 ## Read it through at the end
 
 Read the text through yourself from the start. If you went back to an earlier place while reading, fix the sentence that made you go back.
@@ -204,12 +212,6 @@ Apply these checks in addition to the "Checks for every language" section of `po
 ## Prefer plain words
 
 Use the common word when it carries the same meaning as the formal one. Readers who use English as a second language, and readers outside the field, misread rare words and idioms. Keep a technical term when it is the name readers will search for, and give its meaning the first time it appears.
-
-## Pass documents for people through a reviewer skill, if one is available
-
-Documents written in English that people will read or that will be published (READMEs, manuals, specifications, proposals) can be passed through an English reviewer skill after you polish them yourself. If the skill avoid-ai-writing is among the available skills, use it. Check that the reviewed text keeps every claim, condition, number, and level of certainty of your text. Where the reviewer changed the meaning, restore your original wording.
-
-Do not pass replies to the user, work reports, commit messages, pull request descriptions, or code comments through a reviewer skill.
 
 <!-- lang/ja: read only when writing in this language -->
 
@@ -471,12 +473,13 @@ Keep a Changelog の日本語の版（https://keepachangelog.com/ja/1.1.0/）と
 
 ファイルに保存した文書は、スキル `check-terms` に沿って、`--lang ja` で言い回しの一覧の語を探して替える。
 
-## 人に渡す文書は、yomiyasu があれば yomiyasu に通す
+## 文章を推敲するスキルに通すとき
 
-README・手順書・仕様書・提案書のように、人が読むために渡す・公開する日本語の文書は、自分で整え、`check-terms` で確かめたあとで、使えるスキルの中に yomiyasu があれば yomiyasu スキルに通す。
-yomiyasu には文書と、`styles.md` の表の「種類」の列にある文章の種類の名前を渡す。読み手の詳しさが分かっていれば、expert（同じ分野の人）・informed（分野は違うが、技術や業務に詳しい人）・general（専門の知識が無い人）のどれかも渡す。
-漢語表記の文書は、yomiyasu を通したあとで、選んだ漢語が和語に言い換えられていないかを確かめ、言い換えられていれば漢語に戻す。
-ユーザーへの返答・作業の報告・コミットメッセージ・PR・コードのコメントには通さない。返答に文書の全文を載せるときは、全文の部分だけを文書として扱う。
+規則 `polishing.md` の「Pass documents for people through a skill that refines prose, if one is available」の節に沿って、日本語の文章を推敲するスキルに日本語の文書を通すときは、次を足す。
+
+- スキルに通す前に、`check-terms` で言い回しを確かめる。
+- スキルが文章の種類を受け取るなら、`styles.md` の表の「種類」の列にある名前を渡す。読み手の詳しさを受け取るなら、同じ分野の人・分野は違うが技術や業務に詳しい人・専門の知識が無い人のどれに当たるかを渡す。
+- 漢語表記の文書は、スキルに通したあとで、選んだ漢語が和語に言い換えられていないかを確かめ、言い換えられていれば漢語に戻す。
 
 <!-- lang/ja/skills.md -->
 
@@ -487,8 +490,6 @@ wakariyasu のスキルを日本語の文書や返答に使うときは、スキ
 ## review-for-readers
 
 日本語の文書なら、読み手に、迷った文を英語に直訳させる。主語・目的語・冠詞を補わないと英文にならないなら、元の日本語の文は示す対象が足りない。
-
-日本語の文書で、読み手が理解を妨げる箇所を挙げなくなったら、使えるスキルの中に yomiyasu があれば yomiyasu スキルを呼び出し、文書と文章の種類を渡して整える。種類の名前は、この言語パックの `styles.md` の表の「種類」の列にある。
 
 ## clarify-skill
 

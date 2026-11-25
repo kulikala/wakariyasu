@@ -31,23 +31,23 @@ let page = pagePath ? readFileSync(resolve(pagePath), 'utf8') : ''
 if (!page) for await (const chunk of process.stdin) page += chunk
 const marker = /^const DATA = (.*);?\n/m
 const dataMatch = page.match(marker)
-assert(dataMatch, '埋め込み JSON がありません')
+assert(dataMatch, 'The embedded JSON is missing')
 const data = JSON.parse(dataMatch[1].replace(/;$/, ''))
 /** Check application resource declarations, excluding the embedded user data. */
 function checkExternalLoads (html) {
   const shell = html.replace(marker, 'const DATA = null\n')
   const allowed = new Set(urls)
   // Firefox refuses an import map once the artifact host has loaded a module, so imports name full URLs.
-  assert(!/type=["']importmap["']/i.test(shell), 'import map があります')
-  for (const [, url] of shell.matchAll(/\bimport\b[^'"]*?\bfrom\s*['"]([^'"]+)['"]/g)) assert(allowed.has(url), `未許可の import: ${url}`)
+  assert(!/type=["']importmap["']/i.test(shell), 'There is an import map')
+  for (const [, url] of shell.matchAll(/\bimport\b[^'"]*?\bfrom\s*['"]([^'"]+)['"]/g)) assert(allowed.has(url), `Import of a URL that is not allowed: ${url}`)
   for (const tag of shell.matchAll(/<(?:link|script|img|iframe|object|embed|source|audio|video)\b[^>]*>/gi)) {
     for (const attr of tag[0].matchAll(/\b(?:src|href|data|srcset)\s*=\s*["']([^"']*)["']/gi)) {
-      assert(allowed.has(attr[1]), `未許可の外部リソース: ${attr[1]}`)
+      assert(allowed.has(attr[1]), `External resource that is not allowed: ${attr[1]}`)
     }
   }
-  assert(!/(?:\burl\s*\(|@import\b|\bfetch\s*\(|\bimport\s*\()/i.test(shell), '追加の動的外部読み込みがあります')
-  for (const url of urls) assert(shell.includes(url), `固定 URL がありません: ${url}`)
-  assert(!/href=["']#/.test(shell), 'ハッシュリンクがあります')
+  assert(!/(?:\burl\s*\(|@import\b|\bfetch\s*\(|\bimport\s*\()/i.test(shell), 'There is an extra dynamic external load')
+  for (const url of urls) assert(shell.includes(url), `The fixed URL is missing: ${url}`)
+  assert(!/href=["']#/.test(shell), 'There is a hash link')
 }
 checkExternalLoads(page)
 for (const extra of ['<img src="https://example.com/x">', '<style>@import "https://example.com/x";</style>', '<script>fetch("https://example.com/x")</script>']) {
@@ -106,7 +106,7 @@ async function waitFor (expression, label, timeout = 30000) {
     if (await evaluate(expression)) return
     await sleep(80)
   }
-  throw new Error(`待機失敗: ${label}; console=${JSON.stringify(errors)}; network=${JSON.stringify(networkFailures)}`)
+  throw new Error(`Wait failed: ${label}; console=${JSON.stringify(errors)}; network=${JSON.stringify(networkFailures)}`)
 }
 function check (value, label) {
   assert(value, label)
@@ -118,7 +118,7 @@ async function click (selector, inPlace = false) {
   if (!inPlace) await evaluate(`document.querySelector(${JSON.stringify(selector)})?.scrollIntoView({block:'nearest',inline:'nearest'})`)
   await sleep(50)
   const rect = await evaluate(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, width: r.width, height: r.height } })()`)
-  assert(rect && rect.width > 0 && rect.height > 0, `クリックできません: ${selector}`)
+  assert(rect && rect.width > 0 && rect.height > 0, `Cannot click: ${selector}`)
   await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y })
   await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1 })
   await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1 })
@@ -174,7 +174,7 @@ try {
     try { targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); break } catch {}
     await sleep(100)
   }
-  assert(targets?.length, `Chrome を起動できません: ${portError}; ${chromeLog.slice(-1500)}`)
+  assert(targets?.length, `Cannot start Chrome: ${portError}; ${chromeLog.slice(-1500)}`)
   socket = new WebSocket(targets.find(t => t.type === 'page').webSocketDebuggerUrl)
   await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }) })
   socket.addEventListener('message', event => {
@@ -199,22 +199,22 @@ try {
   await navigate(page, 'sample')
   const total = data.sources.reduce((n, source) => n + source.files.length, 0)
   const availableFull = data.sources.some(source => source.files.some(file => typeof file.full_body === 'string'))
-  check(await evaluate(fileCount) === total, 'sample: 全ファイルの見出し')
-  check(await evaluate('document.documentElement.dataset.theme') === 'dark', 'OS の初期配色に従う')
-  check(await evaluate("!!document.querySelector('#full') && !!document.querySelector('#diff')") === availableFull, '全文が無ければ範囲の切替を出さない')
-  check(await evaluate("!!document.querySelector('#source')") === (data.sources.length > 1), '単一対象では対象選択を非表示')
-  check(await evaluate("document.querySelector('#version').textContent") === data.data_version, 'バージョンをそのまま表示')
-  check(await evaluate("!document.querySelector('details, summary, a[href^=\"#\"]')"), '独自開閉とハッシュ非依存')
+  check(await evaluate(fileCount) === total, 'sample: a heading for every file')
+  check(await evaluate('document.documentElement.dataset.theme') === 'dark', 'follows the OS color scheme at first')
+  check(await evaluate("!!document.querySelector('#full') && !!document.querySelector('#diff')") === availableFull, 'no range switch without full text')
+  check(await evaluate("!!document.querySelector('#source')") === (data.sources.length > 1), 'no target select for a single target')
+  check(await evaluate("document.querySelector('#version').textContent") === data.data_version, 'shows the version as is')
+  check(await evaluate("!document.querySelector('details, summary, a[href^=\"#\"]')"), 'own open and close, no hash dependence')
   if (total) {
     await click('#files .file-header')
-    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'true'"), '見出しで開く')
+    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'true'"), 'opens by the heading')
     await click('#files .file-header')
-    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'false'"), '見出しで閉じる')
+    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'false'"), 'closes by the heading')
     await click('#openAll')
-    check(await evaluate(allOpen), 'すべて開く')
+    check(await evaluate(allOpen), 'open all')
     await click('#closeAll')
-    check(await evaluate(allClosed), 'すべて閉じる')
-    check(await evaluate("document.querySelectorAll('#files .diff-body').length === 0"), '閉じたファイルの本文は未描画')
+    check(await evaluate(allClosed), 'close all')
+    check(await evaluate("document.querySelectorAll('#files .diff-body').length === 0"), 'the body of a closed file is not rendered')
     const sidebarWidth = () => evaluate("document.querySelector('#sidebar').getBoundingClientRect().width")
     const before = await sidebarWidth()
     const handle = await evaluate("(() => { const r = document.querySelector('#resizer').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()")
@@ -223,13 +223,13 @@ try {
     for (const dx of [40, 80, 120]) await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: handle.x + dx, y: handle.y, button: 'left', buttons: 1 })
     await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: handle.x + 120, y: handle.y, button: 'left', clickCount: 1 })
     await sleep(100)
-    check(Math.abs(await sidebarWidth() - before - 120) <= 2, '境目のドラッグで一覧の幅が変わる')
+    check(Math.abs(await sidebarWidth() - before - 120) <= 2, 'dragging the boundary changes the list width')
     await click('#toggleSidebar')
-    check(await evaluate("document.querySelector('#sidebar').getBoundingClientRect().width === 0 && !document.querySelector('#resizer') && document.querySelector('#toggleSidebar').getAttribute('aria-expanded') === 'false'"), '一覧を隠す')
+    check(await evaluate("document.querySelector('#sidebar').getBoundingClientRect().width === 0 && !document.querySelector('#resizer') && document.querySelector('#toggleSidebar').getAttribute('aria-expanded') === 'false'"), 'hides the list')
     await click('#toggleSidebar')
-    check(Math.abs(await sidebarWidth() - before - 120) <= 2, '一覧を出すと前の幅に戻る')
+    check(Math.abs(await sidebarWidth() - before - 120) <= 2, 'showing the list restores the previous width')
     await click('#filelist button[data-file-id]')
-    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'true' && location.hash === ''"), '一覧から開いて移動')
+    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'true' && location.hash === ''"), 'opens and moves from the list')
     // Scroll into the middle of the longest file: its header and the current hunk header stay on screen.
     const longest = data.sources.flatMap((source, ri) => source.files.map((file, fi) => ({ id: `f-${ri}-${fi}`, rows: file.body.split('\n').length })))
       .sort((x, y) => y.rows - x.rows)[0]
@@ -244,29 +244,29 @@ try {
       const hunk = [...article.querySelectorAll('td.hunk')].map(td => td.getBoundingClientRect()).filter(r => r.top <= head.bottom + 1).at(-1)
       return { head: head.top - main.getBoundingClientRect().top, hunk: hunk && hunk.top - head.bottom }
     })()`)
-    check(stuck === null || (Math.abs(stuck.head) <= 1 && stuck.hunk !== undefined && Math.abs(stuck.hunk) <= 1), 'スクロールしてもファイル名と節の見出しが上に残る: ' + JSON.stringify(stuck))
+    check(stuck === null || (Math.abs(stuck.head) <= 1 && stuck.hunk !== undefined && Math.abs(stuck.hunk) <= 1), 'file name and hunk headings stay at the top while scrolling: ' + JSON.stringify(stuck))
     await evaluate("document.querySelector('#main').scrollTop = 0")
     await send('Browser.grantPermissions', { permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'] }).catch(() => {})
     const clipboard = "navigator.clipboard.readText()"
     const firstPath = data.sources.find(s => s.files.length).files[0].path
     await click('#files .copy-path')
-    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'true'"), 'パスのコピーで開閉しない')
-    check(await evaluate(clipboard) === firstPath, 'ファイル名の横のボタンでパスをコピー')
+    check(await evaluate("document.querySelector('#files .file-header').getAttribute('aria-expanded') === 'true'"), 'copying the path does not open or close')
+    check(await evaluate(clipboard) === firstPath, 'the button next to the file name copies the path')
     await evaluate("(() => { const text = document.querySelector('#diff-app h1'); const range = document.createRange(); range.selectNodeContents(text); getSelection().removeAllRanges(); getSelection().addRange(range) })()")
-    await waitFor("!!document.querySelector('#copySelection')", '選んだ文字列のコピーのボタン', 5000)
+    await waitFor("!!document.querySelector('#copySelection')", 'the button to copy the selected text', 5000)
     const selected = await evaluate('getSelection().toString()')
     await click('#copySelection')
-    check(await evaluate(clipboard) === selected && selected.length > 0, '選んだ文字列をコピー')
+    check(await evaluate(clipboard) === selected && selected.length > 0, 'copies the selected text')
     await evaluate('getSelection().removeAllRanges()')
-    await waitFor("!document.querySelector('#copySelection')", '選択を外すとボタンが消える', 5000)
+    await waitFor("!document.querySelector('#copySelection')", 'the button disappears when the selection is cleared', 5000)
     await search(data.sources.find(s => s.files.length).files[0].path)
-    check(await evaluate(fileCount) > 0, 'ファイル名検索')
+    check(await evaluate(fileCount) > 0, 'file name search')
     // The hunk header text may also appear in a file's own lines; only those files may match.
     const hunkQuery = '@@ -0,0'
     const bodyHits = data.sources.flatMap(s => s.files).filter(f => [f.path, f.old || ''].some(p => p.toLowerCase().includes(hunkQuery)) ||
       String(f.body || '').split('\n').some(line => !line.startsWith('@@') && /^[ +-]/.test(line) && line.slice(1).toLowerCase().includes(hunkQuery))).length
     await search(hunkQuery)
-    check(await evaluate(fileCount) === bodyHits, 'ハンク記号は検索しない')
+    check(await evaluate(fileCount) === bodyHits, 'hunk marks are not searched')
     await search('')
     await click('#openAll')
     const ids = await evaluate("[...document.querySelectorAll('#files article[data-file-id]')].map(e => e.dataset.fileId)")
@@ -279,23 +279,23 @@ try {
           await waitFor(`!!document.querySelector('#files article[data-file-id="${id}"] .diff-body')`, `render ${id}`)
           check(await evaluate(`(() => { const table = document.querySelector('#files article[data-file-id="${id}"] table'); return !table || (table.dataset.layout === '${layout}' && table.dataset.scope === '${scope}') })()`), `render ${id} ${layout}/${scope}`)
         }
-        check(await evaluate(fileCount) === total, `全ファイル描画 ${layout}/${scope}`)
+        check(await evaluate(fileCount) === total, `all files rendered ${layout}/${scope}`)
       }
     }
     await click('#closeAll')
   }
   for (const theme of ['light', 'dark', 'hybrid']) {
     await click('#' + theme)
-    check(await evaluate('document.documentElement.dataset.theme') === theme, `配色 ${theme}`)
+    check(await evaluate('document.documentElement.dataset.theme') === theme, `color scheme ${theme}`)
   }
   const fixture = {
-    ...data, title: '操作検証', data_version: 'test', full_text: true, group_depth: 2,
+    ...data, title: 'Operation check', data_version: 'test', full_text: true, group_depth: 2,
     sources: [
-      { name: '対象一', kind: 'git', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [['1234567890123456', '2026-11-05', '検証コミット']], files: [
-        { path: 'docs/example.md', old: 'old-only.md', status: 'R100', added: 3, deleted: 1, binary: false, notice: '', body: '@@ -1 +1,3 @@\n-old\n+# **見出し検索**\n+- list `code`\n+[link](https://example.com)', full_body: '@@ -1,2 +1,4 @@\n unchanged\n-old\n+# **見出し検索**\n+- list `code`\n+[link](https://example.com)' },
+      { name: 'Target one', kind: 'git', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [['1234567890123456', '2026-11-05', 'check commit']], files: [
+        { path: 'docs/example.md', old: 'old-only.md', status: 'R100', added: 3, deleted: 1, binary: false, notice: '', body: '@@ -1 +1,3 @@\n-old\n+# **heading search**\n+- list `code`\n+[link](https://example.com)', full_body: '@@ -1,2 +1,4 @@\n unchanged\n-old\n+# **heading search**\n+- list `code`\n+[link](https://example.com)' },
         { path: 'src/test.js', old: null, status: 'M', added: 1, deleted: 1, binary: false, notice: '', body: '@@ -1 +1 @@\n-const old = 1\n+const needle = 2', full_body: '@@ -1 +1 @@\n-const old = 1\n+const needle = 2' }
       ] },
-      { name: '対象二', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [
+      { name: 'Target two', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [
         { path: 'other.txt', old: null, status: 'A', added: 1, deleted: 0, binary: false, notice: '', body: '@@ -0,0 +1 @@\n+other body', full_body: '@@ -0,0 +1 @@\n+other body' }
       ] }
     ]
@@ -304,10 +304,10 @@ try {
   await navigate(fixturePage, 'fixture')
   await click('#hybrid')
   await navigate(fixturePage, 'fixture')
-  check(await evaluate('document.documentElement.dataset.theme') === 'hybrid', '同じファイルで配色の保存と復元')
-  check(await evaluate("[...document.querySelectorAll('#diff-app button:not(.file-header), #diff-app select, #diff-app input, #diff-app .file-header-row')].every(e => e.title.trim())"), '押せる要素すべてに title がある')
-  check(await evaluate("!!document.querySelector('#contentOnly') && !!document.querySelector('#full')"), '絞り込みと範囲の切替を出す')
-  check(await evaluate("[...document.querySelectorAll('[role=toolbar] span')].some(e => e.textContent === '空白') && !document.querySelector('[role=toolbar]').textContent.includes('空白の違い')"), '空白の切替の名前は「空白」')
+  check(await evaluate('document.documentElement.dataset.theme') === 'hybrid', 'the color scheme is saved and restored for the same file')
+  check(await evaluate("[...document.querySelectorAll('#diff-app button:not(.file-header), #diff-app select, #diff-app input, #diff-app .file-header-row')].every(e => e.title.trim())"), 'every pressable element has a title')
+  check(await evaluate("!!document.querySelector('#contentOnly') && !!document.querySelector('#full')"), 'shows the filter and the range switch')
+  check(await evaluate("[...document.querySelectorAll('[role=toolbar] span')].some(e => e.textContent === 'Whitespace') && !document.querySelector('[role=toolbar]').textContent.includes('Show whitespace')"), 'the whitespace switch is named "Whitespace"')
   // A selected button must look different from a hovered unselected one, also while the pointer stays on it.
   const { root } = await send('DOM.getDocument', { depth: -1 })
   await send('CSS.enable')
@@ -325,67 +325,82 @@ try {
   const onHover = await hoverColor('#unified')
   const offHover = await hoverColor('#split')
   const onPlain = await evaluate("getComputedStyle(document.querySelector('#unified')).backgroundColor")
-  check(onHover !== offHover && onHover !== onPlain, `選ばれたボタンのホバーの色: ${onHover} / ${offHover} / ${onPlain}`)
+  check(onHover !== offHover && onHover !== onPlain, `hover color of the selected button: ${onHover} / ${offHover} / ${onPlain}`)
   await search('needle')
-  check(await evaluate(fileCount) === 1, '本文検索')
+  check(await evaluate(fileCount) === 1, 'text search')
   await click('#filelist button[data-file-id]')
-  check(await evaluate("!!document.querySelector('#files mark.search')"), 'コード上の検索強調')
+  check(await evaluate("!!document.querySelector('#files mark.search')"), 'search highlight on code')
   await click('#closeAll')
   await search('old-only')
-  check(await evaluate(fileCount) === 1, '旧パス検索')
-  check(await evaluate("!!document.querySelector('#clearFilter')?.title"), '検索の文字列があれば消すボタンを出す')
+  check(await evaluate(fileCount) === 1, 'old path search')
+  check(await evaluate("!!document.querySelector('#clearFilter')?.title"), 'shows the clear button when there is search text')
   await click('#clearFilter', true)
   await sleep(300)
-  check(await evaluate("document.querySelector('#filter').value === '' && !document.querySelector('#clearFilter') && document.activeElement?.id === 'filter'"), '消すボタンで検索の文字列を消し、ボタンを隠して入力欄に戻る')
-  check(await evaluate(fileCount) > 1, '検索の文字列を消すと、すべてのファイルに戻る')
-  await search('見出し検索')
+  check(await evaluate("document.querySelector('#filter').value === '' && !document.querySelector('#clearFilter') && document.activeElement?.id === 'filter'"), 'the clear button clears the text, hides itself and returns to the input')
+  check(await evaluate(fileCount) > 1, 'clearing the search text brings back all files')
+  await search('heading search')
   await click('#filelist button[data-file-id]')
-  check(await evaluate("!!document.querySelector('#files mark.search')"), 'Markdown 上の検索強調')
+  check(await evaluate("!!document.querySelector('#files mark.search')"), 'search highlight on Markdown')
   await search('')
   await click('#openAll')
   await pickSource('End')
-  check(await evaluate(fileCount) === 1, '対象選択')
+  check(await evaluate(fileCount) === 1, 'target select')
   await click('#openAll')
   await click('#closeAll')
-  check(await evaluate(allClosed), '対象で絞った一括開閉')
+  check(await evaluate(allClosed), 'open all and close all within a target')
   await pickSource('Home')
-  check(await evaluate("[...document.querySelectorAll('#files .file-header')].filter(e => e.getAttribute('aria-expanded') === 'true').length") === 2, '対象外ファイルの開閉状態を保持')
+  check(await evaluate("[...document.querySelectorAll('#files .file-header')].filter(e => e.getAttribute('aria-expanded') === 'true').length") === 2, 'keeps the open state of files outside the target')
   // Whitespace: changed blanks carry marks drawn by CSS, and ignoring whitespace hides blank-only changes.
   const spaceFile = (path, body) => ({ path, old: null, status: 'M', added: 2, deleted: 2, binary: false, notice: '', body })
-  const spaceFixture = { ...fixture, sources: [{ name: '空白', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [
+  const spaceFixture = { ...fixture, sources: [{ name: 'blanks', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [
     spaceFile('blank.py', '@@ -1,2 +1,2 @@\n-\tone  \r\n-a　b\n+    one\n+a b'),
     spaceFile('real.py', '@@ -1,2 +1,2 @@\n-\tkeep\n-old\n+    keep\n+new'),
-    { ...spaceFile('run.sh', ''), added: 0, deleted: 0, notice: '内容の差分はありません。', old_mode: '100644', new_mode: '100755' },
+    { ...spaceFile('run.sh', ''), added: 0, deleted: 0, notice: 'There is no difference in content.', old_mode: '100644', new_mode: '100755' },
     { ...spaceFile('moved.py', ''), old: 'before.py', status: 'R100', added: 0, deleted: 0 },
     { ...spaceFile('gone.py', ''), status: 'D', added: 0, deleted: 1 },
     { ...spaceFile('link', ''), added: 1, deleted: 1, old_mode: '120000', new_mode: '120000' }
   ] }] }
   await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(spaceFixture).replace(/</g, '\\u003c') + ';\n'), 'space')
   await click('#openAll')
-  await waitFor("document.querySelectorAll('#files table').length === 2", '空白の検証の描画')
-  check((await evaluate("document.querySelectorAll('#files article')[2].querySelector('.file-mode')?.textContent")) === '通常のファイル（100644） → 実行できるファイル（100755）', 'モードの変更を出す')
+  await waitFor("document.querySelectorAll('#files table').length === 2", 'rendering for the whitespace check')
+  check((await evaluate("document.querySelectorAll('#files article')[2].querySelector('.file-mode')?.textContent")) === 'Regular file (100644) → Executable file (100755)', 'shows the mode change')
   const marks = await evaluate("[...document.querySelectorAll('#files article')[0].querySelectorAll('.ws')].map(e => e.className.replace('ws ws-', ''))")
-  check(['tab', 'space', 'cr', 'ideo'].every(name => marks.includes(name)), '変わった空白に記号を付ける: ' + marks.join(','))
+  check(['tab', 'space', 'cr', 'ideo'].every(name => marks.includes(name)), 'marks changed whitespace: ' + marks.join(','))
   const firstLine = "document.querySelector('#files article .line-text')"
   await evaluate(`(() => { const range = document.createRange(); range.selectNodeContents(${firstLine}); getSelection().removeAllRanges(); getSelection().addRange(range) })()`)
-  check(await evaluate('getSelection().toString()') === '\tone  \r', '記号を付けた行を選ぶと元の文字だけが入る')
+  check(await evaluate('getSelection().toString()') === '\tone  \r', 'selecting a marked line yields only the original characters')
   await evaluate('getSelection().removeAllRanges()')
   await click('#spaceIgnore')
-  await waitFor("!!document.querySelector('#files .space-only')", '空白だけの変更の案内')
-  check(await evaluate("document.querySelectorAll('#files article')[1].querySelectorAll('tr td:last-child .line-text').length") === 3, '空白を無視すると、空白だけ変わった行は1行にまとまる')
-  check(await evaluate("document.querySelector('#totals').textContent.includes('+1') && document.querySelector('#totals').textContent.includes('−1')"), '空白を無視した行数を合計に出す')
+  await waitFor("!!document.querySelector('#files .space-only')", 'notice for a whitespace-only change')
+  check(await evaluate("document.querySelectorAll('#files article')[1].querySelectorAll('tr td:last-child .line-text').length") === 3, 'ignoring whitespace merges a whitespace-only change into one line')
+  check(await evaluate("document.querySelector('#totals').textContent.includes('+1') && document.querySelector('#totals').textContent.includes('−1')"), 'the totals count the lines with whitespace ignored')
   await click('#split')
   check(await evaluate("[...document.querySelectorAll('#files article')[1].querySelectorAll('tr')].some(t => { const cells = t.querySelectorAll('.line-text'); return cells.length === 2 && cells[0].textContent === '\\tkeep' && cells[1].textContent === '    keep' })"), '左右の配置では、それぞれの側の空白のまま出す')
   await click('#unified')
   await click('#spaceShow')
   await click('#contentOnly')
-  check(await evaluate("[...document.querySelectorAll('#files article .file-header')].map(e => e.textContent.split(' / ')[1]).join()") === 'blank.py,real.py' && await evaluate("document.querySelectorAll('#filelist button[data-file-id]').length") === 2, '追加・変更したファイルだけにすると、権限だけの変更・移動・削除・シンボリックリンクを出さない')
+  check(await evaluate("[...document.querySelectorAll('#files article .file-header')].map(e => e.textContent.split(' / ')[1]).join()") === 'blank.py,real.py' && await evaluate("document.querySelectorAll('#filelist button[data-file-id]').length") === 2, 'with added or modified files only, permission-only changes, moves, deletions and symbolic links are hidden')
   await click('#contentOnly')
-  check(await evaluate(fileCount) === 6, '絞り込みを外すと、すべてのファイルを出す')
+  check(await evaluate(fileCount) === 6, 'turning the filter off shows all files')
   // Without full text or files the filter would hide, neither control appears.
   const plainFixture = { ...fixture, sources: [{ ...fixture.sources[1], files: [{ ...fixture.sources[1].files[0], full_body: undefined }] }] }
   await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(plainFixture).replace(/</g, '\u003c') + ';\n'), 'plain')
-  check(await evaluate("!document.querySelector('#contentOnly') && !document.querySelector('#full') && !document.querySelector('#diff')"), '絞り込む対象も全文も無ければ、絞り込みと範囲の切替を出さない')
+  check(await evaluate("!document.querySelector('#contentOnly') && !document.querySelector('#full') && !document.querySelector('#diff')"), 'without anything to filter or full text, neither the filter nor the range switch appears')
+  // Japanese: the labels from the language pack replace the English words; the layout and the data stay the same.
+  const jaArgument = process.argv.find(arg => arg.startsWith('--ja-labels='))
+  if (jaArgument) {
+    const jaLabels = JSON.parse(readFileSync(resolve(jaArgument.slice('--ja-labels='.length)), 'utf8'))
+    const jaFixture = { ...spaceFixture, lang: 'ja', labels: jaLabels }
+    await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(jaFixture).replace(/</g, '\\u003c') + ';\n'), 'ja')
+    check(await evaluate('document.documentElement.lang') === 'ja', 'ja: the page language is ja')
+    check(await evaluate("[...document.querySelectorAll('[role=toolbar] span')].some(e => e.textContent === '空白') && document.querySelector('#openAll').getAttribute('aria-label') === 'すべて開く'"), 'ja: the toolbar words come from the pack')
+    check(await evaluate("document.querySelector('#totals').textContent.includes('6 ファイル')"), 'ja: the totals use the pack')
+    await click('#openAll')
+    check(await evaluate("document.querySelectorAll('#files article')[2].querySelector('.file-mode')?.textContent") === '通常のファイル（100644） → 実行できるファイル（100755）', 'ja: the mode words come from the pack')
+    check(await evaluate("[...document.querySelectorAll('#files article')].some(a => a.textContent.includes('内容の差分はありません。'))"), 'ja: the notice is translated')
+    check(await evaluate("[...document.querySelectorAll('#diff-app button:not(.file-header), #diff-app select, #diff-app input, #diff-app .file-header-row')].every(e => e.title.trim())"), 'ja: every pressable element has a title')
+    check(await evaluate("!/[A-Za-z]{4,} [a-z]+ [a-z]+/.test([...document.querySelectorAll('#diff-app button, #diff-app nav, [role=toolbar]')].map(e => e.title + ' ' + e.getAttribute('aria-label')).join(' ').replace(/\\b(?:null|true|false)\\b/g, ''))"), 'ja: no English sentences remain in titles')
+  }
   // Closing a file from its header while scrolled into it keeps the next header in view.
   const longBody = '@@ -0,0 +1,200 @@\n' + Array.from({ length: 200 }, (_, i) => '+line ' + i).join('\n')
   const longFixture = { ...fixture, sources: [{ ...fixture.sources[1], files: [0, 1, 2, 3].map(i => ({ path: `long-${i}.txt`, old: null, status: 'A', added: 200, deleted: 0, binary: false, notice: '', body: longBody })) }] }
@@ -403,43 +418,43 @@ try {
   const shownAt = await evaluate(nextTop)
   await click('#f-0-1 .file-header', true)
   await sleep(200)
-  check(Math.abs(await evaluate(nextTop) - shownAt) <= 2, `閉じる前に見えていた次の見出しは同じ位置に残す: ${shownAt} → ${await evaluate(nextTop)}`)
+  check(Math.abs(await evaluate(nextTop) - shownAt) <= 2, `the next heading that was visible before closing stays in place: ${shownAt} → ${await evaluate(nextTop)}`)
   await click('#f-0-1 .file-header')
   await sleep(300)
   await scrollToNext(3000)
   await click('#f-0-1 .file-header', true)
   await sleep(200)
-  check(Math.abs(await evaluate(nextTop)) <= 2, `閉じる前に画面の外にあった次の見出しは、スクロール領域の先頭に出す: ${await evaluate(nextTop)}`)
+  check(Math.abs(await evaluate(nextTop)) <= 2, `the next heading that was off screen before closing goes to the top of the scroll area: ${await evaluate(nextTop)}`)
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
   const mobileFixture = structuredClone(fixture)
   mobileFixture.sources[0].files = Array.from({ length: 45 }, (_, i) => ({ ...fixture.sources[0].files[0], path: `docs/mobile-${i}.md` }))
   const mobilePage = page.replace(marker, () => 'const DATA = ' + JSON.stringify(mobileFixture).replace(/</g, '\\u003c') + ';\n')
   await navigate(mobilePage, 'mobile')
-  check(await evaluate("document.querySelector('#diff-screen').dataset.screen === 'list'"), 'モバイル初期画面は一覧')
-  check(await evaluate("!document.querySelector('#resizer') && document.querySelector('#toggleSidebar').getBoundingClientRect().width === 0"), 'モバイルでは幅の境目と一覧を隠すボタンが無い')
-  check(await evaluate("document.querySelector('#diff-screen').getBoundingClientRect().left >= innerWidth - 1"), 'モバイル差分の開始位置は画面右側')
-  await search('見出し検索')
+  check(await evaluate("document.querySelector('#diff-screen').dataset.screen === 'list'"), 'mobile starts at the list')
+  check(await evaluate("!document.querySelector('#resizer') && document.querySelector('#toggleSidebar').getBoundingClientRect().width === 0"), 'mobile has no width boundary and no hide-list button')
+  check(await evaluate("document.querySelector('#diff-screen').getBoundingClientRect().left >= innerWidth - 1"), 'the mobile diff starts at the right side of the screen')
+  await search('heading search')
   const oldSearch = await evaluate("document.querySelector('#filter').value")
   await evaluate("document.querySelector('#sidebar').scrollTop = document.querySelector('#filelist button[data-file-id=\"f-0-15\"]').offsetTop - 200")
   const listScroll = await evaluate("document.querySelector('#sidebar').scrollTop")
   await click('#filelist button[data-file-id="f-0-15"]')
   await sleep(400)
-  check(await evaluate("document.querySelector('#diff-screen').dataset.screen === 'diff'"), 'モバイル一覧から差分に切り替え')
-  check(await evaluate("document.querySelector('#diff-screen').getBoundingClientRect().left >= -1 && document.querySelector('#diff-screen').getBoundingClientRect().right <= innerWidth + 1"), 'モバイル差分のスライド完了')
-  check(await evaluate("[...document.querySelectorAll('.bar .button-text')].every(e => getComputedStyle(e).display === 'none')"), 'モバイルツールバーはアイコンのみ')
+  check(await evaluate("document.querySelector('#diff-screen').dataset.screen === 'diff'"), 'mobile switches from the list to the diff')
+  check(await evaluate("document.querySelector('#diff-screen').getBoundingClientRect().left >= -1 && document.querySelector('#diff-screen').getBoundingClientRect().right <= innerWidth + 1"), 'the mobile diff slide completes')
+  check(await evaluate("[...document.querySelectorAll('.bar .button-text')].every(e => getComputedStyle(e).display === 'none')"), 'the mobile toolbar has icons only')
   await click('#back')
   await sleep(400)
-  check(await evaluate("document.querySelector('#diff-screen').dataset.screen === 'list'"), 'モバイル戻る')
-  check(await evaluate("document.querySelector('#filter').value") === oldSearch, '戻った一覧の検索を保持')
-  check(await evaluate("document.querySelector('#sidebar').scrollTop") === listScroll, '戻った一覧のスクロール位置を保持')
-  check(await evaluate('document.documentElement.scrollWidth <= innerWidth'), 'モバイル横方向のはみ出しなし')
+  check(await evaluate("document.querySelector('#diff-screen').dataset.screen === 'list'"), 'mobile back')
+  check(await evaluate("document.querySelector('#filter').value") === oldSearch, 'the list keeps its search after going back')
+  check(await evaluate("document.querySelector('#sidebar').scrollTop") === listScroll, 'the list keeps its scroll position after going back')
+  check(await evaluate('document.documentElement.scrollWidth <= innerWidth'), 'no horizontal overflow on mobile')
   // The static check sees only URLs written in the page; modules and fonts load further URLs at run time.
   const loaded = [...requests.values()].filter(url => /^https?:/.test(url)).map(url => new URL(url))
   const outside = loaded.filter(url => !(url.host === 'cdn.jsdelivr.net' ? url.pathname.startsWith('/npm/')
     : ['fonts.googleapis.com', 'fonts.gstatic.com'].includes(url.host)))
-  check(outside.length === 0, '実行中に読み込んだ外部アドレスが jsDelivr の /npm/ と Google Fonts だけ: ' + outside.join(' '))
-  check(networkFailures.length === 0, '外部の読み込みの失敗なし: ' + JSON.stringify(networkFailures))
-  check(errors.length === 0, 'コンソールエラーなし: ' + errors.join('\n'))
+  check(outside.length === 0, 'the only external addresses loaded while running are jsDelivr /npm/ and Google Fonts: ' + outside.join(' '))
+  check(networkFailures.length === 0, 'no failed external loads: ' + JSON.stringify(networkFailures))
+  check(errors.length === 0, 'no console errors: ' + errors.join('\n'))
   process.stdout.write(JSON.stringify({ ok: true, files: total, checks: checks.length, results: checks, staticExternalLoads: urls, consoleErrors: errors, networkFailures }) + '\n')
 } catch (error) {
   process.stderr.write(JSON.stringify({ ok: false, browser: 'failed', message: error.message, consoleErrors: errors, networkFailures }) + '\n')

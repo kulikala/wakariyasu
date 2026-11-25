@@ -28,7 +28,7 @@
 - `AGENTS.snippet.md` には、規則に続けて、言語ごとのフォルダの中身を言語ごとの節で入れた。貼っている人は全文を入れ替える。
 - README・CHANGELOG・設計書・プラグインの設定ファイルを英語にした。日本語の README と変更履歴は `README.ja.md` と `CHANGELOG.ja.md` にある。
 - 使わない言い回しの一覧を、言語ごとのフォルダ `skills/check-terms/lang/<言語>/` に移した。`check-terms` は `--lang <コード>` で1つの言語を探し、付けなければ一覧のあるすべての言語を探す。注記は英語（`(check in context)`）になり、知らないオプション・一覧の無い言語・読めないファイルでは終了コード 2 で止まる。
-- `show-changes` のページは、既定で英語になった。`build.py --lang <コード>` を付けると、`show-changes` と `session-status` のページは、その言語のフォルダから表示の語を取る。日本語の語はフォルダにある。
+- `show-changes` のページは、既定で英語になった。言語を指定すると（`show-changes` は `--lang <コード>`、`session-status` は報告の `lang`）、どちらのページもその言語のフォルダから表示の語を取る。日本語の語はフォルダにある。
 
 ## [0.11.0] - 2026-11-11
 

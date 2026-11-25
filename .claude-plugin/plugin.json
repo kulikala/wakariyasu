@@ -1,6 +1,6 @@
 {
   "name": "wakariyasu",
-  "description": "Rules and skills that make the Japanese an AI agent writes understandable to readers who have not followed its work",
+  "description": "Rules and skills that make what an AI agent writes understandable to readers who have not followed its work",
   "version": "0.12.0",
   "skills": "./skills/",
   "author": {

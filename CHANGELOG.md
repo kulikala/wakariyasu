@@ -9,7 +9,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 
 ### Added
 
-- Added the skill `compose-page`. It builds a page for people to read (a report, proposal, comparison and the like) starting from what the reader wants to know. Unless the environment or the project fixes the page's code, it starts from a single-HTML-file template that uses Vue 3, Tailwind CSS v4 and Lucide. The page has both a light and a dark display and follows the display setting of the reader's device.
+- Added the skill `compose-page`. It builds a page for people to read (a report, proposal, comparison and the like) starting from what the reader wants to know. Unless the environment or the project fixes the page's code, it starts from a single-HTML-file template that uses Vue 3, Tailwind CSS v4 and Lucide (`@lucide/vue`); the template leaves the icons and colors to the agent. The page has both a light and a dark display and follows the display setting of the reader's device.
 - Added the skill `extract-insights`. From text such as meeting records and documents, it extracts insights, one at a time, that other people can use. Each insight is written as one sentence plus its kind, background, supplement, certainty and source.
 - In the `session-status` page, http and https URLs in the text become links that open in a new tab.
 - Added 「包み」 (a translation of "wrapper") and 「札」 (meaning a tag or label) to the list of phrases Japanese does not use.
@@ -26,6 +26,9 @@ A change to how the rules or skills are written that changes the agent's behavio
 - The bodies of the rules and skills are now in English. The notation choices, phrasing checks and yomiyasu usage for writing in Japanese moved to the Japanese folder.
 - What is loaded at the start of a session is now the rules, the way to write a question for a decision, and the list of language folders. The agent reads the notation table and the phrasing tables from the Japanese folder before writing Japanese.
 - `AGENTS.snippet.md` now contains, after the rules, the contents of each language folder in a section per language. People who pasted it replace the whole.
+- README, CHANGELOG, the design documents and the plugin manifests are now in English. The Japanese README and changelog are `README.ja.md` and `CHANGELOG.ja.md`.
+- The lists of phrases to avoid moved to `skills/check-terms/lang/<language>/`, one folder per language. `check-terms` takes `--lang <code>` to search one language; without it, it searches every language that has a list. Its notes are in English (`(check in context)`), and it stops with exit code 2 on an unknown option, a language without a list, or a file it cannot read.
+- The `show-changes` page is in English by default. `build.py --lang ja --labels <file>` writes it in Japanese, with the labels from the Japanese folder.
 
 ## [0.11.0] - 2026-11-11
 

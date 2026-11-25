@@ -4,6 +4,8 @@ This is the starting point when nothing in the environment or the project sets t
 
 The URLs name only the major versions of Vue (3) and Tailwind CSS (4), so the page loads the latest release within each major version. The Lucide URL names no version and loads the latest release.
 
+Vue is loaded from jsDelivr's `+esm` build of the bundler file, which includes the template compiler. Lucide's `+esm` bundle imports Vue's runtime from jsDelivr in the same form, so the page and the icons share one Vue runtime. When they run on separate copies of Vue, icons fail to render and the console shows an error from inside the Lucide bundle.
+
 ## The file
 
 ```html
@@ -16,29 +18,27 @@ The URLs name only the major versions of Vue (3) and Tailwind CSS (4), so the pa
   <script type="importmap">
     {
       "imports": {
-        "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.js",
-        "lucide-vue-next": "https://cdn.jsdelivr.net/npm/lucide-vue-next/+esm"
+        "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-bundler.js/+esm",
+        "@lucide/vue": "https://cdn.jsdelivr.net/npm/@lucide/vue/+esm"
       }
     }
   </script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
     @theme {
-      /* Light values of the page's colors. Use them as bg-surface, text-ink and so on. */
-      --color-surface: #ffffff;
-      --color-ink: #1f2328;
+      /* One token per color role the page uses, with its light value */
+      --color-{{role}}: {{light value}};
     }
     @layer base {
       :root { color-scheme: light; }
       @media (prefers-color-scheme: dark) {
         :root {
-          /* Dark values of the same colors */
-          --color-surface: #16181d;
-          --color-ink: #e6e8eb;
+          /* The same tokens with their dark values */
+          --color-{{role}}: {{dark value}};
           color-scheme: dark;
         }
       }
-      body { @apply bg-surface text-ink; }
+      body { @apply bg-{{background role}} text-{{text role}}; }
     }
   </style>
 </head>
@@ -49,10 +49,11 @@ The URLs name only the major versions of Vue (3) and Tailwind CSS (4), so the pa
 
   <script type="module">
     import { createApp, ref, computed, reactive } from 'vue'
-    import { Bell } from 'lucide-vue-next'
+    // Import each icon the page uses by its Lucide component name
+    import { {{IconName}} } from '@lucide/vue'
 
     const app = createApp({
-      components: { Bell },
+      components: { {{IconName}} },
       setup () {
         // Composition API state for the page
         return {}
@@ -66,20 +67,17 @@ The URLs name only the major versions of Vue (3) and Tailwind CSS (4), so the pa
 
 - Set `lang` to the language the page is written in. Browsers choose the default font from it, so a page with the wrong `lang` can show text in a typeface meant for another language.
 - The page specifies no font and uses the browser's default.
-- Define each color the page uses once in `@theme` with its light value, and redefine it with its dark value under `prefers-color-scheme: dark`. Utilities built from the token (`bg-surface`, `text-ink`) then follow the device's setting without a `dark:` variant on every element. Give `body` its background and text color from the tokens.
+- Decide the color roles and their values from what the page shows and what its cues must tell apart. Define each role once in `@theme` with its light value, and redefine it with its dark value under `prefers-color-scheme: dark`. Utilities built from a token (`bg-{{role}}`, `text-{{role}}`) then follow the device's setting without a `dark:` variant on every element. Give `body` its background and text color from the tokens.
 
 ## Writing Lucide icons in the template
 
 Vue reads the template from the HTML in the page, which the browser parses first. The browser lowercases tag names and does not treat a custom tag written as self-closing as closed.
 
-- Import the icons you use from `lucide-vue-next` and register them in the app's `components`. In the template, write them in kebab-case (`<bell />` for `Bell`, `<chevron-down />` for `ChevronDown`), not in PascalCase.
+- Import the icons you use from `@lucide/vue` and register them in the app's `components`. In the template, write each one as the kebab-case form of its component name, not in PascalCase.
 - Put each icon inside its own element, such as a `<div>`. Otherwise the icon tag stays open and takes the elements after it as its children.
 
 ```html
-<button>
-  <div><bell /></div>
-  <span>Notifications</span>
-</button>
+<div><{{icon-name}} /></div>
 ```
 
 ## Publishing as a Claude artifact
@@ -95,14 +93,12 @@ When the page is published as a Claude artifact, follow the environment's rules 
   :root { color-scheme: light; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --color-surface: #16181d;
-      --color-ink: #e6e8eb;
+      --color-{{role}}: {{dark value}};
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --color-surface: #16181d;
-    --color-ink: #e6e8eb;
+    --color-{{role}}: {{dark value}};
     color-scheme: dark;
   }
 </style>

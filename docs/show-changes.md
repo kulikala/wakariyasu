@@ -1,51 +1,51 @@
-# show-changes の改修方法
+# How to modify show-changes
 
-スキル `show-changes` のページは、`skills/show-changes/scripts/` の `build.py`（差分を集めてページを作るスクリプト）が、`template.html`（ページの雛形）にデータを埋め込んで作る。
+The page of the skill `show-changes` is built by `build.py` in `skills/show-changes/scripts/` (the script that collects the diff and builds the page), which embeds the data into `template.html` (the page template).
 
-## 改修したあとのテスト
+## Testing after a change
 
 ```sh
-python3 -B dev/test-show-changes.py --repo <名前> <場所> <BASE> <TARGET> [--merge-base <名前>] [--sample-dir <保存するフォルダ>] [--skip-browser]
+python3 -B dev/test-show-changes.py --repo <name> <location> <BASE> <TARGET> [--merge-base <name>] [--sample-dir <folder to save to>] [--skip-browser]
 ```
 
-`dev/test-show-changes.py` は、`--repo` で渡したリポジトリの2つのコミットから、差分だけのページ・全文を入れたページ・`--artifact` を付けたページを作り、`dev/test-show-changes-page.mjs` でブラウザのテストを実行する。あわせて、次を検証する。
+From two commits of the repository passed with `--repo`, `dev/test-show-changes.py` builds a diff-only page, a page that includes full text, and a page built with `--artifact`, and runs the browser test with `dev/test-show-changes-page.mjs`. It also verifies the following.
 
-- JSON に書き出して読み直しても、データが変わらない。
-- 過去に修正した誤りがまた起きていない（誤りの一覧は、`dev/test-show-changes.py` が出力する `regressions`）。
-- 比べたリポジトリの状態が、テストの前と後で変わらない。
-- 2つのフォルダの対象と unified diff の対象（`git diff`・`--no-prefix`・`diff -ru` の形）を混ぜたページを作れる。UTF-8 として読めないバイトとシンボリックリンクを含む対象も作れる。
+- Data does not change when written out to JSON and read back.
+- Mistakes fixed in the past have not happened again (the list of mistakes is `regressions`, which `dev/test-show-changes.py` prints).
+- The state of the compared repository is the same before and after the test.
+- A page can be built that mixes two-folder targets with unified diff targets (the forms `git diff`, `--no-prefix` and `diff -ru`). Targets containing bytes that cannot be read as UTF-8 and symbolic links can also be built.
 
-作ったページは標準出力で受け取り、2つのフォルダの対象は一時フォルダに作る。`--sample-dir`（書き込める既存のフォルダ）を渡したときだけ、作ったページを保存する。`--skip-browser` を付けると、ブラウザを使わないテストだけを実行する。`--skip-browser` のときも、ページの静的な検査に node を使う。
+The built page is received on standard output, and the two-folder targets are created in a temporary folder. The built page is saved only when `--sample-dir` (an existing writable folder) is passed. With `--skip-browser`, only the tests that do not use a browser run. Even with `--skip-browser`, node is used for the static checks of the page.
 
-`dev/test-show-changes-page.mjs` は、作ったページを headless の Chrome で開いて操作を試す。次を検証する。
+`dev/test-show-changes-page.mjs` opens the built page in headless Chrome and tries operating it. It verifies the following.
 
-- 開閉、一覧からの移動、絞り込み、配置・範囲・配色の切り替え、パスと選んだ文字列のコピー、スマートフォンの幅での操作が動く。
-- スクロールしても、ファイルの見出しと `@@` の行（差分のまとまりごとの見出し）が上に残る。
-- 変わった空白に記号が付き、記号を付けた行を選んでコピーすると元の文字だけが入る。「空白」で「無視」を選ぶと、空白だけ変わった行が1行にまとまり、行数の合計も変わる。
-- ファイルの一覧で「追加・変更したファイルだけ」のボタンを押すと、内容が変わった追加・変更のファイルだけが残り、権限だけの変更・移動・削除・シンボリックリンクが消える。もう一度押すと、すべて戻る。検索の入力欄に文字列があるときだけ、右端に文字列を消すボタンが出る。押すと文字列が消えてすべてのファイルが戻り、入力欄にフォーカスが戻る。絞り込んで消えるファイルが無いページと、全文を含まないページでは、絞り込みのボタンと範囲の切り替えを出さない。
-- 選ばれたボタンにマウスを乗せたときの背景の色が、選ばれていないボタンに乗せたときの色とも、選ばれたボタンの普段の色とも違う。押せる要素のすべてに title がある。
-- スクロールしてファイルの途中にいるときに見出しを押して閉じると、閉じる前に画面にあった次のファイルの見出しは同じ位置に残り、画面の外にあった次の見出しはスクロール領域の先頭に来る。
-- コンソールにエラーが無い。
-- ページに記載した外のアドレスが固定した URL の一覧（`dev/test-show-changes-page.mjs` の `urls`）にあり、実行中に読み込んだ外のアドレスが jsDelivr の `/npm/` と Google Fonts だけで、読み込みに失敗しない。
+- Opening and closing, moving from the list, filtering, switching layout, range and color scheme, copying a path and the selected text, and operation at a smartphone width all work.
+- Even when scrolling, the file headings and the `@@` lines (the headings of each block of the diff) stay at the top.
+- Changed whitespace gets a symbol, and when a line with symbols is selected and copied, only the original characters go in. Choosing "ignore" under 「空白」 (whitespace) collapses lines in which only whitespace changed into one line, and the total line count changes too.
+- In the file list, pressing the "only added and changed files" button leaves only the added and changed files whose content changed, and removes permission-only changes, moves, deletions and symbolic links. Pressing it again brings everything back. Only when the search field has text, a button for clearing the text appears at the right end. Pressing it clears the text, brings all files back and returns focus to the field. On a page where no file would disappear by filtering and on a page that does not include full text, the filter button and the range switch are not shown.
+- The background color when the mouse is over a selected button differs both from the color when over an unselected button and from the selected button's usual color. Every clickable element has a title.
+- When you are partway through a file after scrolling and press the heading to close it, the heading of the next file that was on screen before closing stays in the same position, and a next heading that was off screen comes to the top of the scroll area.
+- There are no errors in the console.
+- The external addresses written in the page are in the list of pinned URLs (`urls` in `dev/test-show-changes-page.mjs`), and the external addresses loaded during the run are only jsDelivr's `/npm/` and Google Fonts, with no load failures.
 
-ページ1枚だけを試すときは、`node dev/test-show-changes-page.mjs <ページ>.html` で実行する。`--artifact` で作ったページは、Claude のアーティファクトの公開先に近い形（文書の骨組みと、ページより先に動くモジュールのスクリプト）で包んで開く。公開先の CSP（ページで実行できるものの制限）と sandbox は再現しない。Chrome は、macOS ではアプリケーションのフォルダの Google Chrome を、ほかの OS では `google-chrome` を起動し、環境変数 `CHROME` で別の場所を指定できる。`--static-only` を付けると、ブラウザで開かずに、埋め込んだデータが読めることと、ページに記載した外のアドレスが固定した URL の一覧にあることを検証する。Chrome のプロファイルとページのファイルは OS の一時フォルダに作り、終わったら消す。
+To try just one page, run `node dev/test-show-changes-page.mjs <page>.html`. A page built with `--artifact` is opened wrapped in a form close to where Claude artifacts are published (the document skeleton and a module script that runs before the page). The publishing site's CSP (the restrictions on what a page may execute) and sandbox are not reproduced. For Chrome, on macOS it launches Google Chrome in the Applications folder, and on other OSes it launches `google-chrome`; the environment variable `CHROME` can specify a different location. With `--static-only`, instead of opening in a browser, it verifies that the embedded data can be read and that the external addresses written in the page are in the list of pinned URLs. The Chrome profile and the page files are created in the OS's temporary folder and deleted afterward.
 
-## 決定事項と経緯
+## Decisions and reasons
 
-- 表示は Vue 3 の1ファイルで、ビルドの仕組みは使わない。ライブラリはバージョンを固定した CDN から読む。`build.py` を Python の標準のライブラリだけで動かし、ページを1つのファイルで渡せるようにするため。
-- ライブラリは ESM のまま、完全な URL で import する。import map は使わない。Claude のアーティファクトでは公開先のスクリプトがページより先にモジュールを読み込み、Firefox はそのあとの import map を受け付けないため。
-- 外のスタイルシートは Google Fonts のほかは読まない。表示先（Claude のアーティファクトなど）によっては、Google Fonts 以外のスタイルシートが止められる。highlight.js は ESM で core と使う言語だけを読み、色は Tailwind のクラスで付ける。
-- Vue は、@lucide/vue が jsDelivr で import するのと同じ `vue@<バージョン>/+esm` から読む。@lucide/vue は既定の大きさを Vue の provide／inject で受け取るので、ページに Vue が2つあると受け取れない。この Vue は template の文字列を読めない版なので、`@vue/compiler-dom` の `compile` を `registerRuntimeCompiler` で登録する（Vue の完全版と同じやり方）。Vue と `@vue/compiler-dom` のバージョンはそろえる。テンプレートを実行時にコンパイルするので、CSP で `unsafe-eval` を禁じる表示先ではページが動かない。Claude のアーティファクトでは動く。
-- ライブラリのバージョンを上げるときは、出てから2週間以上たったバージョンにする。Claude のアーティファクトの規則による。バージョンを上げたら、`template.html` の import の URL と、`dev/test-show-changes-page.mjs` の固定した URL の一覧を一緒に更新する。
-- CDN は jsDelivr だけを使う。Claude のアーティファクトが読み込みを許す配信元に入っている。
-- 開閉は `<details>` やページ内のリンク（`#…`）を使わず、ボタンと自前の状態で行う。表示先が差し込むスクリプトは、`<details>` とページ内のリンクの動きを壊すことがある。
-- ファイルの見出しと `@@` の行は、スクロールの枠の中で sticky にして上に残す。ファイルの枠の角は `overflow: clip` で丸め、`overflow: hidden` は使わない。`hidden` はスクロールの枠を作り、sticky が働かなくなる。同じ理由で、スクロールの枠（`#main`）の余白は内側の要素に付ける。
-- 差分は git があれば git に作らせ（2つのフォルダの対象は `git diff --no-index`）、git が無いときだけ Python の difflib で作る。difflib は、同じ行が多い大きいファイルで遅い。
-- UTF-8 として読めないバイトは、置き換えの字にせず `\xNN` の形で残す。置き換えの字にすると、違うバイトが同じ字に見え、変わった行が変わっていないように見える。
-- 検索はパッチの見出し・`@@` の行・行頭の印に当てない。見る人が探すのは、ファイル名と行の本文のため。
-- 空白の記号は CSS（背景と疑似要素）で描き、ページの文字は元のまま残す。コピーと検索が、記号ではなく元の文字を扱うため。
-- 記号を付けるのは、行の中で変わった範囲・行頭の字下げが対の行と違うとき・変わった行の行末の空白と、どの行にもある幅の無い文字（ZWSP・BOM）だけ。すべての空白に付けると、変わっていない字下げまで記号で埋まる。行末の CR だけは、変わったときに限って付ける。CRLF のファイルで、変わった行のすべてに記号が付くのを避けるため。
-- 「空白」の「無視」は `git diff -w` と同じ考え方で、空白（全角スペース・タブ・行末の CR を含む）を除いて同じになる行を、変わっていない行として出す。空行の追加と削除は残す。ページの中で差分を組み直すので、データは1通りで済む。
-- 「追加・変更したファイルだけ」は、状態が追加か変更で、内容に差分があるファイル（バイナリを含む）だけを残す。権限だけの変更・移動・複製・削除・シンボリックリンク・サブモジュールは、ファイルの中身を読む対象ではないため外す。移動と複製は、中身が変わっていても外す。どのファイルも残るページではボタンを出さない。押しても何も変わらないボタンは、見る人を迷わせるため。
-- 選ばれたボタンにマウスを乗せたときは、選ばれたボタンの色を濃くする。選ばれていないボタンに乗せたときの色と同じにすると、押してもマウスを離すまで見た目が変わらず、見る人は押せていないと思って押し直す。
-- 見出しを押してファイルを閉じたときは、次のファイルの見出しを、見ていた位置に合わせてスクロールする。閉じたファイルの途中までスクロールしていると、閉じたあとに同じ位置のままでは、後ろのファイルの途中が出るため。閉じたファイルの先頭が画面にあるときは、スクロールしない。
+- The display is a single Vue 3 file and uses no build system. Libraries are loaded from a CDN with pinned versions. This is so that `build.py` runs on the Python standard library alone and the page can be handed over as one file.
+- Libraries are imported as ESM by their full URL. Import maps are not used. In Claude artifacts, the publishing site's script loads modules before the page, and Firefox does not accept an import map that comes after.
+- No external stylesheets are loaded other than Google Fonts. Depending on where it is displayed (such as Claude artifacts), stylesheets other than Google Fonts are blocked. highlight.js is loaded as ESM with only the core and the languages used, and colors are applied with Tailwind classes.
+- Vue is loaded from the same `vue@<version>/+esm` that @lucide/vue imports on jsDelivr. @lucide/vue receives its default size through Vue's provide/inject, so it cannot receive it if the page has two Vues. This Vue is a build that cannot read template strings, so `compile` of `@vue/compiler-dom` is registered with `registerRuntimeCompiler` (the same way as Vue's full build). The versions of Vue and `@vue/compiler-dom` are kept the same. Because templates are compiled at runtime, the page does not work where the display site forbids `unsafe-eval` in its CSP. It works in Claude artifacts.
+- When raising a library version, use a version that has been out for two weeks or more. This follows Claude artifacts' rule. After raising a version, update the import URLs in `template.html` and the list of pinned URLs in `dev/test-show-changes-page.mjs` together.
+- Only jsDelivr is used as the CDN. It is among the sources Claude artifacts allow loading from.
+- Opening and closing is done with buttons and the page's own state, not `<details>` or in-page links (`#...`). Scripts that the display site injects can break the behavior of `<details>` and in-page links.
+- File headings and `@@` lines are made sticky inside the scroll frame so that they stay at the top. The corners of a file's frame are rounded with `overflow: clip`, and `overflow: hidden` is not used, because `hidden` creates a scroll container and sticky stops working. For the same reason, the padding of the scroll frame (`#main`) is put on an inner element.
+- The diff is made by git if git is available (`git diff --no-index` for two-folder targets), and by Python's difflib only when git is unavailable. difflib is slow on large files with many identical lines.
+- Bytes that cannot be read as UTF-8 are kept in the form `\xNN`, not as the replacement character. With the replacement character, different bytes look like the same character, and a changed line would look unchanged.
+- Search is not applied to the patch heading, the `@@` lines or the marks at the start of lines. What viewers look for is file names and the text of lines.
+- Whitespace symbols are drawn with CSS (background and pseudo-elements), and the page's text is left as the original, because copying and searching then handle the original characters, not the symbols.
+- Symbols are attached only to the changed range within a line, to a leading indent that differs from the paired line, to trailing whitespace on a changed line, and to zero-width characters that appear on any line (ZWSP and BOM). Marking all whitespace would fill even unchanged indentation with symbols. A trailing CR gets a symbol only when it changed, to avoid symbols on every changed line in CRLF files.
+- "Ignore" under 「空白」 (whitespace) follows the same idea as `git diff -w`: lines that become identical when whitespace (including full-width spaces, tabs and a trailing CR) is removed are shown as unchanged lines. Added and deleted blank lines are kept. The diff is rebuilt inside the page, so only one set of data is needed.
+- "Only added and changed files" keeps only files whose state is added or changed and whose content has a diff (including binary files). Permission-only changes, moves, copies, deletions, symbolic links and submodules are excluded because they are not targets whose file contents are read. Moves and copies are excluded even if their contents changed. On a page where every file would remain, the button is not shown, because a button that changes nothing when pressed confuses viewers.
+- When the mouse is over a selected button, the selected button's color is made darker. If it were the same as the color over an unselected button, the appearance would not change after pressing until the mouse is released, and viewers would think they had not pressed it and press again.
+- When a file is closed by pressing its heading, the next file's heading is scrolled to match the position the viewer was looking at. If you had scrolled partway through the closed file, staying at the same position after closing would show the middle of a later file. When the top of the closed file is on screen, no scrolling is done.

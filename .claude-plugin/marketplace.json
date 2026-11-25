@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "wakariyasu",
-      "description": "AI エージェントが書く日本語を、作業の経緯を知らない人が読んでも分かるようにする規則とスキル",
+      "description": "Rules and skills that make the Japanese an AI agent writes understandable to readers who have not followed its work",
       "version": "0.12.0",
       "author": {
         "name": "kulikala"

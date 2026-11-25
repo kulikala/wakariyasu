@@ -1,247 +1,214 @@
-# 変更履歴
+# Changelog
 
-バージョンの番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従います。
-規則やスキルの書き方が変わり、エージェントの振る舞いが変わる変更は、マイナーバージョンを上げます。
+English | [日本語](CHANGELOG.ja.md)
+
+Version numbers follow [Semantic Versioning](https://semver.org/).
+A change to how the rules or skills are written that changes the agent's behavior raises the minor version.
 
 ## [0.12.0] - 2026-11-25
 
-### 追加
+### Added
 
-- スキル `compose-page` を追加した。人に見せるページ（報告・提案・比較など）を、読み手が知りたいことから組み立てる。環境やプロジェクトがページのコードを定めていなければ、Vue 3・Tailwind CSS v4・Lucide を使う1つの HTML ファイルの雛形から始める。ページは明るい表示と暗い表示の両方を持ち、読み手の機器の表示設定に従う。
-- スキル `extract-insights` を追加した。会議の記録や資料などの文章から、ほかの人が使える知見を1件ずつ取り出す。知見は、知見の1文と、種類・背景・補足・確かさ・出所で記述する。
-- session-status のページで、文中の http・https の URL がリンクになり、新しいタブで開く。
-- 日本語では使わない言い回しの一覧に、「包み」（wrapper の訳語）と「札」（タグ・ラベルの意味）を追加した。
-- 言語ごとの追加分を `skills/writing-rules/lang/<言語>/` に置けるようにした。エージェントは、返答や文書を記述する言語のフォルダがあれば、記述する前にそのフォルダのファイルを読んで使う。言語を切り替える設定は要らない。日本語（`ja`）と英語（`en`）のフォルダがある。
-- 英語の文書を人に渡す前に、使えるスキルの中に avoid-ai-writing があれば、エージェントがそのスキルに通す。
-- session-status の報告を、1枚の HTML のページ（アーティファクト）にもできるようにした。ユーザーはページ上で、判断を求めていることの案を選び、メッセージを記入し、回答をまとめてコピーしてセッションに貼り付けられる。ページは、ユーザーがページで見たいと言ったときや、指示でアーティファクトやページで見せるように求められているときに作る。
+- Added the skill `compose-page`. It builds a page for people to read (a report, proposal, comparison and the like) starting from what the reader wants to know. Unless the environment or the project fixes the page's code, it starts from a single-HTML-file template that uses Vue 3, Tailwind CSS v4 and Lucide. The page has both a light and a dark display and follows the display setting of the reader's device.
+- Added the skill `extract-insights`. From text such as meeting records and documents, it extracts insights, one at a time, that other people can use. Each insight is written as one sentence plus its kind, background, supplement, certainty and source.
+- In the `session-status` page, http and https URLs in the text become links that open in a new tab.
+- Added 「包み」 (a translation of "wrapper") and 「札」 (meaning a tag or label) to the list of phrases Japanese does not use.
+- Language-specific additions can now be placed in `skills/writing-rules/lang/<language>/`. If a folder exists for the language of the reply or document being written, the agent reads and uses its files before writing. No setting for switching languages is needed. Folders for Japanese (`ja`) and English (`en`) exist.
+- Before handing over an English document, the agent runs it through the skill avoid-ai-writing if that skill is among the available skills.
+- The `session-status` report can now also be a single HTML page (an artifact). On the page, the user can pick options for the points that need a decision, write a message, and copy all the answers to paste into the session. The page is made when the user says they want to see it as a page, or when instructions ask for an artifact or a page.
 
-### 変更
+### Changed
 
-- エージェントがユーザーに判断を求めるのは、依頼された作業を続けたり終えたりするのに答えが必要なときだけになった。依頼の外の事柄は、作業の結果から見えたものでも問いかけにせず、事実と影響として報告する。依頼が終わっていれば、session-status は終わったことを伝えて止まる。
-- ユーザーへの返答で、仕組みや変更を説明するときは全体を先に記述し、理由から結論までに確認した事実も記述する。自分で付けた呼び名の意味は返答ごとに添え直し、前の返答や別のファイルの内容は、場所を示すだけにせず、使う箇所に記述する。
-- 文書の仕上げの対象に、ウェブのページ・アーティファクト・スライド・Office の文書を入れた。エージェントは、読み手が見る文字を取り出して仕上げる。
-- スキルの説明文は英語だけになった。日本語の依頼でも、同じ意味の依頼としてスキルが呼ばれる。
-- 規則とスキルの本文を英語にした。日本語で記述したときの表記の選び方・言い回しの確かめ方・yomiyasu の使い方は、日本語のフォルダに移した。
-- セッションの始めに読み込まれるのは、規則と判断の問いかけの書き方、言語ごとのフォルダの一覧になった。表記の表と言い回しの表は、エージェントが日本語を記述する前に日本語のフォルダから読む。
-- `AGENTS.snippet.md` には、規則に続けて、言語ごとのフォルダの中身を言語ごとの節で入れた。貼っている人は全文を入れ替える。
+- The agent asks the user for a decision only when the answer is needed to continue or finish the requested work. Matters outside the request are reported as facts and their impact, not asked as questions, even if the work's results revealed them. If the request is finished, `session-status` says it is finished and stops.
+- When a reply to the user explains a mechanism or a change, it states the whole first, and also states the facts confirmed between the reasons and the conclusion. The meaning of a name the agent coined is added again in each reply, and the content of an earlier reply or another file is written out where it is used rather than only pointed to.
+- Web pages, artifacts, slides and Office documents are now included in what gets finished before handover. The agent extracts the text a reader will see and finishes it.
+- Skill descriptions are now in English only. A request in Japanese still invokes the skill as a request of the same meaning.
+- The bodies of the rules and skills are now in English. The notation choices, phrasing checks and yomiyasu usage for writing in Japanese moved to the Japanese folder.
+- What is loaded at the start of a session is now the rules, the way to write a question for a decision, and the list of language folders. The agent reads the notation table and the phrasing tables from the Japanese folder before writing Japanese.
+- `AGENTS.snippet.md` now contains, after the rules, the contents of each language folder in a section per language. People who pasted it replace the whole.
 
 ## [0.11.0] - 2026-11-11
 
-### 追加
+### Added
 
-- エージェントが日本語の文書を記述するとき、和語と漢語のどちらにも寄せない標準表記と、意味と読みやすさを失わない範囲で漢語を中心に記述する漢語表記のどちらかを、文書の目的と読み手から選ぶ。
-- どちらの表記で記述させるかは、CLAUDE.md で指定できる。
+- When the agent writes a Japanese document, it chooses, from the document's purpose and reader, between standard notation, which leans toward neither native Japanese nor Sino-Japanese words, and Sino-Japanese notation, which centers on Sino-Japanese words as far as meaning and readability are not lost.
+- Which notation to write in can be specified in CLAUDE.md.
 
 ## [0.10.0] - 2026-11-09
 
-### 追加
+### Added
 
-- Codex・Cursor・GitHub Copilot などのエージェントに、`npx skills add` と `npx openskills install` でもスキルをインストールできるようになった。手順は README の「[インストール方法](README.md#インストール方法)」にある。
-- エージェントが記述する日付と曜日が、文書の言語と読み手の地域で使われている形になる。
-- 日本語では使わない言い回しの一覧に、「入れ方」「入るもの」「使うエージェント」を追加した。エージェントは、README などでインストールの説明に使う語を「インストール方法」のような見慣れた語にする。
-- スキル `show-changes` のページで、押せる要素にマウスを乗せると、押すと何が起きるかが表示される。
-- スキル `show-changes` のページで、検索の入力欄に文字列があるときは、右端の ✕ ボタンか Esc キーで文字列を消せる。
+- Skills can now also be installed for agents such as Codex, Cursor and GitHub Copilot with `npx skills add` and `npx openskills install`. The steps are in the README's "[Installation](README.md#installation)" section.
+- The dates and weekdays the agent writes take the form used in the document's language and the reader's region.
+- Added 「入れ方」, 「入るもの」 and 「使うエージェント」 to the list of phrases Japanese does not use. In READMEs and the like, the agent uses a familiar term such as 「インストール方法」 (installation method) for explaining installation.
+- On the `show-changes` page, hovering over a clickable element shows what pressing it will do.
+- On the `show-changes` page, when the search field has text, it can be cleared with the ✕ button at the right end or the Esc key.
 
-### 変更
+### Changed
 
-- エージェントが書く CHANGELOG が、作業の記録ではなく、使う人にとって何が変わったかの案内になる。変更の種類（追加・変更・修正など）で項目を分ける。
-- エージェントが書く README で、インストールに使うほかのツールの説明が、実行するコマンドと必須のオプションだけになる。ほかのツールの詳しい使い方は、ほかのツールの README へのリンクで示す。
-- 日本語では使わない言い回しの一覧で、「勧め」の言い換えの候補に「推奨」を追加した。
-- 指示のファイルに貼る `AGENTS.snippet.md` が短くなった。README・変更履歴・指示文の書き方はスキル `writing-rules` から必要なときに読むようになり、規則の中で同じことを繰り返していた記述をまとめた。貼っている人は、アップデートのときに新しい `AGENTS.snippet.md` の全文に入れ替える。
-- エージェントが文章を整えるときに、丸括弧の補足と鉤括弧で囲んだ例を1つずつ確かめ、要らなければ除き、必要なら地の文に組み込む。括弧や記号そのものはコードの書式で示す。
-- エージェントが書く文書と指示文から、並べた項目の数、読み手が使わない時点の値、同じ指示の重複が減る。スキル `clarify-skill` の点検でも、項目の数と重複を確かめる。
-- スキル `summarize-session` で作るドキュメント・知見・指摘の文書に、その時点の状態と作業の記録が入らなくなる。記録が欲しいときは、頼めば別の節か引用の形で入る。ログの文書には、これまでどおり作業の記録と、いつの状態かが入る。
-- スキル `summarize-session` で作る知見の文書に、確かめた手順と確認していないことの一覧が入らなくなる。確かさは、確認した知見か推定かで示す。
-- スキル `remove-meta-narrative` は、設計書や README の中にある記録の節も点検する。点検しないのは、作業記録のように、文書の目的が作業の記録である文書だけになる。
-- スキル `show-changes` のページで、ファイルの途中までスクロールしてから見出しを押して閉じても、次のファイルの見出しを見失わない。閉じる前に画面にあった次の見出しは同じ位置に残り、画面の外にあった次の見出しは画面の先頭に来る。
-- スキル `show-changes` のページで、選ばれているボタンにマウスを乗せたときの色が、選ばれていないボタンのときと違う色になる。押した直後でも、選んだことが分かる。
-- スキル `show-changes` のページで、絞り込んで消えるファイルが無いときは絞り込みのボタンが、全文を含まないときは範囲の切り替えが出ない。空白の切り替えの名前は「空白」になる。
-- スキル `show-changes` のページで、コミットの一覧の日付が日本語の日付の形になる。
+- The CHANGELOG the agent writes becomes a guide to what changed for the people who use the software, not a work record. Entries are divided by kind of change (added, changed, fixed and so on).
+- In the README the agent writes, the explanation of other tools used for installation is limited to the commands to run and the required options. Detailed usage of those tools is shown as a link to their own READMEs.
+- In the list of phrases Japanese does not use, added 「推奨」 (recommended) as a candidate replacement for 「勧め」 (recommendation).
+- `AGENTS.snippet.md`, pasted into the instruction file, became shorter. How to write READMEs, changelogs and instructions is now read from the skill `writing-rules` when needed, and descriptions that repeated the same thing within the rules were merged. People who pasted it replace it with the whole of the new `AGENTS.snippet.md` when updating.
+- When the agent polishes writing, it checks each parenthetical supplement and each example in quotation brackets, removes it if unneeded, and if needed works it into the main text. The brackets and symbols themselves are shown in code format.
+- In the documents and instructions the agent writes, there are fewer enumerated item counts, values at points the reader will not use, and repeated instructions. The check by the skill `clarify-skill` also looks at item counts and repetition.
+- The documents, insights and feedback documents made by the skill `summarize-session` no longer include the state at that moment or a work record. If a record is wanted, it is included on request as a separate section or as a quotation. Log documents still include the work record and the time the state is as of.
+- The insights document made by the skill `summarize-session` no longer includes a list of the procedures checked and of what was not confirmed. Certainty is shown as confirmed insight or estimate.
+- The skill `remove-meta-narrative` also checks record sections inside design documents and READMEs. Only documents whose purpose is to record work, such as work records, are not checked.
+- On the `show-changes` page, if you scroll partway through a file and then press its heading to close it, you no longer lose sight of the next file's heading. The next heading that was on screen before closing stays in the same position, and a next heading that was off screen comes to the top of the screen.
+- On the `show-changes` page, the color of a selected button when the mouse hovers over it differs from the color of an unselected button. Right after pressing, you can tell that it was selected.
+- On the `show-changes` page, the filter button does not appear when there is no file that would disappear by filtering, and the range switch does not appear when the page does not contain full text. The whitespace switch is named 「空白」 (whitespace).
+- On the `show-changes` page, dates in the commit list take the Japanese date form.
 
 ## [0.9.0] - 2026-11-06
 
-- GNU sed と grep を使う環境（多くの Linux）で、`check-terms` が「Invalid collation character」を出し、一部の言い回しの除外が働かないまま検査を終えていた不具合を修正した。原因は、C.UTF-8 のロケールの GNU sed と grep が、全角の数字や漢字の範囲指定を受け付けないことにある。言い回しの一覧の正規表現を、範囲指定を使わない形に修正した。macOS では、この不具合は起きていなかった。
-- スキル `summarize-session` を追加した。セッションで検討したこと・分かったこと・受けた指摘・作業の記録を、セッションにいなかった人やエージェントが後から読んで使える文書にまとめる。依頼からユーザーが求めているものを推定し、次の4つのモードのうち該当するモードの方針で文書を作る。ドキュメント出力は、検討した事柄を抽象の階層を上げて、文書として構造化する。知見抽出は、汎用的に通用する理解を構成する。指摘抽出は、指摘を指摘事項・意図・背景と対象・対応方針で整理する。ログ出力は、作業の記録を残す。複数のモードに該当する依頼では、モードごとに文書を分ける。どのモードにも該当しない依頼では、各モードの方針を参考に、エージェントが構成を組み立てる。
-- スキル `show-changes` は、Claude が動く環境では、作成したページをアーティファクト（claude.ai に置かれ、ブラウザで開けるページ）として提示するようにした。
-- エージェントは、文書を人やエージェントに渡す・見せるたびに、試作や書きかけの文書でも仕上げの手順（メタ記述の除去・読み手のレビュー・整え）を実施し、実施した手順と実施しなかった手順を返答に記載するようにした。
-- エージェントが自分で文章を整える段階で、主語や目的語の欠落を、英語に一語ずつ訳すつもりで読んで確認するようにした。補う語は日本語として自然な言い方で記述し、訳した英文の語や語順は写さない。
-- 文書の中のファイルやフォルダを、読み手の環境でも参照できる形（リポジトリの中は相対の場所、外は役割や名前）で示し、書き手の PC にしか無い場所を記述しないようにした。
-- スキルや規則のような指示文では、括弧の中や「など」で例を並べず、項目を満たす条件や性質で記述するようにした。成果物の書き方も、文書のどこに何を置くかや並べる順序を定めず、読み手が何を読み取れればよいかという方針で記述するようにした。書き方を定めるのは、出力の形式をはっきり指定されたときと、ほかの人やツールがその形式で読むときだけにする。スキル `clarify-skill` も、例の列挙と、成果物の書き方を縛る指示を点検する。
-- ユーザーが指定した形式は、スキルを置くリポジトリやプロジェクトの、ユーザーと合意した拘束の記録に残すようにした。スキル `clarify-skill` は記録を読み、記録にある拘束を指摘しない。
-- エージェントが自分で文章を整える段階で、括弧で囲んだ補足が本当に必要かを確認し、必要なときも括弧を外して文に組み込めないかを先に考えるようにした。
-- 言い回しの一覧に無い和語も、日常の具体的な意味から離れて使っているときは、漢語に言い換えられないかを確認するようにした。
-- 日本語では使わない言い回しの一覧に「調べ」（調査・探索・集計の意味の名詞）を追加した。文脈で確かめる言い回しの一覧に「切る」（名詞を目的語にして分けることを言う）「渡すとき」「節」「材料」「届く」「広がり」「抜け」（あるべきものが欠けていることを言う名詞）「確かめる」「当たる」（該当することを言う）を追加し、「当てる」の候補の語に「問い合わせる」「突き合わせる」「実施する」を追加した。
+- Fixed a defect in environments that use GNU sed and grep (many Linux systems) in which `check-terms` printed "Invalid collation character" and finished the check with the exclusion of some phrases not working. The cause is that GNU sed and grep in the C.UTF-8 locale do not accept range specifications of full-width digits and kanji. The regular expressions in the phrase list were rewritten without range specifications. This defect did not occur on macOS.
+- Added the skill `summarize-session`. It turns what the session examined, found, was told and did into a document that people or agents who were not in the session can read and use later. It infers from the request what the user wants and builds the document with the policy of the applicable mode among the following four. Document output raises the level of abstraction of what was examined and structures it as a document. Insight extraction composes understanding that holds in general. Feedback extraction organizes feedback into the point, the intent, the background and target, and the response policy. Log output keeps a work record. For a request that matches several modes, the documents are split by mode. For a request that matches none, the agent builds a structure using each mode's policy as a guide.
+- In environments where Claude runs, the skill `show-changes` now presents the page it builds as an artifact (a page held on claude.ai that opens in a browser).
+- Each time the agent hands or shows a document to a person or an agent, even a prototype or a draft, it now carries out the finishing steps (removing meta-narrative, reader review and polishing) and states in its reply which steps it carried out and which it did not.
+- When the agent polishes writing itself, it now checks for missing subjects and objects by reading as if translating into English word by word. Words it supplies are written in natural Japanese and do not copy the words or word order of the translated English.
+- Files and folders in a document are now shown in a form that can be referenced in the reader's environment (a relative location inside the repository, a role or name outside it), and locations that exist only on the writer's PC are not written.
+- In instructions such as skills and rules, examples are no longer listed in parentheses or with "etc."; they are written as the conditions or properties that satisfy the item. How deliverables are written is also stated as a policy of what the reader should be able to take away, without fixing where to put what in a document or the order of items. A writing format is fixed only when the output format is clearly specified or when another person or tool reads that format. The skill `clarify-skill` also checks for example lists and for instructions that bind how a deliverable is written.
+- A format the user specified is now kept in the record of constraints agreed with the user in the repository or project that holds the skill. The skill `clarify-skill` reads the record and does not flag constraints in it.
+- When the agent polishes writing itself, it now checks whether a parenthetical supplement is really needed, and when it is, first considers whether the parentheses can be removed and the supplement worked into the sentence.
+- Native Japanese words that are not in the phrase list are also checked for whether they can be replaced with Sino-Japanese words when they are used apart from their concrete everyday meaning.
+- Added 「調べ」 (a noun meaning investigation, search or tally) to the list of phrases Japanese does not use. Added to the list of phrases to check in context: 「切る」 (with a noun as object, meaning to divide), 「渡すとき」, 「節」, 「材料」, 「届く」, 「広がり」, 「抜け」 (a noun meaning that something that should be there is missing), 「確かめる」 and 「当たる」 (meaning to apply). Added 「問い合わせる」, 「突き合わせる」 and 「実施する」 to the candidate words for 「当てる」.
 
 ## [0.8.0] - 2026-11-06
 
-- 規則とリファレンスを新しいスキル `writing-rules` に、日本語では使わない言い回しの一覧と、文書から言い回しを探すスクリプト `check-terms` を新しいスキル `check-terms` にまとめた。`gh skill install` でスキルを入れている場合は、`--all` を付けて入れ直す。
-- `AGENTS.snippet.md` の最初の行と最後の行に、貼った範囲を示すコメントを付けた。wakariyasu を更新するときは、この2行のあいだを新しい全文に入れ替える。
-- スキル `show-changes` を足した。変更前と後の差分を、リポジトリやフォルダをまたいで1つの HTML のページにして見せる。エージェントがファイルを変更する作業を終えたときは、頼まなくてもページを作って渡す。空白の違いは記号で示し、空白の違いだけの行を変わっていない行として見る表示にも切り替えられる。ファイルの一覧は、追加・変更したファイルだけに絞り込める。権限の変更とシンボリックリンクは、変更前と後の種類を示す。ページを作るには Python 3.9 以上が要り、無い環境ではページを作れないことを伝える。
-- スキル `clarify-skill` を足した。スキルを、読んだエージェントが目的から判断できる指示文になっているかで点検し、修正する方針を立てる。頼めば書き直す。スキルを書き上げたあとは、頼まなくても使う。
-- エージェントが文書を書き終えたあとの仕上げ方を、文書の種類（スキル・README・変更履歴・コミットメッセージなど）で選ぶようにした。公開する変更履歴は、リファレンス「変更履歴の書き方」に沿って、使う人に届く変化を記述する。
-- エージェントが書く文書の見出しを、その節に何が書いてあるかを表す語句で記述するようにした。
-- 日本語では使わない言い回しの一覧に「確かめ」（検証・確認の意味の名詞）を足し、「直し」の言い換えを「改修、修正、更新」にした。文脈で確かめる言い回しの一覧に「流す」「道具」「決めたこと」「例外は」「直す」「書く」「決める」を足し、規則とスキルの本文も「直す」「書く」「決める」を漢語で記述した。「選ぶ」も足したが、「選ぶ」のままが自然な場面が多いので、言い換えは参考にとどめる。
+- Merged the rules and references into the new skill `writing-rules`, and the list of phrases Japanese does not use and the script `check-terms` that searches documents for them into the new skill `check-terms`. If you installed the skills with `gh skill install`, reinstall with `--all`.
+- Added comments marking the pasted range to the first and last lines of `AGENTS.snippet.md`. When updating wakariyasu, replace what is between these two lines with the new whole.
+- Added the skill `show-changes`. It shows the before-and-after diff, across repositories and folders, as one HTML page. When the agent finishes work that changes files, it makes and hands over the page without being asked. Whitespace differences are shown with symbols, and the display can be switched to treat lines that differ only in whitespace as unchanged lines. The file list can be narrowed to only added and changed files. Permission changes and symbolic links show the kind before and after. Building the page needs Python 3.9 or later; where it is missing, the agent says the page cannot be built.
+- Added the skill `clarify-skill`. It checks a skill for whether an agent reading it can decide from the purpose, and plans how to fix it. On request it rewrites the skill. It is used without being asked after a skill is written.
+- How the agent finishes a document after writing it is now chosen by the kind of document (skill, README, changelog, commit message and so on). A public changelog follows the reference "how to write a changelog" and states the changes that reach the people who use the software.
+- Headings in documents the agent writes are now phrases that say what the section contains.
+- Added 「確かめ」 (a noun meaning verification or confirmation) to the list of phrases Japanese does not use, and changed the replacement for 「直し」 (a noun meaning fix) to 「改修、修正、更新」. Added 「流す」, 「道具」, 「決めたこと」, 「例外は」, 「直す」, 「書く」 and 「決める」 to the list of phrases to check in context, and wrote 「直す」, 「書く」 and 「決める」 with Sino-Japanese words in the rule and skill bodies as well. Added 「選ぶ」 too, but since 「選ぶ」 is natural in many places, its replacement is only a reference.
 
 ## [0.7.0] - 2026-11-04
 
-### 追加
+### Added
 
-- 文脈で確かめる言い回しの一覧に、機械の処理を人の動作や場所にたとえた語（「拾う」「通る」「効く」「響く」「入口」「受け口」「渡し先」）を足した。
+- Added to the list of phrases to check in context the words that liken machine processing to a person's actions or places (「拾う」, 「通る」, 「効く」, 「響く」, 「入口」, 「受け口」, 「渡し先」).
 
-### 変更
+### Changed
 
-- 規則 `writing-to-user` の節の見出しを「ユーザーに通じる用語と言い回しを選んで記述する」にし、同じ対象を呼ぶ語を変えないことと、
-  動作を名詞にまとめて誰が何をするかを消さないことを足した。結論を短くまとめるときも条件を落とさないことを足した。
-- 規則 `polishing` で、比喩・飾りの語・宣伝のような言い回しは、消しても読み手の理解が変わらなければ消すようにした。
-- README の「入れる前と後」に、判断の問いかけと文書の例を足し、報告の例で何が変わるかを表にした。
-- README に、yomiyasu を参考にしたことを書いた節「参考にしたもの」を足した。
+- Made the heading of the section of the rule `writing-to-user` 「ユーザーに通じる用語と言い回しを選んで記述する」 (choose and write terms and phrasing that reach the user), and added that the word for the same object is not changed, and that an action is not folded into a noun in a way that erases who does what. Also added that conditions are not dropped when a conclusion is summarized briefly.
+- In the rule `polishing`, metaphors, decorative words and promotional phrasing are removed if removing them does not change the reader's understanding.
+- Added examples of questions for a decision and of documents to the README's "Before and after installing", and put what changes in the report example into a table.
+- Added to the README a section, "Acknowledgments", that says yomiyasu was drawn on.
 
 ## [0.6.0] - 2026-11-04
 
-### 追加
+### Added
 
-- 文脈によっては別の語のほうが自然な言い回しの一覧（`references/terms-caution.tsv`）を足した。「当てる」「決まり」「落ちる」
-  「引く」「順」「指す」「置き場所」「一般の文」「目」「次の表」と候補の語を載せた。フックは一覧を2つ目の表にして読み込ませ、
-  `check-terms` は当たった箇所に「（文脈で確かめる）」を付けて出す。終了コードには数えない。`--no-caution` で探さない。
-- スキル `remove-meta-narrative` に5つ目の群「作業の途中の出力が残る」（「〜は未達」「〜は不明であった」など）を足した。
-  作業記録・進行記録のように作業自体を記録する文書には、群3〜群5を適用しない。規則 `writing-documents` の表にも、作業記録の行を足した。
+- Added a list of phrases where another word may read more naturally depending on context (`references/terms-caution.tsv`). It contains 「当てる」, 「決まり」, 「落ちる」, 「引く」, 「順」, 「指す」, 「置き場所」, 「一般の文」, 「目」 and 「次の表」 with candidate words. The hook loads the list as a second table, and `check-terms` prints the places that match marked "(check in context)". They do not count toward the exit code. `--no-caution` turns the search off.
+- Added a fifth group to the skill `remove-meta-narrative`, "work-in-progress output remains" (「〜は未達」, 「〜は不明であった」 and the like). Groups 3 to 5 are not applied to documents that record the work itself, such as work records and progress records. Also added a row for work records to the table in the rule `writing-documents`.
 
-### 変更
+### Changed
 
-- 日本語では使わない言い回しの一覧（`references/terms.tsv`）に、「台」（検査や計測をする環境の意味）・
-  「直し」（修正の意味の名詞）・「出す」（ソフトウェアやバージョンを公開する意味）・
-  「限り」（できないこと・限界の意味の名詞）・「回す」（検査やテストを実行する意味）を加えた。
-- 規則 `writing-to-user` の「回した検査」を「実行した検査」に直した。
-- 規則 `writing-to-user` に、ユーザーに決めてもらうのは依頼から読めない意図と承認が必要な作業で、
-  依頼の範囲の中の手段・順序・書式はエージェントが決めて進め、選んだことを報告に書くと書いた。
-  返答が常に決めることを含む前提に読める冒頭の文も改めた。
-- スキル `session-status` の答えの形から「判断を求めていること」の節を外し、決めてもらうことが
-  あるときだけ足す節にした。`references/asking.md` の、ユーザーが決める理由の例を絞り、お勧めの案で
-  依頼の目的や制約が変わらないなら問いかけずに進めると書いた。
-- 規則 `writing-to-user` と `writing-documents` に、指示語（こそあど言葉）は使わず示す対象の名前を書くことを書いた。
-  `writing-documents` には、前の状態を示す語と「だけ」も、示す対象を書くことを書いた。
-- 規則 `polishing` に、英語の語句や名前を語ごとに置き換えず、文脈に合う日本語の言い方を選ぶことを書いた。
-- 規則とリファレンスを参照する書き方を、1行目の見出しとファイル名の形（規則「書いた文章は、渡す前に整える」（`polishing.md`））に
-  そろえた。読み込まれていないときに読むファイルの案内も、同じ文にそろえた。
-- wakariyasu の本文から指示語を除いた。規則 `writing-documents` の見出しを「エージェントが書く文書は、文書だけで通じるように書く」にした。
-- wakariyasu の本文で、文脈によっては別の語のほうが自然な言い回しを言い換えた（「当てる」→「適用する」、「指す先」→「示す対象」「参照先」、
-  「読み手の目で」→「読み手の視点で」など）。規則 `writing-to-user` の見出しを「語が示す対象を読み取れる書き方にする」に、
-  スキル `review-for-readers` の見出しを「読み手の視点で読み直す」にした。
-- 規則の中の、読み込まれていないときに読むファイルの案内を、プラグインのフォルダの `rules/` と `references/` の実際の場所にした。
-- 規則 `polishing` にフックの説明を添え、規則 `polishing` とスキル `review-for-readers` に、yomiyasu に渡す文章の種類の名前の例を書いた。
-- フックが読み込ませるものを、規則3本・表記の表・判断の問いかけの書き方・言い回しの2つの表に絞った。README の書き方と
-  指示文の書き方は、フックの出力の末尾に場所を示し、該当する文書を書くときに読む。読み込む量は約11,100字から約10,400字になった。
-  規則の中の、読み込まれていないときに読むファイルの案内はファイル名だけにした。
-- `references/asking.md` で、お勧めの案で進める条件を冒頭に移し、お勧めを付けた問いかけでも案を選ぶのはユーザーだと書いた。
+- Added to the list of phrases Japanese does not use (`references/terms.tsv`): 「台」 (an environment for inspection or measurement), 「直し」 (a noun meaning fix), 「出す」 (to release software or a version), 「限り」 (a noun meaning what cannot be done, a limit) and 「回す」 (to run inspections or tests).
+- In the rule `writing-to-user`, changed 「回した検査」 to 「実行した検査」 (the inspection that was run).
+- In the rule `writing-to-user`, wrote that what the user decides is the intent that cannot be read from the request and the work that needs approval, that the agent decides and proceeds with the means, order and format within the scope of the request, and writes in the report what it chose. Also revised the opening sentence that could be read as assuming a reply always includes something to decide.
+- Removed the "points that need a decision" section from the answer form of the skill `session-status` and made it a section added only when there is something for the user to decide. In `references/asking.md`, narrowed the examples of reasons the user decides, and wrote that if the recommended option does not change the request's purpose or constraints, the agent proceeds without asking.
+- In the rules `writing-to-user` and `writing-documents`, wrote that demonstratives (words such as "this", "that", "here" in Japanese) are not used and the name of the object being pointed to is written. In `writing-documents`, wrote that words indicating a previous state, and 「だけ」, also state the object they point to.
+- In the rule `polishing`, wrote that English phrases and names are not replaced word by word, and a Japanese expression that suits the context is chosen.
+- Unified how rules and references are referred to into the form of the first-line heading plus the file name (the rule 「書いた文章は、渡す前に整える」 (`polishing.md`)). The guidance on which file to read when it is not loaded was unified into the same sentence.
+- Removed demonstratives from the body of wakariyasu. Changed the heading of the rule `writing-documents` to 「エージェントが書く文書は、文書だけで通じるように書く」 (documents the agent writes are written to be understood from the document alone).
+- In the body of wakariyasu, reworded phrases where another word reads more naturally depending on context (「当てる」 to 「適用する」, 「指す先」 to 「示す対象」 and 「参照先」, 「読み手の目で」 to 「読み手の視点で」 and so on). Changed the heading of the rule `writing-to-user` to 「語が示す対象を読み取れる書き方にする」 (write so that the object a word refers to can be read), and the heading of the skill `review-for-readers` to 「読み手の視点で読み直す」 (reread from the reader's viewpoint).
+- In the rules, changed the guidance on which file to read when it is not loaded to the actual locations in `rules/` and `references/` of the plugin folder.
+- Added an explanation of the hook to the rule `polishing`, and wrote, in the rule `polishing` and the skill `review-for-readers`, examples of the names of kinds of writing to pass to yomiyasu.
+- Narrowed what the hook loads to the three rules, the notation table, the way to write a question for a decision, and the two phrase tables. How to write READMEs and instructions is pointed to at the end of the hook's output and read when writing the relevant document. The amount loaded went from about 11,100 characters to about 10,400 characters. The guidance in the rules on which file to read when it is not loaded was reduced to file names.
+- In `references/asking.md`, moved the condition for proceeding with the recommended option to the top, and wrote that even for a question with a recommendation, it is the user who chooses the option.
 
 ## [0.5.2] - 2026-10-30
 
-### 変更
+### Changed
 
-- 開発用のスクリプトを `bin/` から `dev/` に移した（`dev/build`・`dev/test`）。最上位に `bin/` があると、
-  claude.ai と Cowork がプラグインを受け付けないため。`dev/test` は、最上位に `bin/` が無いことも確かめる。
-- README に、Claude のアプリ（Web・デスクトップ・スマホ）と Cowork に入れる手順を書いた。チャットではフックが
-  読み込まれないので、規則を効かせるには設定の「Instructions for Claude」かプロジェクトの指示に貼る。
+- Moved the development scripts from `bin/` to `dev/` (`dev/build` and `dev/test`), because claude.ai and Cowork do not accept a plugin that has `bin/` at the top level. `dev/test` also checks that there is no `bin/` at the top level.
+- Wrote in the README the steps for installing into the Claude apps (web, desktop, phone) and Cowork. Hooks are not loaded in chat, so to make the rules apply, paste them into "Instructions for Claude" in the settings or into the project's instructions.
 
 ## [0.5.1] - 2026-10-27
 
-### 変更
+### Changed
 
-- `scripts/check-terms` が、Linux の UTF-8 のロケール（`C.utf8` などの綴り）でも動くようにした。
-  あわせて、「要る〜」の検出を、Linux の grep が受け付けない文字コードの範囲指定を使わない形にした。
+- Made `scripts/check-terms` work in Linux UTF-8 locales as well (spellings such as `C.utf8`). Also changed the detection of 「要る〜」 so that it does not use the character-code range specification that Linux grep does not accept.
 
 ## [0.5.0] - 2026-10-27
 
-### 追加
+### Added
 
-- リファレンス「README の書き方」（`references/readme.md`）を加えた。リポジトリの最上位に置いて外部に公開する
-  日本語の README を、人が保守している日本語の README で見慣れた章の名前・組み立て・言葉で書くための方針で、
-  章ごとの目的、1つの章にはその章の目的に当たる中身だけを書くこと、用語の選び方を含む。章の並びは決めない。
-- 規則 `writing-documents` から、リポジトリの最上位に置いて外部に公開する README を書く・直すときに、このリファレンスを読むようにした。
-- 日本語では使わない言い回しの一覧（`references/terms.tsv`）と、文書からそれを探すスクリプト `scripts/check-terms` を加えた。
-  一覧は、使わない言い回し・代わりに使う語・検出と除外の正規表現を持つ。フックが一覧を表にして読み込ませ、
-  規則 `polishing` の「日本語では使わない言い回しを探す」で、文書を yomiyasu に通す前に `check-terms` をかける。
+- Added the reference "how to write a README" (`references/readme.md`). It is a policy for writing a Japanese README placed at the top level of a repository and published externally, with the section names, structure and wording familiar from Japanese READMEs that people maintain. It includes the purpose of each section, that each section holds only content that serves that section's purpose, and how to choose terms. It does not fix the order of sections.
+- Made the rule `writing-documents` have the agent read this reference when writing or fixing a README that is placed at the top level of a repository and published externally.
+- Added the list of phrases Japanese does not use (`references/terms.tsv`) and the script `scripts/check-terms` that searches documents for them. The list holds the phrase not to use, the word to use instead, and regular expressions for detection and exclusion. The hook loads the list as a table, and in "search for phrases Japanese does not use" in the rule `polishing`, `check-terms` is run before the document goes through yomiyasu.
 
-### 変更
+### Changed
 
-- リファレンス「判断の問いかけの書き方」で、問いかけの段落に、何を目指す作業の途中か、その作業で何に行き当たって
-  判断が必要になったかを書くようにした。表の列には、選ぶと作業の目的に向けて何が起きるかを書く。
-- wakariyasu の規則・リファレンス・スキルの本文から、一覧の言い回し（「問い」「要る〜」「版」など）を言い換えた。
+- In the reference "how to write a question for a decision", the paragraph of the question now states what the work is aiming for and what the work ran into that made a decision necessary. The columns of the table state what happens toward the work's purpose if chosen.
+- Rephrased the phrases in the list (「問い」, 「要る〜」, 「版」 and so on) in the bodies of wakariyasu's rules, references and skills.
 
 ## [0.4.0] - 2026-10-25
 
-### 変更
+### Changed
 
-- 規則 `writing-to-user` の判断の問いかけを、リファレンス「判断の問いかけの書き方」（`references/asking.md`）に沿う書き方にした。
-  問いごとに、セッションの通し番号の見出し、ユーザーが決める理由、お勧めの度合いの高い順の案の表を書く。
-  案の記号には A・B・C… と、二択の Y・N を使える。
-- 規則 `writing-to-user` から、問う前に答えの案を出し、調べれば分かることは聞かずに調べる、という項目を外した。
-  いつ問うかは決めず、問いの書き方だけを決める。
-- スキル `session-status` の「判断を求めていること」を、同じリファレンスの形にした。
-- 規則 `writing-documents` から、スキル・規則・プロンプトを書くときに、リファレンス
-  「エージェント向けの指示文の書き方」（`references/writing-instructions.md`）を読むようにした。
+- Made the questions for a decision in the rule `writing-to-user` follow the reference "how to write a question for a decision" (`references/asking.md`). For each question, write a heading with a session-wide serial number, the reason the user decides, and a table of options in descending order of how strongly each is recommended. Option labels can be A, B, C... and, for two choices, Y and N.
+- Removed from the rule `writing-to-user` the item that said to offer a candidate answer before asking, and to investigate rather than ask about what can be found out. When to ask is not fixed; only how to write a question is.
+- Made the "points that need a decision" of the skill `session-status` take the same form as that reference.
+- Made the rule `writing-documents` have the agent read the reference "how to write instructions for agents" (`references/writing-instructions.md`) when writing a skill, rule or prompt.
 
-### 追加
+### Added
 
-- リファレンス `references/asking.md` と `references/writing-instructions.md`。
-  フック・各スキルの写し・`AGENTS.snippet.md` にも入れた。
+- The references `references/asking.md` and `references/writing-instructions.md`. They were also put into the hook, the copy in each skill, and `AGENTS.snippet.md`.
 
 ## [0.3.0] - 2026-10-23
 
-### 変更
+### Changed
 
-- 規則 `polishing` を「書いた文章は、渡す前に整える」とし、どの言語でも確かめる項目と、
-  日本語で書いたときに足す項目（表記の選び方・読点・yomiyasu）に分けた。
-- 規則 `writing-to-user` の指す先の確かめ方を、指示語一般の書き方にし、英語に直訳して確かめる方法を
-  日本語の文のための手順として分けた。
-- `session-status` と `explain-clearly` はほかの言語で同じ意味のことを聞かれたときも使う。
-  `session-status` の見出しと状態の語は返答と同じ言語で書く。
-- 英語の README を外し、日本語の README の冒頭に英語でプラグインの説明を置いた。
-- フックと `AGENTS.snippet.md` に、日本語の表記の表（`references/styles.md`）も入れた。
+- Made the rule `polishing` 「書いた文章は、渡す前に整える」 (polish writing before handing it over), and split it into the items checked in any language and the items added when writing in Japanese (choice of notation, commas, yomiyasu).
+- Changed how the rule `writing-to-user` checks what a word points to into how to write demonstratives in general, and separated the method of checking by translating literally into English as a procedure for Japanese sentences.
+- `session-status` and `explain-clearly` are also used when asked something of the same meaning in another language. The headings and state words of `session-status` are written in the same language as the reply.
+- Removed the English README and put an English description of the plugin at the top of the Japanese README.
+- Also put the Japanese notation table (`references/styles.md`) into the hook and `AGENTS.snippet.md`.
 
-### 追加
+### Added
 
-- `.editorconfig`・`.gitattributes`・`.gitignore`。
-- リポジトリの決まりを確かめる `bin/test` と、それを動かす GitHub Actions。
-- スキルが呼ばれるかを測る `claude plugin eval` のケース（`evals/`）。
-- 開発の手引き（`docs/development.md`）。
+- `.editorconfig`, `.gitattributes` and `.gitignore`.
+- `bin/test`, which checks the repository's rules, and the GitHub Actions that run it.
+- Cases for `claude plugin eval` that measure whether skills are called (`evals/`).
+- The development guide (`docs/development.md`).
 
 ## [0.2.3] - 2026-10-22
 
-### 変更
+### Changed
 
-- wakariyasu の入手先から yomiyasu を外した。yomiyasu は作者の入手先から入れる。
+- Removed yomiyasu from wakariyasu's marketplace. yomiyasu is installed from its author's marketplace.
 
 ## [0.2.2] - 2026-10-22
 
-### 変更
+### Changed
 
-- README の yomiyasu の節を、入っていれば呼ぶことと、入れ方の案内だけにした。
+- Reduced the README's yomiyasu section to the fact that it is called if installed, and the guidance on how to install it.
 
 ## [0.2.1] - 2026-10-22
 
-### 変更
+### Changed
 
-- 規則 `writing-documents` の仕上げの手順と、`review-for-readers` の読み直しのあとに、
-  yomiyasu を呼ぶ場所を書いた。
+- Wrote where yomiyasu is called, after the finishing steps in the rule `writing-documents` and after the reread in `review-for-readers`.
 
 ## [0.2.0] - 2026-10-22
 
-### 変更
+### Changed
 
-- 整える手順を、まず自分で整え、人に渡す文書だけ yomiyasu にも通す順にした。
-  ユーザーへの返答では yomiyasu を呼ばない。
-- 自分で整える項目に、前置きの句・間を取るだけの読点・疑問形の見出し・太字とコロンの箇条書き・
-  否定してから言い直す文・同じ文末の連続を足した。
+- Changed the polishing procedure to the order of polishing yourself first and running yomiyasu as well only for documents handed to people. yomiyasu is not called for replies to the user.
+- Added to the items the agent checks itself: introductory phrases, commas that only create a pause, headings in question form, bulleted lists of bold text and a colon, sentences that negate and then restate, and consecutive identical sentence endings.
 
 ## [0.1.0] - 2026-10-21
 
-### 追加
+### Added
 
-- 規則 `writing-to-user`・`writing-documents`・`polishing` と、日本語の表記の表。
-- スキル `session-status`・`explain-clearly`・`remove-meta-narrative`・`review-for-readers`。
-- セッションの始めに規則を読み込ませるフック。
-- Claude Code 以外のエージェントに貼る `AGENTS.snippet.md`。
+- The rules `writing-to-user`, `writing-documents` and `polishing`, and the Japanese notation table.
+- The skills `session-status`, `explain-clearly`, `remove-meta-narrative` and `review-for-readers`.
+- A hook that loads the rules at the start of a session.
+- `AGENTS.snippet.md`, to paste into agents other than Claude Code.
 
 [0.11.0]: https://github.com/kulikala/wakariyasu/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/kulikala/wakariyasu/compare/v0.9.0...v0.10.0

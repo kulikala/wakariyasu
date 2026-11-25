@@ -1,126 +1,120 @@
-# 開発の手引き
+# Development guide
 
-## フォルダの構成
+## Folder layout
 
 ```text
-.claude-plugin/plugin.json       プラグインの定義（名前・バージョン・スキルの場所）
-.claude-plugin/marketplace.json  プラグインの入手先（マーケットプレイス）の定義
-skills/<名前>/SKILL.md           スキルの本文
-skills/<名前>/references/        そのスキルだけが読むリファレンス
-skills/<名前>/scripts/           そのスキルが実行するスクリプト
-skills/writing-rules/rules/      規則（writing-to-user・writing-documents・polishing）
-skills/writing-rules/references/ 規則が指すリファレンス（判断の問いかけ・指示文の書き方・README の書き方・変更履歴の書き方）
-skills/writing-rules/lang/<言語>/ 言語ごとの追加分（言語パック。ja は日本語、en は英語）
-skills/check-terms/references/   日本語では使わない言い回しの一覧（terms.tsv）と、文脈で確かめる言い回しの一覧（terms-caution.tsv）
-skills/check-terms/scripts/      check-terms（言い回しを文書から探す）と terms-table（一覧を、フックと AGENTS.snippet.md に入れる表にする）
-tests/terms-cases.txt            check-terms が当たる例と当たらない例
-tests/caution-cases.txt          check-terms が「（文脈で確かめる）」を付けて出す例と出さない例
-tests/session-status-report.json session-status のページを作るテストに使う、架空の報告
-hooks/                           セッションの始めに規則を読み込ませ、言語パックの場所を伝えるフック（load-rules.sh・lang-index.sh）
-AGENTS.snippet.md                Claude Code 以外のエージェントに貼る規則の本文（dev/build が作る）
-dev/build                        規則・asking.md・言語パック・言い回しの一覧をつなげて、AGENTS.snippet.md を作る
-dev/test                         リポジトリのルールを検査する
-dev/test-show-changes.py         show-changes の build.py と template.html を改修したあとのテスト（docs/show-changes.md）
-dev/test-show-changes-page.mjs   show-changes のページをブラウザで開いて操作を試すテスト
-dev/test-session-status.py       session-status のページを作る build.py と template.html、日本語の言語パックのページの語を改修したあとのテスト
-.github/workflows/test.yml       push と pull request のたびに dev/test を実行する GitHub Actions の設定
-evals/                           スキルが呼ばれるかを測る claude plugin eval のケース
-docs/                            開発の手引き
-docs/agreements.md               著者と合意した拘束（点検で指摘しない書き方や形式）
-CHANGELOG.md                     バージョンごとの変更
+.claude-plugin/plugin.json       Plugin definition (name, version, skills location)
+.claude-plugin/marketplace.json  Definition of the place to get the plugin from (the marketplace)
+skills/<name>/SKILL.md           Body of a skill
+skills/<name>/references/        References read only by that skill
+skills/<name>/scripts/           Scripts that skill runs
+skills/writing-rules/rules/      Rules (writing-to-user, writing-documents, polishing)
+skills/writing-rules/references/ References the rules point to (questions for a decision, how to write instructions, how to write a README, how to write a changelog)
+skills/writing-rules/lang/<language>/ Per-language additions (language packs; ja is Japanese, en is English)
+skills/check-terms/references/   The list of phrases Japanese does not use (terms.tsv) and the list of phrases to check in context (terms-caution.tsv)
+skills/check-terms/scripts/      check-terms (searches documents for phrases) and terms-table (turns the lists into the table put into the hook and AGENTS.snippet.md)
+tests/terms-cases.txt            Examples that check-terms matches and examples it does not
+tests/caution-cases.txt          Examples that check-terms prints marked "(check in context)" and examples it does not
+tests/session-status-report.json A fictional report used by the test that builds the session-status page
+hooks/                           Hooks that load the rules at the start of a session and tell where the language packs are (load-rules.sh, lang-index.sh)
+AGENTS.snippet.md                The body of the rules to paste into agents other than Claude Code (made by dev/build)
+dev/build                        Joins the rules, asking.md, the language packs and the phrase lists to make AGENTS.snippet.md
+dev/test                         Checks the repository's rules
+dev/test-show-changes.py         Test to run after changing build.py and template.html of show-changes (docs/show-changes.md)
+dev/test-show-changes-page.mjs   Test that opens the show-changes page in a browser and tries operating it
+dev/test-session-status.py       Test to run after changing build.py and template.html that build the session-status page, and the page wording in the Japanese language pack
+.github/workflows/test.yml       GitHub Actions configuration that runs dev/test on every push and pull request
+evals/                           Cases for claude plugin eval that measure whether skills are called
+docs/                            Development guides
+docs/agreements.md               Constraints agreed with the author (wording and formats a review does not flag)
+CHANGELOG.md                     Changes for each version (CHANGELOG.ja.md is the Japanese version)
 ```
 
-フック・`dev/build`・`check-terms`・`terms-table` は `sh` と標準のコマンドだけで動きます。`dev/test` は、さらに `git` を使います。Python などのほかの処理系は要りません。
+The hooks, `dev/build`, `check-terms` and `terms-table` run with only `sh` and standard commands. `dev/test` also uses `git`. No other runtime such as Python is needed.
 
-スキル `show-changes` のページを作る `build.py` は、Python 3 の標準のライブラリで動きます。`build.py` を改修したあとのテストには、さらに node と Chrome を使います。改修の手順は [show-changes の改修方法](show-changes.md) にあります。
+`build.py`, which builds the page of the skill `show-changes`, runs on the Python 3 standard library. The test after changing `build.py` also uses node and Chrome. The steps for changing it are in [How to modify show-changes](show-changes.md).
 
-スキル `session-status` のページを作る `build.py` も、Python 3 の標準ライブラリで動きます。`build.py`・`template.html`・日本語の言語パックにあるページの語を改修したあとは、`python3 dev/test-session-status.py` を実行します。
+`build.py`, which builds the page of the skill `session-status`, also runs on the Python 3 standard library. After changing `build.py`, `template.html` or the page wording in the Japanese language pack, run `python3 dev/test-session-status.py`.
 
-## 本文を修正する
+## Changing the body
 
-規則とリファレンスはスキル `writing-rules` に、言い回しの一覧と `check-terms` はスキル `check-terms` に置き、ほかのスキルはこの2つのフォルダから読みます。
-`gh skill install` のようにスキルのフォルダだけをインストールする方法でも、`--all` ですべてのスキルが並んでインストールされるので、ほかのスキルから2つのフォルダを読めます。
+The rules and references are in the skill `writing-rules`, and the phrase lists and `check-terms` are in the skill `check-terms`; the other skills read from these two folders.
+Even with a method that installs only the skill folders, such as `gh skill install`, `--all` installs all the skills side by side, so the other skills can read the two folders.
 
-規則・リファレンス・言い回しの一覧を修正したら、`dev/build` で `AGENTS.snippet.md` を作り直します。
+After changing a rule, a reference or a phrase list, rebuild `AGENTS.snippet.md` with `dev/build`.
 
 ```sh
 dev/build
 ```
 
-規則とスキルの本文は、2つの層に分けて記述します。
+The bodies of the rules and skills are written in two layers.
 
-- どの言語の文章にも適用する内容（返答や文書の組み立て、語が何を示すかを読み手が読み取れる書き方、判断の問いかけ方など）は、規則・リファレンス・スキルの本文に、英語で記述します。訳さずに、英語として書き起こします。
-- 1つの言語で記述したときにだけ足す内容（表記の選び方、読点、その言語の文の確かめ方、その言語の推敲スキルなど）は、言語パック `skills/writing-rules/lang/<言語>/` に、その言語で記述します。言語のコードは ISO 639-1 の2文字です。
+- Content that applies to writing in any language (how replies and documents are put together, writing so that the reader can tell what a word refers to, how to ask a question for a decision and so on) is written in English in the bodies of the rules, references and skills. It is composed in English, not translated.
+- Content added only when writing in one language (the choice of notation, commas, how to check sentences in that language, that language's proofreading skill and so on) is written in that language in the language pack `skills/writing-rules/lang/<language>/`. The language code is the two letters of ISO 639-1.
 
-言語パックのファイルは次の決まった名前のどれかにします。足すことの無いファイルは置きません。規則とスキルは、この名前で言語パックを指します。
+A language pack file has one of the following fixed names. A file with nothing to add is not created. The rules and skills refer to a language pack by these names.
 
-| ファイル | 中身 |
+| File | Contents |
 |---|---|
-| `polishing.md` | その言語で記述した文章を整えるときに足す確認。使わない言い回しの一覧や、外部の推敲スキルもここで指す |
-| `styles.md` | 文章の種類ごとの表記と文体の選び方 |
-| `conventions.md` | その言語の読み手が見慣れた名前（README の章の名前・変更履歴の小見出し・session-status の見出しと状態の語・判断の問いかけの列名） |
-| `skills.md` | スキルごとに足すこと（スキルの名前の節に記述する） |
+| `polishing.md` | Checks added when polishing writing in that language. It also points to the list of phrases not to use and to external proofreading skills |
+| `styles.md` | How to choose notation and style for each kind of writing |
+| `conventions.md` | Names familiar to readers of that language (README section names, changelog subheadings, session-status headings and state words, column names of questions for a decision) |
+| `skills.md` | What to add for each skill (written in a section named after the skill) |
 
-ユーザーが言語を切り替える設定はありません。フックは規則と `asking.md` の本文と、言語パックの一覧（言語のコードとフォルダの場所）だけを出します。エージェントは、返答や文書を記述する言語の言語パックがあれば、記述する前にそのフォルダのファイルを読みます。言語を足すときは、`lang/` に言語のコードのフォルダを作り、上の名前のファイルを置きます。フック・`dev/build`・`dev/test` は `lang/` の下のフォルダを数えるので、書き換える必要はありません。
+There is no setting for the user to switch languages. The hook outputs only the bodies of the rules and `asking.md`, and the list of language packs (language codes and folder locations). If a language pack exists for the language of the reply or document being written, the agent reads the files in that folder before writing. To add a language, create a folder named with the language code under `lang/` and place files with the names above. The hooks, `dev/build` and `dev/test` count the folders under `lang/`, so they need no rewriting.
 
-## 検査する
+## Checking
 
 ```sh
 dev/test
 ```
 
-`dev/test` はモデルを呼ばずに、次を確かめます。
+`dev/test` checks the following without calling a model.
 
-- `AGENTS.snippet.md` が本文と一致し、規則・リファレンス・言い回しの一覧と同じ名前のファイルが、ほかのスキルに無い。
-- バージョンが `plugin.json`・`marketplace.json`・`CHANGELOG.md` でそろっている。
-- 入手先（`marketplace.json`）に載っているプラグインが1つだけ。
-- スキルごとに、`SKILL.md` が frontmatter で始まり、フォルダ名と同じ `name` と、`description` がある。
-- フックの出力に、規則と `asking.md` の見出しの行と、言語パックごとのフォルダの場所があり、言語パックの中身は無い。
-- 言語パックのファイルが決まった名前のどれか。
-- 規則・リファレンス・言語パック・スキルが別の規則やリファレンスの節を名指しで参照するとき（英語の本文は ``the "<見出し>" section of `x.md` ``、日本語の本文は ``（`x.md`）の「<見出し>」の節`` の形）、名指しした見出しが参照先の規則かリファレンスにある。
-- README がリンクするリポジトリ内のファイルがある。
-- `check-terms` が `tests/terms-cases.txt` の例のとおりに当たり、当たらない。
-- `check-terms` が `tests/caution-cases.txt` の例のとおりに「（文脈で確かめる）」を付けて出し、終了コードを 1 にしない。
-- 日本語の言語パック・`check-terms` の SKILL.md・README・手引きに、日本語では使わない言い回しが無い。
-- 最上位に `bin/` が無い。`bin/` があると、claude.ai と Cowork（Claude のデスクトップアプリで、作業をまとめて任せる機能）はプラグイン全体を受け付けない。開発用のスクリプトは `dev/` に置く。
-- 改行と空白が `.editorconfig` の設定に合っている（git に登録済みのファイルが対象）。
+- `AGENTS.snippet.md` matches the body, and no other skill has a file with the same name as a rule, a reference or a phrase list.
+- The version is the same in `plugin.json`, `marketplace.json` and `CHANGELOG.md`.
+- The marketplace (`marketplace.json`) lists only one plugin.
+- For each skill, `SKILL.md` starts with frontmatter and has a `name` equal to the folder name and a `description`.
+- The hook output contains the heading lines of the rules and `asking.md` and the folder location of each language pack, and does not contain the contents of the language packs.
+- Language pack files have one of the fixed names.
+- When a rule, reference, language pack or skill refers by name to a section of another rule or reference (in English bodies in the form ``the "<heading>" section of `x.md` ``, in Japanese bodies in the form ``（`x.md`）の「<見出し>」の節``), the named heading exists in the rule or reference it refers to.
+- The files in the repository that the README links to exist.
+- `check-terms` matches and does not match as the examples in `tests/terms-cases.txt` say.
+- `check-terms` prints marked "(check in context)" as the examples in `tests/caution-cases.txt` say, and does not make the exit code 1.
+- The Japanese language pack, the SKILL.md of `check-terms`, the README and the guide contain no phrases Japanese does not use.
+- There is no `bin/` at the top level. With a `bin/`, claude.ai and Cowork (the feature of the Claude desktop app for handing over work in bulk) do not accept the whole plugin. Development scripts are placed in `dev/`.
+- Line endings and whitespace match the `.editorconfig` settings (files registered in git are checked).
 
-プラグインの定義の書式は Claude Code の検査でも確かめます。
+The format of the plugin definition is also checked by Claude Code's validation.
 
 ```sh
 claude plugin validate .
 ```
 
-## スキルが呼ばれるかを測る
+## Measuring whether skills are called
 
-`evals/` のケースは、決まった頼み方でスキルが呼ばれるかを、`claude plugin eval` で測ります。
-モデルを呼ぶので、費用がかかります。手元で、必要なときに実行します。
+The cases in `evals/` measure with `claude plugin eval` whether a skill is called for a given way of asking.
+It calls a model, so it costs money. Run it locally when needed.
 
 ```sh
 claude plugin eval . --model sonnet --allow-tools Write Edit --no-publish --max-cost-usd 5
 ```
 
-| ケース | 頼み方 | 確かめること |
+| Case | How it asks | What it checks |
 |---|---|---|
-| `status-ja` | 「現状は？」 | `session-status` が呼ばれる |
-| `status-en` | "What's the status? What's done and what's left?" | `session-status` が呼ばれ、返答に日本語が混ざらない |
-| `document-ja` | 手順書 `setup.md` を記述させる | `setup.md` ができ、`remove-meta-narrative` が呼ばれ、文書自身を語る文が残らない |
+| `status-ja` | 「現状は？」 ("Where do things stand?") | `session-status` is called |
+| `status-en` | "What's the status? What's done and what's left?" | `session-status` is called, and no Japanese is mixed into the reply |
+| `document-ja` | Has the agent write a procedure `setup.md` | `setup.md` is created, `remove-meta-narrative` is called, and no sentence about the document itself remains |
 
-日本語が混ざらないことは、かなと漢字の正規表現で確かめます。
+That no Japanese is mixed in is checked with a regular expression of kana and kanji.
 
-既定では、プラグインを入れた場合と入れない場合の2通りを実行して比べます。1通りだけで
-手早く確かめるなら、`--runs 1 --ablation none` を付けます。結果は `evals/results/` に出ます
-（git には登録しません）。
+By default it runs two ways, with the plugin installed and without, and compares them. To check quickly with only one way, add `--runs 1 --ablation none`. Results go to `evals/results/` (not registered in git).
 
-## バージョンを上げて公開する
+## Raising the version and publishing
 
-1. `CHANGELOG.md` に新しいバージョンの節を記載する。エージェントの振る舞いが変わる変更はマイナーバージョン、
-   README や検査だけの変更はパッチバージョンを上げる。
-2. `.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を同じ値にする。
-3. `dev/test` と `claude plugin validate .` を通す。
-4. コミットし、コミットに `v0.3.0` の形のタグを付けて push する。GitHub で同じタグのリリースを作り、
-   本文に `CHANGELOG.md` の新しいバージョンの節を載せる。
+1. Write a section for the new version in `CHANGELOG.md` (and in `CHANGELOG.ja.md`). A change that alters the agent's behavior raises the minor version; a change only to the README or checks raises the patch version.
+2. Set `version` in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` to the same value.
+3. Pass `dev/test` and `claude plugin validate .`.
+4. Commit, tag the commit in the form `v0.3.0`, and push. Create a release with the same tag on GitHub, and put the new version's section of `CHANGELOG.md` in its body.
 
-入れてある人は `/plugin marketplace update wakariyasu` のあとに
-`/plugin update wakariyasu@wakariyasu` を実行すると、新しいバージョンに替わります。Claude Code は
-プラグインをバージョンごとにコピーして読み込むので、バージョンを上げないと、修正した本文は読み込まれません。
+People who have it installed run `/plugin marketplace update wakariyasu` and then `/plugin update wakariyasu@wakariyasu` to switch to the new version. Claude Code copies a plugin for each version and loads from that copy, so a changed body is not loaded unless the version is raised.

@@ -1,236 +1,236 @@
 # wakariyasu
 
+English | [日本語](README.ja.md)
+
 wakariyasu is a plugin for Claude Code and the Claude apps that adds rules and skills to an AI agent so that the Japanese it writes can be understood by someone who has not followed its work. This applies to the agent's reports and questions to the user, and to the documents the agent writes, such as READMEs, specs and commit messages.
 
-wakariyasu は、AI エージェントが記述する日本語を、作業の経緯を知らない人が読んでも分かるようにする、Claude Code と Claude のアプリで使えるプラグインです。エージェントがユーザーに返す報告や質問と、エージェントが記述する文書（README・仕様書・コミットメッセージなど）の両方を対象にします。
+When you hand an agent a long task, its reports and questions tend to be written in terms of names the agent coined along the way and assumptions it settled on midway. The person reading the report has to ask, "So what does that mean?" wakariyasu adds instructions that make the agent write in a form that a reader who does not know the history can follow.
 
-エージェントに長い作業を任せると、報告や質問が、作業の途中でエージェントが付けた呼び名や、途中で定めた前提のまま記述されがちです。報告を読む人は「結局どういうこと？」と聞き返すことになります。wakariyasu はエージェントへの指示文を足して、経緯を知らない読み手に通じる形で記述させます。
+## Before and after installing
 
-## インストールする前と後
+Suppose a user asks an agent, "The product list screen is slow, please fix it," and steps away. When the user comes back, they read the agent's report and questions and the documents the agent wrote. Here they are before and after installing wakariyasu.
 
-ユーザーがエージェントに「商品一覧の画面が遅いので直して」と頼み、席を外していたとします。戻ってきたユーザーが読む報告と質問、エージェントが記述した文書を、wakariyasu をインストールする前と後で比べます。
+### Progress report
 
-### 作業の報告
+**Before installing**
 
-**インストールする前**
+> Went with plan B and moved the cache to v2. The screen is lighter now. Only the zero-stock problem is left.
 
-> 案Bで進め、キャッシュは v2 に寄せました。表示は軽くなりました。残りは在庫ゼロ問題だけです。
+**After installing**
 
-**インストールした後**
-
-> 商品一覧の画面が遅い件は、商品の情報をサーバーのメモリーに5分間残し、表示のたびにデータベースから読まない形にしました。表示にかかる時間は 2.1 秒から 0.4 秒になりました。
+> For the slow product list screen, I now keep product information in the server's memory for 5 minutes, so the screen no longer reads from the database on every display. The time to display the screen went from 2.1 seconds to 0.4 seconds.
 >
-> 残っているのは、在庫が0の商品で画面の表示が崩れる不具合の1件です。
+> One issue remains: the screen layout breaks for products whose stock is 0.
 
-インストールする前の報告の語ごとに、読んだユーザーが思うことと、インストールした後の報告での書き方を並べます。
+For each term in the report before installing, here is what the user thinks and how the report after installing writes it.
 
-| インストールする前の報告の語 | 読んだユーザーが思うこと | インストールした後の報告の書き方 |
+| Term in the report before installing | What the user thinks | How the report after installing writes it |
 |---|---|---|
-| 案B | 案A は何で、案B は何か | 何をしたかを記載する |
-| v2 | 作業の途中で出た呼び名で、何のことか分からない | 呼び名を使わず、中身を記載する |
-| 軽くなりました | どれだけ速くなったのか | 表示にかかる時間を、前と後の数で記載する |
-| 在庫ゼロ問題 | どんな問題か | 何が起きる不具合かを記載する |
+| Plan B | What is plan A, and what is plan B? | States what was done |
+| v2 | A name that came up during the work; no idea what it refers to | Drops the name and states the content |
+| Lighter | How much faster is it? | States the display time before and after, in numbers |
+| Zero-stock problem | What kind of problem is it? | States what the defect does |
 
-### 判断の問いかけ
+### Questions for a decision
 
-報告より前、作業の途中でエージェントがユーザーに判断してもらう場面です。
+This is a moment before the report, partway through the work, when the agent needs the user to decide something.
 
-**インストールする前**
+**Before installing**
 
-> キャッシュの TTL、どっちにします？
+> Which TTL for the cache?
 
-**インストールした後**
+**After installing**
 
-> **1. 商品の情報をサーバーに残す時間を、5分と1時間のどちらにするか**
+> **1. Whether to keep product information on the server for 5 minutes or 1 hour**
 >
-> 商品一覧の表示を速くする作業の途中で、商品の情報をサーバーに残す時間を決める必要が出ました。在庫の数が画面に遅れて出てもよい時間は、お店の運用で決まるので、判断をお願いします。
+> While speeding up the product list screen, a decision came up on how long to keep product information on the server. How long a stock count may lag on screen depends on how the shop operates, so I need you to decide.
 >
-> | 案 | 背景・選ぶと起きること |
+> | Option | Background and what happens if chosen |
 > |---|---|
-> | A（お勧め） | 5分。在庫の数は最大5分遅れて表示されます。表示は 0.4 秒です。在庫切れになった商品が、画面で在庫ありと出続ける時間を5分以内に抑えられることがお勧めの理由です。 |
-> | B | 1時間。表示は 0.3 秒になりますが、在庫の数は最大1時間遅れます。 |
+> | A (recommended) | 5 minutes. Stock counts are shown up to 5 minutes late. The screen displays in 0.4 seconds. The reason for recommending it: a product that has sold out keeps showing as in stock for no more than 5 minutes. |
+> | B | 1 hour. The screen displays in 0.3 seconds, but stock counts lag by up to 1 hour. |
 
-インストールした後の問いかけは何を決定するのか、なぜユーザーが決定するのか、選ぶと何が起きるのかを記載します。ユーザーは問いかけの番号（1）と表の案の記号（A・B）だけで、「1 は A」のように答えられます。
+The question after installing states what is being decided, why the user is the one to decide, and what happens with each choice. The user can answer with only the question number (1) and the option letter in the table (A or B), such as "1 is A".
 
-### 記述した文書
+### Written documents
 
-**インストールする前**（設計書の一節）
+**Before installing** (a passage from a design document)
 
-> レビューの指摘を受けて、本章ではキャッシュの方針を整理する。詳細は後述。
+> Following the review comments, this chapter organizes the cache policy. Details below.
 
-**インストールした後**
+**After installing**
 
-> 商品の情報は、サーバーのメモリーに5分間残す。5分を過ぎた情報は、次に表示するときにデータベースから読み直す。
+> Product information is kept in the server's memory for 5 minutes. Information older than 5 minutes is read again from the database the next time it is displayed.
 
-インストールする前の文は作成したときのやり取り（レビューの指摘）と、文書の中の別の場所（後述）を読まないと、何が決まったのかが分かりません。インストールした後の文はその一節だけで方針が分かります。
+The sentence before installing cannot be understood without reading the exchange in which it was written (the review comments) and another place in the document (below). The sentence after installing states the policy on its own.
 
-## 規則とスキル
+## Rules and skills
 
-wakariyasu はエージェントへの指示文でできていて、指示文には2種類あります。
+wakariyasu is made of instructions to the agent, in two kinds.
 
-- **規則**は書き方の方針を記載した指示文です。Claude Code では、セッションが始まるたびに読み込まれ、毎回の返答と文書に当てはめられます。頼む必要はありません。
-- **スキル**は決まった場面での手順を記載した指示文です。ユーザーが「使う場面」の節の表にある言葉で頼んだとき、またはエージェントが報告を記述するときや文書を書き上げて渡すときに、エージェントが自分で選んで使います。
+- A **rule** is an instruction that states a writing policy. In Claude Code, rules are loaded at the start of every session and applied to every reply and document. You do not need to ask for them.
+- A **skill** is an instruction that states a procedure for a particular situation. The agent chooses and uses a skill on its own when the user asks in words listed in the table in the "When each is used" section, or when the agent writes a report or finishes a document to hand over.
 
-## 使う場面
+## When each is used
 
-| 場面 | 言葉の例 | 使われる指示文 | すること |
+| Situation | Example words | Instruction used | What it does |
 |---|---|---|---|
-| いつもの返答 | （頼まなくても当てはまります） | 規則 [`writing-to-user.md`](skills/writing-rules/rules/writing-to-user.md) | 返答を、経緯を知らない人に通じる語と形で記述させます |
-| 状況を知りたい | 「現状は？」「残タスクは？」 | スキル `session-status` | 目指していること・タスクと状態を決まった形で報告させ、判断してもらうことがあれば問いかけを添えさせます。報告は、案を選んで回答をコピーできるページにもできます |
-| 返答が分からない | 「分かりやすく」「つまり？」「〜とは？」「〜の違いは？」 | スキル `explain-clearly` | 直前の返答や、返答の中の分からなかった語を言い直させます。「簡潔に」なら短く、「小学生でも分かるように」なら前提を足して説明させます |
-| 文書を記述させる | （頼まなくても当てはまります） | 規則 [`writing-documents.md`](skills/writing-rules/rules/writing-documents.md) | README・仕様書・SKILL.md・コミットメッセージなどを、文書だけで通じるように記述させます |
-| 文書からメタ記述を除く | 「メタ記述を除いて」 | スキル `remove-meta-narrative` | メタ記述（「本章では〜」「ご指摘を受けて〜」のように、文書が自分自身や作った経緯を語る文）と、エージェントの作業の途中の出力（「〜は未達」「〜は不明だった」）を見つけて修正させます。作業記録・進行記録の文書では、作業の記録は残します |
-| 文書を人に渡す前 | 「公開前に見て」「読み手の目でレビューして」 | スキル `review-for-readers` | 作業の経緯を知らない別のエージェント（サブエージェント）に文書だけを読ませ、読み手が引っかかった箇所を修正させます。サブエージェントを起こすので、時間とトークンを多く使います。サブエージェントを起こせないエージェントでは、自分で読み直したことを添えて報告させます |
-| 変更を人に見せる | 「差分を見せて」「変更をページにして」（ファイルを変更する作業のあとは、頼まなくても当てはまります） | スキル `show-changes` | 変更前と後の差分を、リポジトリやフォルダをまたいで1つの HTML のページにさせます。Claude の環境では、ページをアーティファクトとして示させ、アーティファクトを使えない環境では HTML ファイルとして保存させます |
-| 人に見せるページを作る | 「ページにして」「アーティファクトにして」「見やすくして」（人に見せるページを作ったときは、頼まなくても当てはまります） | スキル `compose-page` | 報告や資料の整理のように内容を人に伝える HTML のページを、作った経緯を知らない読み手が、結論・状態・項目どうしの違いを画面から読み取れる形に組み立てさせます。明るい表示と暗い表示の両方を用意させます |
-| スキルを分かりやすくする | 「このスキルを点検して」「スキルを書き直して」（スキルを書き上げたあとは、頼まなくても当てはまります） | スキル `clarify-skill` | スキル（SKILL.md と、スキルが読むリファレンス）を、読んだエージェントが目的から判断できる指示文になっているかで点検させ、修正する方針を立てさせます。頼めば書き換えさせます |
-| セッションの内容を文書に残す | 「このセッションをまとめて」「判明したことをまとめて」「指摘を抜き出して」 | スキル `summarize-session` | セッションで検討したこと・分かったこと・受けた指摘・作業の記録を、セッションに居なかった人が読んで使える文書にまとめさせます。依頼からユーザーが求めているものを推定させ、検討した事柄を文書として構造化する・知見として構成する・指摘を意図と対応方針で整理する・作業記録を残す、のうち該当するモードで記述させます。複数に該当すれば文書を分けさせ、どれにも該当しなければ各モードの方針を参考に構成を組み立てさせます |
-| 文章から知見を抜き出す | 「この文字起こしから知見を抜き出して」「発言録から分かったことをまとめて」 | スキル `extract-insights` | 会議やインタビューの文字起こし・発言録・記事のような文章から、その場に居なかった人が後から判断に使える知見を抜き出させます。知見は1件ずつ1文にさせ、確認した事実・主張・決定の種類と、背景・補足・確かさ・出所を添えさせます。発言の引用集や要約ではなく、発言から何が言えるかを記述させます。今のセッションで分かったことをまとめるときは `summarize-session` が受け持ちます |
-| 日本語の言い回しを確かめる | 「言い回しを確かめて」（ファイルに記述した日本語の文書を渡す前は、頼まなくても当てはまります） | スキル `check-terms` | 文書から、日本語では使わない言い回しと、文脈によっては別の語のほうが自然な言い回しを探させ、一覧の意味で使っていれば代わりの語に替えさせます |
+| Ordinary replies | (applies without being asked) | Rule [`writing-to-user.md`](skills/writing-rules/rules/writing-to-user.md) | Has the agent write replies in words and a form that someone who has not followed the work can understand |
+| You want to know the status | "Where do things stand?" "What's left?" | Skill `session-status` | Has the agent report what it is aiming for and its tasks and their states in a fixed form, with a question attached if it needs you to decide something. The report can also be a page where you pick an option and copy your answers |
+| A reply is unclear | "Explain it plainly" "So what does it mean?" "What is X?" "What is the difference between X and Y?" | Skill `explain-clearly` | Has the agent restate its previous reply, or a term in the reply that was unclear. For "briefly" it shortens; for "so a child could understand" it adds the background |
+| Having the agent write a document | (applies without being asked) | Rule [`writing-documents.md`](skills/writing-rules/rules/writing-documents.md) | Has the agent write READMEs, specs, SKILL.md files, commit messages and the like so that they can be understood from the document alone |
+| Removing meta-narrative from a document | "Remove the meta-narrative" | Skill `remove-meta-narrative` | Has the agent find and fix meta-narrative (sentences in which a document talks about itself or how it was made, such as "this chapter covers..." or "following your comment...") and the agent's work-in-progress output ("X was not reached" "X was unknown"). In work logs and progress records, the record of the work stays |
+| Before handing a document to someone | "Check it before release" "Review it through a reader's eyes" | Skill `review-for-readers` | Has a separate agent (a subagent) that does not know the history read only the document, and has the agent fix the places where that reader got stuck. It starts a subagent, so it uses more time and tokens. An agent that cannot start subagents rereads the document itself and says so in its report |
+| Showing changes to a person | "Show me the diff" "Make the changes into a page" (applies without being asked after work that changes files) | Skill `show-changes` | Has the agent turn the before-and-after diff, across repositories and folders, into one HTML page. In Claude's environment the page is presented as an artifact; where artifacts are unavailable it is saved as an HTML file |
+| Making a page for people to read | "Make it a page" "Make it an artifact" "Make it easier to read" (applies without being asked when a page for people is made) | Skill `compose-page` | Has the agent build an HTML page that conveys content to people, such as a report or an organized set of material, so that a reader who does not know how it was made can read the conclusion, the state and the differences between items from the screen. It has the agent prepare both a light and a dark display |
+| Making a skill clearer | "Check this skill" "Rewrite the skill" (applies without being asked after a skill is written) | Skill `clarify-skill` | Has the agent check a skill (SKILL.md and the references it reads) for whether an agent reading it can decide from the purpose, and plan how to fix it. On request it rewrites the skill |
+| Leaving the session's content as a document | "Summarize this session" "Summarize what we found" "Extract the feedback" | Skill `summarize-session` | Has the agent turn what the session examined, found, was told and did into a document that someone who was not in the session can read and use. It has the agent infer from the request what the user wants and write in the applicable mode: structuring what was examined as a document, composing findings as insights, organizing feedback by intent and response, or keeping a work log. If several apply it splits the documents, and if none applies it builds a structure with the modes as a guide |
+| Extracting insights from text | "Extract insights from this transcript" "Summarize what the minutes tell us" | Skill `extract-insights` | Has the agent extract, from text such as a meeting or interview transcript, a record of remarks or an article, insights that someone who was not there can later use for decisions. Each insight is one sentence, with its kind (confirmed fact, claim or decision) and its background, supplement, certainty and source. It has the agent write what can be said from the remarks, not a collection of quotes or a summary. `summarize-session` handles summarizing what was found in the current session |
+| Checking Japanese phrasing | "Check the phrasing" (applies without being asked before handing over a Japanese document written to a file) | Skill `check-terms` | Has the agent search a document for phrases that Japanese does not use and for phrases where another word may read more naturally depending on context, and replace them with the alternative when they are used in the listed sense |
 
-`show-changes` がページを作るには Python 3 が要ります。ほかのスキルと規則は Python を使いません。
+`show-changes` needs Python 3 to build its page. The other skills and the rules do not use Python.
 
-規則はもう1本、[`polishing.md`](skills/writing-rules/rules/polishing.md) があります。記述した文章を渡す前に整える方法を定めた規則です。
+There is one more rule, [`polishing.md`](skills/writing-rules/rules/polishing.md), which states how to polish a piece of writing before handing it over.
 
-規則とスキルは、どの言語の文章にも適用する内容を英語で記述しています。日本語で記述したときに足す内容（下の「表記の選び方」、言い回しの確かめ方、yomiyasu の使い方など）は、言語ごとのフォルダ [`skills/writing-rules/lang/ja/`](skills/writing-rules/lang/ja/) に分けてあります。言語を切り替える設定はありません。エージェントは、返答や文書を記述する言語のフォルダがあれば、記述する前にそのフォルダのファイルを読んで使います。英語のフォルダ [`skills/writing-rules/lang/en/`](skills/writing-rules/lang/en/) もあります。
+Rules and skills state in English the content that applies to writing in any language. Content added only when writing in Japanese (the "Choosing notation" section below, how to check phrasing, how to use yomiyasu and so on) is kept in a folder for each language, [`skills/writing-rules/lang/ja/`](skills/writing-rules/lang/ja/). There is no setting for switching languages. If a folder exists for the language of the reply or document being written, the agent reads and uses the files in that folder before writing. An English folder, [`skills/writing-rules/lang/en/`](skills/writing-rules/lang/en/), also exists.
 
-言い回しの一覧は、スキル `check-terms` のフォルダに入っています。エージェントは一覧を見て記述し、ファイルに記述した文書は、一覧から言い回しを探すスクリプト `check-terms`（`sh skills/check-terms/scripts/check-terms <ファイル>` で実行）で確かめます。
+The lists of phrasing are in the folder of the skill `check-terms`. The agent writes with the lists in view, and checks a document written to a file with the script `check-terms`, which searches the document for phrases from the lists (run it with `sh skills/check-terms/scripts/check-terms <file>`).
 
-- [`terms.tsv`](skills/check-terms/references/terms.tsv)：日本語では使わない言い回し（「コマンドを打つ」「旗」「導入」のような翻訳調の語や、作業の中で生まれた造語）と、代わりに使う語。`check-terms` は、見つけると検査の失敗にします（終了コード 1）。
-- [`terms-caution.tsv`](skills/check-terms/references/terms-caution.tsv)：誤りではないものの、文脈によっては別の語のほうが自然な言い回しと、候補の語。たとえば「規則を当てる」より「規則を適用する」が自然な場面や、表を「次の表」と位置で示すより「料金の表」と中身で示すほうが分かりやすい場面があります。`check-terms` は「（文脈で確かめる）」を付けて出しますが、検査の失敗にはしません。
+- [`terms.tsv`](skills/check-terms/references/terms.tsv): phrases Japanese does not use (translation-like words such as 「コマンドを打つ」「旗」「導入」, and words coined during the work), with the words to use instead. When `check-terms` finds one, the check fails (exit code 1).
+- [`terms-caution.tsv`](skills/check-terms/references/terms-caution.tsv): phrases that are not wrong but where another word may read more naturally depending on context, with candidate words. For example, there are places where 「規則を適用する」 reads more naturally than 「規則を当てる」, and places where naming a table by its content (「料金の表」) is clearer than by its position (「次の表」). `check-terms` prints these marked "(check in context)" but does not fail the check.
 
-規則とリファレンスは、スキル `writing-rules` のフォルダにあります。リファレンスは判断の問いかけの書き方・指示文の書き方（スキルや規則のようにエージェントが読む文書の書き方）・README の書き方（公開する README の章）・変更履歴の書き方（公開する変更履歴に記載すること）です。Claude Code と Cowork では、規則と判断の問いかけの書き方が、言語ごとのフォルダの一覧と一緒に、セッションごとに一度読み込まれます。言語ごとのフォルダのファイル（表記の表・言い回しの扱いを含む）と、指示文・README・変更履歴の書き方は、エージェントが必要になったときに読みます。
+The rules and references are in the folder of the skill `writing-rules`. The references cover how to write a question for a decision, how to write instructions (how to write documents that agents read, such as skills and rules), how to write a README (the sections of a public README) and how to write a changelog (what a public changelog states). In Claude Code and Cowork, the rules and the way to write a question for a decision are loaded once per session, together with the list of language folders. The files in each language folder (including the notation tables and the handling of phrasing) and the guides for writing instructions, READMEs and changelogs are read by the agent when needed.
 
-## 表記の選び方
+## Choosing notation
 
-かなと漢字の使い分け・数字の書き方・体言止め・常体と敬体は、文章の種類によって変わります。wakariyasu は表記を一律には定めず、エージェントに次の順番で選ばせます。
+How kana and kanji are used, how numbers are written, noun-ending sentences, and the plain and polite styles vary with the kind of writing. wakariyasu does not fix notation uniformly; it has the agent choose in this order.
 
-1. ユーザーの指示（CLAUDE.md や AGENTS.md に記載した指示を含みます）
-2. 同じ文書や同じリポジトリで、すでに使われている書き方
-3. wakariyasu が文章の種類ごとに定めた既定。たとえば、ユーザーへの返答は敬体の文で記述し、コミットや PR の変更点の行は体言止めでもよい、とします。種類ごとの表は [`styles.md`](skills/writing-rules/lang/ja/styles.md) にあります
+1. The user's instructions (including instructions in CLAUDE.md or AGENTS.md)
+2. The way already used in the same document or the same repository
+3. The default wakariyasu sets for each kind of writing. For example, replies to the user are written in polite-style sentences, and the change lines of a commit or PR may end in a noun. The table for each kind is in [`styles.md`](skills/writing-rules/lang/ja/styles.md)
 
-エージェントは、語の選び方も、標準表記と漢語表記のどちらかを文書ごとに選びます。標準表記は和語と漢語のどちらかに寄せず、文脈と読み手に合う語を選ぶ書き方です。漢語表記は、意味と読みやすさを失わない範囲で漢語を中心に表記する書き方です。ユーザーの指示と、すでに使われている書き方で決まらなければ、文書の目的と読み手から、意味の伝わるほうを選びます。
+For word choice too, the agent picks per document between standard notation and Sino-Japanese notation. Standard notation does not lean toward native Japanese words or Sino-Japanese words but picks the words that suit the context and the reader. Sino-Japanese notation centers on Sino-Japanese words as far as meaning and readability are not lost. If the user's instructions and the existing style do not decide it, the agent picks whichever conveys the meaning better from the document's purpose and reader.
 
-決まった書き方にしたいときは、CLAUDE.md に1行で指定してください。たとえば「数字は算用数字で記述する」「README は敬体で記述する」と指定すれば、指定した内容が既定より優先されます。
+To fix a particular style, specify it in one line in CLAUDE.md. For example, specifying "Write numbers in Arabic numerals" or "Write the README in polite style" takes precedence over the defaults.
 
-## yomiyasu との組み合わせ
+## Combining with yomiyasu
 
-wakariyasu の規則が見るのは、経緯を知らない人に通じる語と内容です。yomiyasu は不自然な比喩や主語と述語の食い違いのような、日本語の文の書き方を細かく修正します。エージェントは記述した日本語をまず wakariyasu の規則で整えます。[yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu。日本語の推敲スキル）が入っている環境では、README や手順書のように人に渡す文書を仕上げるときに、エージェントが頼まれなくても yomiyasu スキルを呼び出します。呼び出す場面は日本語のフォルダの [`polishing.md`](skills/writing-rules/lang/ja/polishing.md) に記載してあります。ユーザーへの返答では呼び出しません。yomiyasu が無くても、wakariyasu は動きます。
+What wakariyasu's rules look at is words and content that someone who does not know the history can follow. yomiyasu finely corrects how Japanese sentences are written, such as unnatural metaphors and mismatched subjects and predicates. The agent first polishes the Japanese it writes with wakariyasu's rules. In an environment where [yomiyasu](https://github.com/nanaism/yomiyasu) (nanaism/yomiyasu, a Japanese proofreading skill) is installed, the agent calls the yomiyasu skill without being asked when it finishes a document for people, such as a README or a procedure. The situations in which it is called are in [`polishing.md`](skills/writing-rules/lang/ja/polishing.md) in the Japanese folder. It is not called for replies to the user. wakariyasu works without yomiyasu.
 
-yomiyasu は wakariyasu とは別のプラグインです。一緒に使うときは、作者のリポジトリの案内どおりにインストールします。Claude Code では次の2つです。
+yomiyasu is a separate plugin from wakariyasu. To use them together, install it as its author's repository describes. In Claude Code, run these two.
 
 ```text
 /plugin marketplace add nanaism/yomiyasu
 /plugin install yomiyasu@yomiyasu
 ```
 
-## インストール方法
+## Installation
 
-Claude Code では「4. Claude Code プラグイン」、claude.ai のチャットと Cowork では「5. Claude のアプリと Cowork」の方法でインストールします。Codex・Cursor・GitHub Copilot などのエージェントでは、1〜3 のどれかの方法でスキルをインストールしてから、「[規則を指示のファイルに貼る](#規則を指示のファイルに貼る)」の手順で規則を貼ります。1〜3 のどれでも同じスキルがインストールされるので、手元で使えるコマンド（1 と 3 は Node.js の `npx`、2 は GitHub CLI）で選びます。規則とスキルの違いは「[規則とスキル](#規則とスキル)」の章にあります。
+In Claude Code, install with the method in "4. Claude Code plugin"; in claude.ai chat and Cowork, use "5. Claude apps and Cowork". For agents such as Codex, Cursor and GitHub Copilot, install the skills with one of methods 1 to 3, then paste the rules following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)". Methods 1 to 3 all install the same skills, so choose by the command you have at hand (1 and 3 use Node.js `npx`; 2 uses the GitHub CLI). The difference between rules and skills is in the "[Rules and skills](#rules-and-skills)" section.
 
 ### 1. `npx skills add`
 
-[skills](https://github.com/vercel-labs/skills) のコマンドで、スキルをインストールします。
+Install the skills with the command of [skills](https://github.com/vercel-labs/skills).
 
 ```sh
-# 新規インストール
+# New installation
 npx skills add kulikala/wakariyasu --skill '*' -g
 
-# 最新版へのアップデート
+# Update to the latest version
 npx skills update -g
 ```
 
-`--skill '*'` は wakariyasu のスキルをすべてインストールする指定です。wakariyasu のスキルはスキル `writing-rules` のフォルダから規則を読むので、一部ではなくすべてをインストールします。`-g` はホームディレクトリにインストールして、すべてのフォルダで使えるようにする指定です。インストール先のエージェントを選ぶときは `-a` オプションを使えます。
+`--skill '*'` installs all of wakariyasu's skills. wakariyasu's skills read the rules from the folder of the skill `writing-rules`, so install all of them, not a subset. `-g` installs into the home directory so that the skills can be used in every folder. To choose the agents to install for, use the `-a` option.
 
-インストールしたら、「[規則を指示のファイルに貼る](#規則を指示のファイルに貼る)」の手順で規則を貼ります。
+After installing, paste the rules following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)".
 
 ### 2. `gh skill install`
 
-GitHub CLI の `gh skill` コマンド（プレビュー版の機能）で、スキルをインストールします。
+Install the skills with the `gh skill` command of the GitHub CLI (a preview feature).
 
 ```sh
-# 新規インストール
+# New installation
 gh skill install kulikala/wakariyasu --all --scope user
 
-# 最新版へのアップデート
+# Update to the latest version
 gh skill update --all
 ```
 
-`--all` は wakariyasu のスキルをすべてインストールする指定です。`--scope user` はホームディレクトリにインストールして、すべてのフォルダで使えるようにする指定です。インストール先のエージェントを選ぶときは `--agent` オプションを使えます。
+`--all` installs all of wakariyasu's skills. `--scope user` installs into the home directory so that the skills can be used in every folder. To choose the agents to install for, use the `--agent` option.
 
-インストールしたら、「[規則を指示のファイルに貼る](#規則を指示のファイルに貼る)」の手順で規則を貼ります。
+After installing, paste the rules following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)".
 
 ### 3. `npx openskills install`
 
-[OpenSkills](https://github.com/numman-ali/openskills) で、作業中のリポジトリにスキルをインストールし、スキルの一覧をリポジトリの AGENTS.md に書き込みます。
+With [OpenSkills](https://github.com/numman-ali/openskills), install the skills into the repository you are working in and write the list of skills into the repository's AGENTS.md.
 
 ```sh
-# 新規インストールと AGENTS.md への反映
+# New installation and writing to AGENTS.md
 npx openskills install kulikala/wakariyasu -y
 npx openskills sync -y
 
-# 最新版へのアップデートと AGENTS.md への反映
+# Update to the latest version and write to AGENTS.md
 npx openskills update
 npx openskills sync -y
 ```
 
-`-y` はどのスキルをインストールするかを確かめずに、wakariyasu のスキルをすべてインストールする指定です。ホームディレクトリにインストールするときは `--global` オプションを使えます。
+`-y` installs all of wakariyasu's skills without asking which skills to install. To install into the home directory, use the `--global` option.
 
-インストールしたら、「[規則を指示のファイルに貼る](#規則を指示のファイルに貼る)」の手順で、規則を `sync` が書き込んだ AGENTS.md に貼ります。
+After installing, paste the rules into the AGENTS.md that `sync` wrote, following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)".
 
-### 4. Claude Code プラグイン
+### 4. Claude Code plugin
 
-Claude Code ではこの方法でインストールします。規則とスキルの両方がインストールされ、規則は毎回のセッションの始めに自動で読み込まれます。
+In Claude Code, install with this method. Both the rules and the skills are installed, and the rules are loaded automatically at the start of every session.
 
-Claude Code の中で、次の2つを実行します。1つ目は wakariyasu のリポジトリをプラグインの入手先（マーケットプレイス）として登録し、2つ目は入手先から wakariyasu をインストールします。
+In Claude Code, run the following two commands. The first registers the wakariyasu repository as a place to get plugins from (a marketplace), and the second installs wakariyasu from it.
 
 ```text
 /plugin marketplace add kulikala/wakariyasu
 /plugin install wakariyasu@wakariyasu
 ```
 
-インストールできたかは新しいセッションで「現状は？」と聞いて確かめられます。「現状は？」はスキル `session-status` が受け持つ言葉なので、「現在のゴール」「タスク」などの見出しのついた報告が返ってくれば、インストールできています。1〜3 の方法でインストールしたときも、同じように確かめられます。
+To check that the installation worked, ask "Where do things stand?" in a new session. This phrase is handled by the skill `session-status`, so if a report with headings such as "Current goal" and "Tasks" comes back, it is installed. You can check the same way after installing with methods 1 to 3.
 
-最新版へのアップデートはターミナルで次の2つを実行し、Claude Code を起動し直します。
+To update to the latest version, run the following two commands in a terminal and restart Claude Code.
 
 ```sh
-# マーケットプレイスの情報を更新
+# Refresh the marketplace information
 claude plugin marketplace update wakariyasu
 
-# プラグインを最新版へ更新
+# Update the plugin to the latest version
 claude plugin update wakariyasu@wakariyasu
 ```
 
-### 5. Claude のアプリと Cowork
+### 5. Claude apps and Cowork
 
-claude.ai（Web）かデスクトップアプリで **Customize > Plugins** を開き、**Add > Add marketplace** に `kulikala/wakariyasu` を入力して、wakariyasu をインストールします。プラグインは claude.ai のアカウントにインストールされるので、Web かデスクトップアプリで1回インストールすれば、同じアカウントでログインしたスマホのアプリと Cowork でも使えます。
+In claude.ai (web) or the desktop app, open **Customize > Plugins**, enter `kulikala/wakariyasu` under **Add > Add marketplace**, and install wakariyasu. The plugin is installed to your claude.ai account, so installing once in the web or desktop app makes it available in the phone app and in Cowork when you are signed in with the same account.
 
-Cowork では Claude Code と同じく、規則とスキルの両方が働きます。
+In Cowork, as in Claude Code, both the rules and the skills work.
 
-チャットで使えるのは、「[使う場面](#使う場面)」の章の表にあるスキルです。インストールできたかはチャットで「現状は？」と聞いて、見出しのついた報告が返ってくるかで確かめられます。
+In chat, the skills in the table of the "[When each is used](#when-each-is-used)" section can be used. To check that the installation worked, ask "Where do things stand?" in chat and see whether a report with headings comes back.
 
-チャットでは、規則は自動では読み込まれません。「使う場面」の章の表にある「いつもの返答」と「文書を記述させる」の場面にも規則を使いたいときは、次のように貼ります。
+In chat, the rules are not loaded automatically. To make the rules apply to the "Ordinary replies" and "Having the agent write a document" situations in the table of the "When each is used" section, paste them as follows.
 
-- [`AGENTS.snippet.md`](AGENTS.snippet.md) の全文を、Web かデスクトップアプリの設定（左下の名前 > Settings）にある「Your Claude」>「Instructions」か、claude.ai のプロジェクトの指示に貼ります。
-- 指示の欄に収まらなければ、`AGENTS.snippet.md` の見出し「Write replies that someone who has not followed the session can understand」の節（返答の書き方の規則）だけを貼ります。返答の書き方の規則だけでも、「いつもの返答」の場面には働きます。
-- 節だけを貼るときも、`AGENTS.snippet.md` の最初の行と最後の行（貼った範囲を示すコメント）を、節の前後に付けます。アップデートのときに、入れ替える範囲が分かります。
+- Paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md) into "Your Claude" > "Instructions" in the web or desktop app's settings (your name at the bottom left > Settings), or into the instructions of a claude.ai project.
+- If it does not fit in the instructions field, paste only the section with the heading "Write replies that someone who has not followed the session can understand" in `AGENTS.snippet.md` (the rules for how to write replies). The rules for writing replies alone work for the "Ordinary replies" situation.
+- When pasting only a section, also put the first and last lines of `AGENTS.snippet.md` (comments marking the pasted range) before and after the section. They show which range to replace when updating.
 
-### 規則を指示のファイルに貼る
+### Paste the rules into an instruction file
 
-1〜3 の方法でインストールされるのは、スキルだけです。スキルは動くたびにスキル `writing-rules` のフォルダから規則を読むので、スキルを使う場面には規則が働きます。スキルを使わない「いつもの返答」と「文書を記述させる」の場面にも規則を働かせるには、規則を指示のファイルに貼ります。
+Methods 1 to 3 install only the skills. A skill reads the rules from the folder of the skill `writing-rules` each time it runs, so the rules apply in situations where a skill is used. To make the rules apply also in the "Ordinary replies" and "Having the agent write a document" situations, where no skill is used, paste the rules into an instruction file.
 
-wakariyasu の規則をまとめたファイル [`AGENTS.snippet.md`](AGENTS.snippet.md)（GitHub にある wakariyasu のリポジトリの最上位にあります）の全文を、エージェントが毎回読む指示のファイル（Codex なら AGENTS.md、ほかのエージェントならカスタム指示）に貼ります。全文の最初の行 `<!-- wakariyasu:AGENTS.snippet.md -->` と最後の行 `<!-- /wakariyasu:AGENTS.snippet.md -->` は、貼った範囲を示すコメントです。
+Paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md), the file that gathers wakariyasu's rules (it is at the top level of the wakariyasu repository on GitHub), into the instruction file the agent reads every time (AGENTS.md for Codex, custom instructions for other agents). The first line of the whole, `<!-- wakariyasu:AGENTS.snippet.md -->`, and the last line, `<!-- /wakariyasu:AGENTS.snippet.md -->`, are comments that mark the pasted range.
 
-1〜3 のアップデートのコマンドは貼った規則をアップデートしません。wakariyasu をアップデートしたら、貼った範囲（2行のコメントとそのあいだ）を、GitHub にある最新の `AGENTS.snippet.md` の全文に入れ替えます。
+The update commands of methods 1 to 3 do not update the pasted rules. After updating wakariyasu, replace the pasted range (the two comment lines and everything between them) with the whole of the latest `AGENTS.snippet.md` on GitHub.
 
-## wakariyasu を改修する人へ
+## For people who modify wakariyasu
 
-フォルダの構成、規則を修正したあとの手順、リポジトリの検査（`dev/test`）、スキルが呼ばれるかを測る試験（eval）、バージョンの上げ方は、[開発の手引き](docs/development.md) にあります。バージョンごとの変更は [CHANGELOG.md](CHANGELOG.md) にあります。
+The folder layout, the steps after changing a rule, the repository checks (`dev/test`), the tests that measure whether skills are called (eval) and how to raise the version are in the [development guide](docs/development.md). The changes for each version are in [CHANGELOG.md](CHANGELOG.md).
 
-## 参考にしたもの
+## Acknowledgments
 
-wakariyasu の規則の一部は、日本語の推敲スキル [yomiyasu](https://github.com/nanaism/yomiyasu)（nanaism/yomiyasu、MIT ライセンス）を参考にしています。
+Some of wakariyasu's rules draw on the Japanese proofreading skill [yomiyasu](https://github.com/nanaism/yomiyasu) (nanaism/yomiyasu, MIT license).
 
-## ライセンス
+## License
 
 MIT

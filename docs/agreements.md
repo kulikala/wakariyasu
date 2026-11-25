@@ -1,45 +1,45 @@
-# 著者と合意した拘束
+# Constraints agreed with the author
 
-wakariyasu のスキルや規則の中には、エージェントの判断に任せず、wakariyasu を育てている著者とすり合わせて書き方や形式を定めた拘束がある。点検では、ここに載っている拘束を、縛りすぎや例の列挙として指摘しない。拘束を変えるときは、先に著者と合意し、この一覧も合わせて更新する。
+Some of wakariyasu's skills and rules contain constraints whose wording or format was settled with the author who maintains wakariyasu, rather than left to the agent's judgment. A review does not flag the constraints listed here as over-constraining or as lists of examples. To change a constraint, first agree on it with the author, and update this list to match.
 
 ## summarize-session
 
-### 指摘抽出の4つの項目
+### The four items of feedback extraction
 
-- 対象：`skills/summarize-session/SKILL.md` の「Feedback extraction」の節
-- 拘束：まとめた指摘ごとに、指摘事項・意図・背景と対象・対応方針の4つを記述し、4つとも省かない。
-- 合意：2026-11-06、著者が指摘抽出の構成として4つの項目を指定した。
+- Subject: the "Feedback extraction" section of `skills/summarize-session/SKILL.md`
+- Constraint: for each piece of feedback summarized, write all four of the point, the intent, the background and target, and the response policy. None of the four is omitted.
+- Agreement: on 2026-11-06, the author specified the four items as the structure of feedback extraction.
 
-### 文書を作った元の記録の扱い
+### Handling the source records a document was made from
 
-- 対象：`skills/summarize-session/SKILL.md` の「Structuring the document」の節
-- 拘束：何から文書を作ったかは、読み手に必要なときだけ、本文とは別の節で記述する。
-- 合意：2026-11-06、著者が、作業記録を何から抽出したかは必要であれば別のセクションに記述するよう指定した。
+- Subject: the "Structuring the document" section of `skills/summarize-session/SKILL.md`
+- Constraint: what the document was made from is written only when the reader needs it, in a section separate from the body.
+- Agreement: on 2026-11-06, the author specified that what a work record was extracted from is to be written in a separate section if necessary.
 
 ## extract-insights
 
-### 知見1件の形
+### The form of one insight
 
-- 対象：`skills/extract-insights/SKILL.md` の「Writing an insight」の節
-- 拘束：知見は1件ずつ、知見の1文と、種類・背景・補足・確かさ・出所で記述し、どれも省かない。
-- 合意：2026-11-25、著者が知見の文書の形として指定した。
+- Subject: the "Writing an insight" section of `skills/extract-insights/SKILL.md`
+- Constraint: write each insight as one sentence of insight plus its kind, background, supplement, certainty and source. None of them is omitted.
+- Agreement: on 2026-11-25, the author specified this as the form of the insights document.
 
 ## compose-page
 
-### 明るい表示と暗い表示
+### Light and dark display
 
-- 対象：`skills/compose-page/SKILL.md` の「Settled and unsettled, options, and controls」の節と、`skills/compose-page/references/single-file-page.md`
-- 拘束：ページには明るい表示と暗い表示の両方を用意し、読み手の機器の表示設定に従って表示する。
-- 合意：2026-11-22、著者がライトモードとダークモードの両方に対応し、機器の表示設定に従って表示するよう指定した。
+- Subject: the "Settled and unsettled, options, and controls" section of `skills/compose-page/SKILL.md`, and `skills/compose-page/references/single-file-page.md`
+- Constraint: the page provides both a light and a dark display, and shows whichever the reader's device display setting selects.
+- Agreement: on 2026-11-22, the author specified that the page support both light mode and dark mode and follow the device display setting.
 
-### 表示を確かめる指示を書かない
+### No instructions to check the display
 
-- 対象：`skills/compose-page/` の SKILL.md と references
-- 拘束：作ったページの表示をエージェントに確かめさせる指示と、確かめられないときに返答へ書かせる指示を記述しない。確かめるかどうかはエージェントに任せる。
-- 合意：2026-11-22、著者が、エージェントが確かめる指示は記載せず、確かめるかどうかはエージェントに任せるよう指定した。
+- Subject: SKILL.md and the references of `skills/compose-page/`
+- Constraint: do not write an instruction that has the agent check how the page it made displays, nor an instruction that has it write in the reply that it could not check. Whether to check is left to the agent.
+- Agreement: on 2026-11-22, the author specified that no instruction for the agent to check is to be written, and whether to check is left to the agent.
 
-### 1つの HTML ファイルで作るページの出発点
+### Starting point for a page built as one HTML file
 
-- 対象：`skills/compose-page/references/single-file-page.md`
-- 拘束：環境やプロジェクトがページのコードを決めていないときの出発点として、Vue 3・Tailwind CSS v4・Lucide を使う1つの HTML ファイルの雛形を載せる。雛形の URL には、著者の雛形と同じメジャーバージョンの指定（`vue@3`、`@tailwindcss/browser@4`）を書く。フォントは指定せず、ブラウザの既定のフォントを使う。
-- 合意：2026-11-25、著者が自分の雛形を参照として取り込むよう指定し、明るい表示と暗い表示への対応、アーティファクトに向けた `<head>` の扱いの分離、Noto Sans JP の指定を外すこと、Vue 3 と Tailwind 4 のバージョンの指定を外すことを指定した。同じ日に、指定しないと動作しないことが分かったとして、雛形のメジャーバージョンの指定に戻すよう指定した。
+- Subject: `skills/compose-page/references/single-file-page.md`
+- Constraint: as the starting point for when the environment or project does not fix the page's code, include a single-HTML-file template that uses Vue 3, Tailwind CSS v4 and Lucide. The URLs in the template carry the same major-version specifiers as the author's template (`vue@3`, `@tailwindcss/browser@4`). No font is specified; the browser's default font is used.
+- Agreement: on 2026-11-25, the author specified that the author's own template be taken in as a reference, and also specified supporting the light and dark displays, separating how the `<head>` is handled for artifacts, dropping the Noto Sans JP specification, and dropping the Vue 3 and Tailwind 4 version specifiers. On the same day, having found that it does not work without them, the author specified returning to the template's major-version specifiers.

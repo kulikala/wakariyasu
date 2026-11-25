@@ -15,3 +15,11 @@ wakariyasu のスキルや規則の中には、エージェントの判断に任
 - 対象：`skills/summarize-session/SKILL.md` の「Structuring the document」の節
 - 拘束：何から文書を作ったかは、読み手に必要なときだけ、本文とは別の節で記述する。
 - 合意：2026-11-06、著者が、作業記録を何から抽出したかは必要であれば別のセクションに記述するよう指定した。
+
+## extract-insights
+
+### 知見1件の形
+
+- 対象：`skills/extract-insights/SKILL.md` の「Writing an insight」の節
+- 拘束：知見は1件ずつ、知見の1文と、種類・背景・補足・確かさ・出所で記述し、どれも省かない。
+- 合意：2026-11-25、著者が知見の文書の形として指定した。

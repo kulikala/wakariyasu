@@ -1,6 +1,6 @@
 ---
 name: summarize-session
-description: Turn what the current session covered into a document that people or agents who were not in the session can read later and use. Use when the user says things like "Summarize this session", "Summarize what we found" or "Extract my feedback", and when the user says the same thing in another language. Infer from the request what the user wants, and build the document with the policy of the matching mode. Document output structures the matters the user asked about as a document. Insight extraction organizes what was learned as general insights. Feedback extraction organizes the user's feedback by finding, intent, background and target, and response policy. Log output keeps a record of the work. If several modes apply, make a separate document for each mode. If no mode applies, build a structure using the modes' policies as a reference. Do not use it for a short summary inside a reply. For questions about how the session is going, use session-status. When the user says they do not understand your last reply, use explain-clearly.
+description: Turn what the current session covered into a document that people or agents who were not in the session can read later and use. Use when the user says things like "Summarize this session", "Summarize what we found" or "Extract my feedback", and when the user says the same thing in another language. Infer from the request what the user wants, and build the document with the policy of the matching mode. Document output structures the matters the user asked about as a document. Insight extraction organizes what was learned as general insights. Feedback extraction organizes the user's feedback by finding, intent, background and target, and response policy. Log output keeps a record of the work. If several modes apply, make a separate document for each mode. If no mode applies, build a structure using the modes' policies as a reference. Do not use it for a short summary inside a reply. To extract insights from a text that is not the session (a transcript, a record of remarks, an article), use extract-insights. For questions about how the session is going, use session-status. When the user says they do not understand your last reply, use explain-clearly.
 ---
 
 # Purpose
@@ -71,6 +71,8 @@ Decide what to put in the document by inferring from the request what the user w
 - Write procedures in the general form, not with the values of a specific version. The reader applies the procedure to the version in use when they read the document.
 
 ### Insight extraction
+
+Insight extraction works from the current session (the record of the conversation with the agent). To extract insights from a text the user gives that is not the session, use the `extract-insights` skill, which tells claims from confirmed facts for each speaker or writer.
 
 An insight is general understanding that holds outside the session. Build it by generalizing from facts, so that the reader does not misjudge the next time they face the same kind of environment, tool or problem.
 

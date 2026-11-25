@@ -71,7 +71,7 @@ Before sending, polish a reply of three or more paragraphs, and any reply the us
 
 # Write documents that make sense on their own
 
-A document such as a README, specification, design document, procedure, rule, SKILL.md, or prompt is read by people who were not part of the exchange in which it was written. Write it so that a reader can understand it from the document alone.
+A document such as a README, specification, design document, procedure, rule, SKILL.md, or prompt, and a document in another format such as a web page or artifact, a slide deck, or an Office file (a word-processing document or a spreadsheet), is read by people who were not part of the exchange in which it was written. Write it so that a reader can understand it from the document alone.
 
 ## How the history of the work is handled depends on the kind of text
 
@@ -123,7 +123,10 @@ Choose the finishing steps by the kind of document. The table also says what to 
 | Skill (SKILL.md and the references the skill reads) | With the `clarify-skill` skill, check and fix the instructions so that an agent reading the skill can decide from the skill's purpose. Then do finishing steps 1 to 3 |
 | Published changelog | Finishing step 3 only. A changelog states the difference from the previous version. Finishing step 1 would fix the sentences that describe that difference, so do not do it |
 | Commit message, PR description | Finishing step 3 only |
+| Web page or artifact, slide deck, Office file | Finishing steps 1 to 3 on the text the reader sees, as described below the table |
 | Any other document | Finishing steps 1 to 3 |
+
+A web page or artifact, a slide deck, or an Office file is finished like any other document, because its readers also read it without the exchange in which it was made. The skills and checks used in the finishing steps read plain text. Take the text the reader sees out of the markup or the file format, including labels, captions, speaker notes, alternative text and the words in charts, and check that text. When the file is generated from a source (data, a template, a script), make the fixes in the source and generate the file again. Fix the file itself only when it has no source. Keep the text grouped as the reader sees it (by slide, by section of the page, by sheet), because the reader picks out one slide or one section and reads it on its own. A page that only displays other material as it is, such as a diff page or a rendered data file, needs finishing only for the text you wrote for it, such as its title, explanations, chart titles and summaries.
 
 <!-- polishing.md -->
 

@@ -17,18 +17,19 @@ The user may read a reply without having followed the history of the session. Ma
 
 ## Choose what to write
 
-Include what the user needs in order to understand the situation and decide. Include the history of the work only as far as the user needs it to understand the situation. When you say what you did, say what it was for.
+Include what the user needs in order to understand the situation and decide. Include the history of the work only as far as the user needs it to understand the situation. When you say what you did, say what it was for. When you explain how something works or what a change does, first describe the whole: which parts act and what ends up different. Then give the details. A user who has read the whole can tell where each detail fits.
 
 - State the result of a check together with its scope. Show the checks you ran with a count or the output, and say which checks you did not run. Before you write that nothing is wrong, look back and confirm that you actually checked each item you report on.
 - When you shorten a conclusion, keep the conditions it depends on. A conclusion without its conditions claims more than you verified.
 - Do not add what you have no facts for (causes, schedules, effects, future handling). If you must infer, write it so that it reads as an inference.
 - Label anything you filled in by inference, any placeholder, and any choice you made yourself, as an inference, a placeholder, or your own choice. Do not leave an assumption in your work without telling the user.
+- When you give the reason for a conclusion or a fix, also state the facts you confirmed on the way from the reason to the conclusion. Facts you confirmed during the work look obvious to you, but without them the user cannot follow how the reason leads to the conclusion.
 
 ## Use words the user knows
 
 A word you kept using during the work looks explained to you, but the user may not know what it means and will have to ask.
 
-- When you use a name you made up, a term from a file you read or a tool's output, or a shorthand such as an option label, check whether the user used that word in the session. If they did not, say what the word refers to, in words the user used or in words that are generally understood. If you use the word repeatedly, give its meaning in the first sentence that uses it.
+- When you use a name you made up, a term from a file you read or a tool's output, or a shorthand such as an option label, check whether the user used that word in the session. If they did not, say what the word refers to, in words the user used or in words that are generally understood. If you use the word repeatedly, give its meaning in the first sentence that uses it. Do this again in each reply, because the user may not have read the earlier replies.
 - Keep proper names that must be exact (file names, command names, skill names) as they are, and add what each is for.
 - Once you name something, keep the same word for it within the reply and in later replies. A different word makes the user think it is a different thing.
 - Do not turn an action into a noun when that hides who does what. Write each action as a sentence that shows who does what.
@@ -47,6 +48,7 @@ Readers go through a text from the start and do not go back to fill in gaps. The
 
 - Do not use demonstratives such as "this" and "that". Write the name of what they point to.
 - When you use a general word that does not say what it is about or whose it is, give that information in the same sentence. Words everyone knows look already settled to the writer, so they are easy to miss. When a sentence applies a reason, limit, comparison, negation, or contrast to a general word, state what or whose it is first.
+- When you rely on something written in an earlier reply, in another document or file, or in a distant part of the same reply, do not only point to where it is. Restate as much of it as the user needs to understand or decide, at the place where you use it.
 
 The language pack's `polishing.md` may add checks specific to the language you write in.
 

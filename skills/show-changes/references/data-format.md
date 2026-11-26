@@ -7,7 +7,7 @@ The JSON format that `--json-out` writes and `--data` reads. `--data` checks the
   "schema_version": 1,
   "title": "…", "data_version": "…", "generated_at": "ISO 8601 date and time",
   "group_depth": 2, "full_text": false,
-  "lang": "language code of the page (optional; en if absent)", "labels": {"name": "word that replaces an English word of the page (optional)"},
+  "lang": "language code of the page (optional; en if absent)", "labels": {"key": "the page's word for that key (optional; the keys of lang/en/labels.json)"},
   "sources": [{
     "name": "the target's name (a choice in the filter)",
     "kind": "one of git, plain, patch (git if absent)",
@@ -30,5 +30,5 @@ The JSON format that `--json-out` writes and `--data` reads. `--data` checks the
 - When `merge_base` is true, `base` is the divergence-point commit.
 - `added` and `deleted` are null for binary files.
 - `old_mode` and `new_mode` are git modes (regular file 100644, executable file 100755, symbolic link 120000, submodule 160000). They are null, or the key is omitted, on the before side of an addition, on the after side of a deletion, and for diff files that do not give modes. The `body` of a symbolic link is the diff of the link target path.
-- `lang` and `labels` are optional. `labels` can only use the names in the `/*__LABELS__*/` block of the template; the page uses the English word for each name that is not given. The notices in `files[].notice` are written in English by `build.py`, and the page replaces the known ones with the labels `noticeBinary`, `noticeNoDiff`, `noticeSubmodule`, `noticeUnreadable` and `noticeNoFull`.
+- `lang` and `labels` are optional. `build.py` writes `labels` when the page is not in English, with every word of the page's language; the keys are those of `lang/en/labels.json`, and the page uses the English word for each key that is not given. The notices in `files[].notice` are written in English by `build.py`, and the page replaces the known ones with the labels `noticeBinary`, `noticeNoDiff`, `noticeSubmodule`, `noticeUnreadable` and `noticeNoFull`.
 - `generated_at` is renewed each time a page is built (also when it is rebuilt with `--data`).

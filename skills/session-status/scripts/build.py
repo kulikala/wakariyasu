@@ -7,23 +7,18 @@ from pathlib import Path
 import re
 import sys
 
+sys.dont_write_bytecode = True
+import labels as labels_module  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
 STATES = ('done', 'in_progress', 'waiting_process', 'waiting_decision', 'not_started', 'problem', 'cancelled')
 TEXT_FIELDS = ('goal', 'instruction', 'status')
-TOP_KEYS = {'title', 'lang', 'asOf', 'labels', *TEXT_FIELDS, 'tasks', 'decisions'}
+TOP_KEYS = {'title', 'lang', 'asOf', *TEXT_FIELDS, 'tasks', 'decisions'}
 LETTER = re.compile(r'^[A-Za-z0-9]{1,3}$')
 
 
 class ReportError(ValueError):
     pass
-
-
-def default_labels(template):
-    """Read the label names from the template, which holds the English defaults."""
-    match = re.search(r'/\*__LABELS__\*/(\{.*?\})/\*__LABELS_END__\*/', template, re.S)
-    if not match:
-        raise ReportError('the template has no /*__LABELS__*/ block')
-    return json.loads(match.group(1))
 
 
 def text(value, where, required=False):
@@ -33,7 +28,7 @@ def text(value, where, required=False):
         raise ReportError(f'{where} must be a non-empty string' if required else f'{where} must be a string')
 
 
-def validate(report, labels):
+def validate(report):
     if not isinstance(report, dict):
         raise ReportError('the report must be a JSON object')
     unknown = set(report) - TOP_KEYS
@@ -42,15 +37,6 @@ def validate(report, labels):
     text(report.get('title'), 'title', required=True)
     for key in ('lang', 'asOf', *TEXT_FIELDS):
         text(report.get(key), key)
-
-    given = report.get('labels', {})
-    if not isinstance(given, dict):
-        raise ReportError('labels must be an object')
-    unknown = set(given) - set(labels)
-    if unknown:
-        raise ReportError(f'unknown labels: {", ".join(sorted(unknown))} (known: {", ".join(labels)})')
-    for key, value in given.items():
-        text(value, f'labels.{key}', required=True)
 
     decisions = report.get('decisions', [])
     if not isinstance(decisions, list):
@@ -128,42 +114,22 @@ def validate(report, labels):
     return report
 
 
-def pack_labels(skill, lang):
-    """Read the page labels for a language from the writing-rules language pack.
-
-    The pack's conventions.md has a section whose heading names the skill and holds a JSON block of labels.
-    Returns None when the pack, the section or the block is missing (for example, when this skill was
-    installed without writing-rules), so the page keeps its English words.
-    """
-    path = Path(__file__).resolve().parents[2] / 'writing-rules' / 'lang' / lang / 'conventions.md'
-    if not lang or not path.is_file():
-        return None
-    for section in re.split(r'(?m)^(?=## )', path.read_text(encoding='utf-8')):
-        heading = section.split('\n', 1)[0]
-        block = re.search(r'```json\n(.*?)```', section, re.S)
-        if heading.startswith('## ') and re.search(r'(?<![\w-])' + re.escape(skill) + r'(?![\w-])', heading) and block:
-            return json.loads(block.group(1))
-    return None
-
-
-def with_pack_labels(report):
-    """Fill the page words from the language pack of report['lang']; labels in the report override them."""
-    pack = pack_labels('session-status', report.get('lang')) if isinstance(report.get('lang'), str) else None
-    if pack:
-        given = report.get('labels') if isinstance(report.get('labels'), dict) else {}
-        report = {**report, 'labels': {**pack, **given}}
-    return report
-
-
-def make_html(report, template, artifact=False):
-    report = with_pack_labels(report)
-    validate(report, default_labels(template))
+def make_html(report, template, labels=None, artifact=False):
+    """Build the page. labels is the complete set of words for the report's language (default: English)."""
+    english = labels_module.english()
+    labels = labels or english
+    validate(report)
+    if labels != english:
+        report = {**report, 'labels': labels}
     payload = json.dumps(report, ensure_ascii=False, separators=(',', ':'))
     # Keep the JSON from closing the script element or starting markup inside it.
     payload = payload.replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
     if template.count('/*__DATA__*/null') != 1:
         raise ReportError('the template must contain /*__DATA__*/null exactly once')
     before, after = template.split('/*__DATA__*/null')
+    after, replaced = re.subn(r'/\*__LABELS__\*/\{\}/\*__LABELS_END__\*/', lambda _: json.dumps(english, ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e'), after, count=1)
+    if replaced != 1:
+        raise ReportError('the template must contain /*__LABELS__*/{}/*__LABELS_END__*/ once')
     title = html.escape(report['title'])
     page = before.replace('__TITLE__', title, 1) + payload + after
     return artifact_body(page) if artifact else page
@@ -181,24 +147,39 @@ def artifact_body(page):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Build the session-status page from a JSON report.')
-    parser.add_argument('report', help='the JSON report; - reads standard input')
+    parser.add_argument('report', nargs='?', help='the JSON report; - reads standard input')
     parser.add_argument('-o', '--output', help='the HTML output path; - writes to standard output')
     parser.add_argument('--artifact', action='store_true', help='leave out the DOCTYPE, html, head and body tags (for hosts such as Claude artifacts that add them)')
+    parser.add_argument('--labels', metavar='FILE', help='a JSON file of the page words: every word for a language that has no pack in lang/, or single words that replace the pack\'s')
+    parser.add_argument('--init', metavar='CODE', help='write the English words to translate for this language (with -o), then stop')
     parser.add_argument('--check', action='store_true', help='only validate the report')
     parser.add_argument('--template', type=Path, default=HERE / 'template.html', help='the page template')
     args = parser.parse_args(argv)
+    if args.init:
+        if not args.output:
+            parser.error('--init needs -o FILE')
+        try:
+            Path(args.output).expanduser().write_text(labels_module.init_text(), encoding='utf-8')
+        except OSError as error:
+            print(f'build.py: {error}', file=sys.stderr)
+            return 2
+        return 0
+    if not args.report:
+        parser.error('give the report, or --init CODE -o FILE')
     if not args.check and not args.output:
         parser.error('give -o/--output, or --check')
     try:
         raw = sys.stdin.read() if args.report == '-' else Path(args.report).read_text(encoding='utf-8')
         report = json.loads(raw)
         template = args.template.read_text(encoding='utf-8')
+        lang = report.get('lang') if isinstance(report, dict) and isinstance(report.get('lang'), str) else None
+        labels = labels_module.resolve(lang, labels_module.read(args.labels) if args.labels else None, 'build.py')
         if args.check:
-            validate(with_pack_labels(report), default_labels(template))
+            validate(report)
             print('ok')
             return 0
-        page = make_html(report, template, args.artifact)
-    except (OSError, json.JSONDecodeError, ReportError) as error:
+        page = make_html(report, template, labels, args.artifact)
+    except (OSError, json.JSONDecodeError, ReportError, labels_module.LabelsError) as error:
         print(f'build.py: {error}', file=sys.stderr)
         return 2
     if args.output == '-':

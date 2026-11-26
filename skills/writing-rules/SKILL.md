@@ -1,6 +1,6 @@
 ---
 name: writing-rules
-description: Holds the rules of the wakariyasu plugin (how to write replies to the user, how to write documents, and how to polish text before handing it over), the references the rules point to (how to write decision questions, instructions for agents, READMEs, and changelogs), and the language packs with what applies only when writing in a given language. Use it when you write a reply to the user or a document and the text of the rules is not in the conversation. Read the rules and references that apply to what you write. Other wakariyasu skills also open the rule, reference, and language pack files from this skill's folder. It also applies when the user says the same thing in another language.
+description: Holds the rules of the wakariyasu plugin (how to write replies to the user, how to write documents, and how to polish text before handing it over), the references the rules point to (how to write decision questions, instructions for agents, READMEs, and changelogs), and the language packs with what applies only when writing in a given language, chosen by the language of what you write. Use it when you write a reply to the user or a document and the text of the rules is not in the conversation. Read the rules and references that apply to what you write. Other wakariyasu skills also open the rule, reference, and language pack files from this skill's folder. It also applies when the user says the same thing in another language.
 ---
 
 # Purpose of this skill
@@ -32,18 +32,26 @@ Read a reference when a rule tells you to. They are in `references/` of the skil
 
 A language pack holds what applies only when writing in one language. Packs are in `lang/<code>/` of the skill's folder, where `<code>` is the ISO 639-1 language code of the language.
 
-Before you write a reply or a document in a language, read every file in that language's folder, unless the text of the file is already in the conversation. If the folder does not exist, only the rules apply.
+Choose the pack for each thing you are about to write by the language of that thing, not by the language of the conversation. A user who writes to you in Japanese and asks for an English README gets a reply from the Japanese pack and a README from the English pack; one turn can need two packs. For each thing, read only the pack file for its kind, unless the text of the file is already in the conversation. If the folder for the language does not exist, only the rules apply.
 
-Every file in a pack has one of the names in the table below. A pack holds only the files that language needs. When a file is missing, nothing is added for that language: skip the step that would use it, and use the English names given in the rules and skills.
+| File | Read it when you write | Holds |
+|---|---|---|
+| `reply.md` | A reply to the user | The register of replies and the checks to add when polishing a reply |
+| `documents.md` | A document: a README, specification, SKILL.md, commit message, and so on | How to choose register and notation for each kind of text, the checks to add when polishing a document, and the names readers expect (README sections, changelog subheadings) |
+| `skills.md` | Text for a wakariyasu skill | Additions for each skill, one section per skill name |
 
-| File | Holds |
-|---|---|
-| `polishing.md` | Checks to add when polishing text in that language, including phrases to avoid and any external reviewer skill |
-| `styles.md` | How to choose register, notation, and formatting for each kind of text |
-| `conventions.md` | Names readers expect in that language: README section names, changelog subheading names, fixed labels such as session-status headings, task-state words, and the column names of decision questions |
-| `skills.md` | Additions for each skill, one section per skill name |
+A pack holds only the files that language needs. When a file is missing, nothing is added for that language and kind of text. A pack may point to tools in other skills. The Japanese pack uses the `check-terms` skill.
 
-A pack may point to tools in other skills. The Japanese pack uses the `check-terms` skill.
+The folder also holds files that tools read or print. Do not open them to look up words:
+
+- `labels.json` holds the fixed words for tools (the column names of decision questions and "(recommended)").
+- `asking-template.md` is the decision question template with those words filled in.
+
+### Fixed words
+
+Headings, column names and state words are filled in by tools. Do not translate them, and do not look them up in a table. For a decision question, take `lang/<code>/asking-template.md` for the language of the question, and use its words as printed. For a status report, the session-status skill gives its own filled template.
+
+For a language that has no pack, run `scripts/asking-skeleton --init <code> -o <file>`. It writes the English words as a JSON file. Translate the values into the language, and keep the words in braces as they are. Then run `scripts/asking-skeleton --lang <code> --labels <file>`. It prints the template, and stops with a one-line message when a key is missing, a key is unknown, or a word in braces was dropped. Run the scripts with `python3 -B`.
 
 ## How to tell whether the files are already loaded
 

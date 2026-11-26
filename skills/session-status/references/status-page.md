@@ -10,7 +10,7 @@ You describe the report in a JSON file, and `scripts/build.py` turns it into the
 2. Put the same report into a JSON file (see "The JSON report" below). Copy the text of each section and each decision as written in the report, not a shorter version, because the user may read only the page.
 3. Run `python3 -B scripts/build.py <report>.json --check`. It only validates the JSON and writes nothing: it prints `ok`, or a message naming the key that is wrong and exits with 2. Fix the JSON until it prints `ok`.
 4. Build the page and hand it over (see "Build and hand over the page" below).
-5. In the reply, give the link or the file location, the key points of "Latest status", and the "Decisions needed" section as usual, so that the user can also answer in the session without opening the page. The first time in a session, add one sentence saying that the user can choose options and write messages on the page, press the copy button, and paste the copied text into the session.
+5. In the reply, give the link or the file location, the key points of the latest status, and the decisions section as usual, so that the user can also answer in the session without opening the page. The first time in a session, add one sentence saying that the user can choose options and write messages on the page, press the copy button, and paste the copied text into the session.
 
 The page needs Python 3.9 or later to build. Where Python is not available, do not make the page; write the report in the reply only, and tell the user that the page could not be built.
 
@@ -21,7 +21,6 @@ The page needs Python 3.9 or later to build. Where Python is not available, do n
   "title": "Docs site migration",
   "lang": "en",
   "asOf": "2026-03-12 14:20",
-  "labels": {},
   "goal": "…",
   "instruction": "…",
   "tasks": [
@@ -50,18 +49,21 @@ In this example, the second task waits for decision 1, so it has `"decision": 1`
 | Key | Content |
 |---|---|
 | `title` | Required. The page title, shown at the top of the page and in the browser tab. Name what the session works on, such as the project or the task. |
-| `lang` | The language code of the report, such as `en` or `ja`. It marks the language of the page's text, and `build.py` takes the page's words from that language's pack (see "Words on the page"). |
+| `lang` | The language code of the report, such as `en` or `ja`: the language of the page being produced. It marks the language of the page's text, and `build.py` takes the page's words from `lang/<code>/labels.json` (see "Words on the page"). |
 | `asOf` | When the report was written, in the form the user reads dates. |
-| `labels` | The page's words that replace the English defaults (see "Words on the page"). |
-| `goal`, `instruction`, `status` | The text of "Current goal", "Latest instruction" and "Latest status". Leave out the key of a section that the report leaves out; the page then leaves out the section too. |
+| `goal`, `instruction`, `status` | The text of the goal, the latest instruction and the latest status sections. Leave out the key of a section that the report leaves out; the page then leaves out the section too. |
 | `tasks` | The rows of the task table, in order. `task` is required. `state` is one of `done`, `in_progress`, `waiting_process`, `waiting_decision`, `not_started`, `problem` and `cancelled`, which stand for the seven states in the state table of `SKILL.md`, from ✅ to ⛔ in table order. For a state you made up under the rules of `SKILL.md`, give `{ "emoji": …, "label": … }`. `decision` is the number of the decision the task waits for, and goes only with `waiting_decision`. |
-| `decisions` | The decision questions, in the order of the reply. `number` is the number of the question in the reply. `question` is the question sentence, and `context` is the paragraph under it. Each option has the answer `letter` (from the "Option" column), an optional short `label` that names the option, and `text`, which is the "Background and what happens if chosen" column of that row. Mark at most one option `recommended`. The reply already puts the recommended option in the first row with letter A, so keep the options in the order of the reply. For a question without options, leave out `options`; the page then shows a box for a written answer. |
+| `decisions` | The decision questions, in the order of the reply. `number` is the number of the question in the reply. `question` is the question sentence, and `context` is the paragraph under it. Each option has the answer `letter`, an optional short `label` that names the option, and `text`, which is the background-and-effects column of that row. Mark at most one option `recommended`. The reply already puts the recommended option in the first row with letter A, so keep the options in the order of the reply. For a question without options, leave out `options`; the page then shows a box for a written answer. |
 
 Text fields are plain text. A blank line starts a new paragraph, lines that start with `- ` make a list, text between backticks is shown as code, and an http or https URL becomes a link that opens in a new tab. Write the full URL of an artifact or page the user should open to decide. Any other markup is shown as written.
 
 ## Words on the page
 
-The page's words have English defaults: the section headings, the column names, the state words, the buttons, and the words of the copied text. The defaults are the `DEFAULT_LABELS` object in `scripts/template.html`, and the key of each word in `labels` is its key there. When you write the report in another language, set `lang`. If the language pack for that language (`skills/writing-rules/lang/<code>/conventions.md` in the plugin) has a section for the status page, `build.py` takes its words, and `labels` is needed only to change single words. Otherwise give every word in `labels`, written in the report's language and keeping the meaning of the English default. Keep words in braces inside a label, such as `{answered}`, as they are; the page fills them in.
+The page's fixed words (the section headings, the column names, the state words, the buttons, and the words of the copied text) come from `lang/<code>/labels.json` of this skill, where `<code>` is the report's `lang`. `lang/en/labels.json` holds the English words, and without `lang` the page is in English. Do not open `scripts/template.html` and do not fill in words yourself. The `build.py` command puts them into the page.
+
+For a language without `lang/<code>/labels.json`, `build.py` stops with a message such as "no labels for fr; run `build.py --init fr -o <file>`". Run that command. It writes the English words as a JSON file. Translate the values into the language of the report and keep the words in braces, such as `{answered}`, as they are; the page fills them in. Then pass the file with `--labels <file>`. The script stops on an unknown key, a missing key, or a dropped word in braces, and says which. The same file prints the matching reply skeleton (`scripts/skeleton.py --lang <code> --labels <file>`), so the reply and the page use the same words.
+
+With a language that has a pack, `--labels <file>` changes single words: the file holds only those keys.
 
 ## Build and hand over the page
 
@@ -72,6 +74,7 @@ python3 -B scripts/build.py <report>.json --artifact -o <page>.html   # to publi
 python3 -B scripts/build.py <report>.json -o <page>.html              # to hand over an HTML file
 ```
 
+- Add `--labels <file>` to either command for a language without a pack (see "Words on the page").
 - Use `--artifact` when you publish the page on a host that adds its own document skeleton (the DOCTYPE, html, head and body tags) to what it publishes, as Claude artifacts do. Leave it out when you hand over an HTML file, which then opens in a browser as is.
 - Where you can publish the page, publish it and give the link. Otherwise save the HTML file and give its location.
 - The page loads its scripts and fonts from public CDNs when it opens, so the user needs a network connection, and a host must allow those CDNs.

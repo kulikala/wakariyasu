@@ -11,4 +11,4 @@ Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for how to write
 - When a change prevents the reader from continuing to use the tool unless they do something (rewrite settings, reinstall, stop using a feature), state in the entry what the reader must do.
 - Collect changes before release under an "Unreleased" heading. When you release, change that heading to one with the version number and release date. Follow the heading form if the top of the changelog or the development guide defines one. If neither defines one, match how the previous versions in the changelog are written.
 
-Use the subheading names, section wording, and phrasing that human-maintained changelogs in the document's language use. Use the language pack's `conventions.md` when it defines them.
+Use the subheading names, section wording, and phrasing that human-maintained changelogs in the document's language use. Use the changelog part of the document language's `documents.md` when it defines them.

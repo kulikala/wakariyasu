@@ -1,4 +1,4 @@
-# Checks to add when writing in English
+# Checks to add when replying in English
 
 Apply these checks in addition to the "Checks for every language" section of `polishing.md`.
 

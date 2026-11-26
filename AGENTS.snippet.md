@@ -4,7 +4,9 @@
 
 This text holds the rules (writing-to-user.md, writing-documents.md, polishing.md) and asking.md. Each file starts after a comment line with its name. Files in this text need not be opened again. Other files are in the folders of the wakariyasu skills.
 
-What to add when writing in a particular language is in that language's pack. A pack pasted next to this text, as AGENTS.snippet.<code>.md, starts with a comment line naming it. Read the pack of a language before you write a reply or a document in it. A language without a pack follows the rules alone.
+What to add when writing in a particular language is in that language's pack. A pack pasted next to this text, as AGENTS.snippet.<code>.md, starts with a comment line naming it. It holds the checks for a reply to the user (reply.md), the checks and notation for a document (documents.md), additions for the wakariyasu skills (skills.md), the decision question template with that language's column names, and phrase lists where the language has them.
+
+Choose the pack for each thing you write by the language of that thing, not by the language of the conversation. A user who writes to you in Japanese and asks for an English README gets a reply by the Japanese pack and a README by the English pack; one turn can need two packs. For a reply use reply.md, and for a document use documents.md. A language without a pack follows the rules alone; write the column names and the "(recommended)" mark of a decision question by translating those of the template in asking.md.
 
 - References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them
 - Language packs: lang/<code>/ in the folder of the writing-rules skill
@@ -51,7 +53,7 @@ Readers go through a text from the start and do not go back to fill in gaps. The
 - When you use a general word that does not say what it is about or whose it is, give that information in the same sentence. Words everyone knows look already settled to the writer, so they are easy to miss. When a sentence applies a reason, limit, comparison, negation, or contrast to a general word, state what or whose it is first.
 - When you rely on something written in an earlier reply, in another document or file, or in a distant part of the same reply, do not only point to where it is. Restate as much of it as the user needs to understand or decide, at the place where you use it.
 
-The language pack's `polishing.md` may add checks specific to the language you write in.
+The `reply.md` of the language pack for the language of the reply may add checks specific to that language.
 
 ## Use session-status for reports and decision questions
 
@@ -155,11 +157,11 @@ Polish for readability. Do not change the claims, conditions, numbers, or the st
 
 ## Checks for the language you wrote in
 
-Apply the `polishing.md` in the language pack for the language of the text. If the pack has a `styles.md`, choose notation by it. The language packs are in `lang/<code>/` of the `writing-rules` skill's folder. A language with no pack gets only the checks for every language.
+Take the language of the text you wrote, not the language of the conversation, and apply the checks in that language's pack: `reply.md` for a reply to the user, `documents.md` for a document. If `documents.md` has a table of the kinds of text, choose notation by it. The language packs are in `lang/<code>/` of the `writing-rules` skill's folder. A language with no pack gets only the checks for every language.
 
 ## Pass documents for people through a skill that refines prose, if one is available
 
-Documents that people will read or that will be published (READMEs, manuals, specifications, proposals) go through a skill that refines prose in the document's language, after you polish them yourself, if such a skill is among the available skills. A skill of this kind audits and rewrites text that AI wrote, to remove the patterns of AI writing (unnatural metaphors, unclear links between subject and predicate, skewed sentence patterns, decoration and promotional tone) while keeping the meaning and conditions. Choose it by its description: the skill must name the language of the document. If the skill takes the kind of document or how much the readers know, give them. The language pack's `styles.md`, if any, names the kinds of document.
+Documents that people will read or that will be published (READMEs, manuals, specifications, proposals) go through a skill that refines prose in the document's language, after you polish them yourself, if such a skill is among the available skills. A skill of this kind audits and rewrites text that AI wrote, to remove the patterns of AI writing (unnatural metaphors, unclear links between subject and predicate, skewed sentence patterns, decoration and promotional tone) while keeping the meaning and conditions. Choose it by its description: the skill must name the language of the document. If the skill takes the kind of document or how much the readers know, give them. The table of kinds in the document language's `documents.md`, if it has one, names the kinds of document.
 
 Check that the refined text keeps every claim, condition, number, and level of certainty of your text. Where the skill changed the meaning, restore your wording.
 
@@ -198,7 +200,7 @@ Before writing a question, check that you can name the requested work that the a
 - In the "Background and what happens if chosen" column, state the content of the option instead of only its label. Then state what happens toward the purpose of the work if the option is chosen. When the content of the option alone does not show why it is a choice at all, state the background that led to the option too.
 - If one option is especially recommended, write "(recommended)" after the letter of the top option. End the "Background and what happens if chosen" column of that row with the reason for recommending it.
 - For a question that cannot list options, omit the table and state in the question what you want answered.
-- The column names in the template and "(recommended)" are the English labels. Use them as written in an English reply. In a reply in another language, use the names that the language pack's `conventions.md` defines for that language. If the pack has no `conventions.md`, write the labels in the reply's language. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
+- The column names in the template and "(recommended)" are English. In a reply in another language, write the question in the form of that language's `asking-template.md` (see "Fixed words" in the index of files), so that the column names and "(recommended)" are the words printed there.
 - When there are several questions, put first the question whose answer changes the later work the most.
 - Even for a question with a recommendation, the user decides which option to choose. You list what happens for each option.
 

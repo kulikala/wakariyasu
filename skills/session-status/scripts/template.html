@@ -185,48 +185,8 @@
 
     const DATA = /*__DATA__*/null
 
-    // English defaults. The report's data may replace any of them through "labels".
-    const DEFAULT_LABELS = /*__LABELS__*/{
-      "pageKind": "Session status",
-      "asOf": "As of {asOf}",
-      "goal": "Current goal",
-      "instruction": "Latest instruction",
-      "tasks": "Tasks",
-      "status": "Latest status",
-      "decisions": "Decisions needed",
-      "colNumber": "#",
-      "colTask": "Task",
-      "colState": "State",
-      "colNotes": "Background and notes",
-      "colOption": "Option",
-      "colOptionDetail": "Background and what happens if chosen",
-      "recommended": "(recommended)",
-      "decisionRef": " ({n})",
-      "stateDone": "Done",
-      "stateInProgress": "In progress",
-      "stateWaitingProcess": "Waiting on a process",
-      "stateWaitingDecision": "Waiting for your decision",
-      "stateNotStarted": "Not started",
-      "stateProblem": "Problem",
-      "stateCancelled": "Cancelled",
-      "noteLabel": "Add a message (optional)",
-      "notePlaceholder": "Conditions, reasons, or anything the agent should know",
-      "freeAnswerLabel": "Your answer",
-      "freeAnswerPlaceholder": "Write your answer",
-      "clearAnswer": "Clear this answer",
-      "overallLabel": "Message about the whole report (optional)",
-      "overallPlaceholder": "Anything else for the agent",
-      "previewLabel": "Text to paste into the session",
-      "progress": "{answered} of {total} answered",
-      "copy": "Copy answers",
-      "copied": "Copied",
-      "copyFailed": "Copying was refused here. Select the text above and copy it.",
-      "copyHeading": "Answers to the decisions in \"{title}\"",
-      "copyAnswer": "Answer",
-      "copyNoAnswer": "(no answer)",
-      "copyNote": "Message",
-      "copyOverall": "Message about the whole report"
-    }/*__LABELS_END__*/
+    // The English words are put in by build.py from lang/en/labels.json. The report's data may replace any of them through "labels".
+    const DEFAULT_LABELS = /*__LABELS__*/{}/*__LABELS_END__*/
 
     const STATES = {
       done: { emoji: '✅', label: 'stateDone', tone: 'done' },

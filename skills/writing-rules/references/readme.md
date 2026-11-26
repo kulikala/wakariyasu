@@ -4,7 +4,7 @@ A README sits at the top level of a repository and publishes a tool externally. 
 
 If the repository has a document that defines how to write its README, read it first and follow it. For the points it does not define, use the policy for each section below.
 For section names and phrasing that the policy below does not cover, open several READMEs that people maintain in the document's language for tools in the same field, if you can read files or the web. Match the form those READMEs use.
-Use the language pack's `conventions.md` when it defines README section names and wording.
+Use the README part of the document language's `documents.md` when it defines README section names and wording.
 
 ## Sections
 
@@ -35,7 +35,7 @@ Do not include guidance for using old versions that are no longer maintained. Re
 
 Readers who meet phrasing that sounds translated, or unfamiliar words, trust the document less and may misread it. Choose wording that human-maintained technical documents in the document's language use.
 
-- General words: for words for work and things, use words established in technical documents in the document's language. Avoid the phrases that the language pack's `polishing.md` lists, if it lists any. For words that are not on the list, use the same approach.
+- General words: for words for work and things, use words established in technical documents in the document's language. Avoid the phrases that the document language's `documents.md` points to, if it points to any. For words that are not on the list, use the same approach.
 - The tool's words: readers compare the words that appear in the tool's commands, screens, and output with what they see on the screen. Use those words unchanged, and give their meaning where they first appear.
 - The writer's coined names: a name the writer gave during the work does not carry meaning outside the tool. Do not use it. Replace it with a general word that states the content. After replacing, restate the replacement in another language, and check that it matches what the original name stands for.
 - Section names: use names that READMEs in the document's language use. A name translated word for word from another language's heading is not seen in READMEs in the document's language.

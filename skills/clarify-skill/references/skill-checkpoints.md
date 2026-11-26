@@ -273,7 +273,7 @@ For each checkpoint in the table in SKILL.md, this reference describes where to 
 - Attach a purpose to each instruction, and write the range of choices as a range (follow `references/writing-instructions.md` of the `writing-rules` skill, as in the division of work section of SKILL.md).
 - If the environment's documents define words not to use or rewordings of their own, follow those rewordings and use words that express the content.
 - Check whether names coined within the skill are used without being defined. If so, define them or replace them with words that express the content.
-- Apply the language pack's `skills.md` section for clarify-skill, if any. The language packs are in the `lang/` folder of the `writing-rules` skill. How to treat terms defined by the environment's documents is as in the "Handling terms" section of SKILL.md.
+- Apply the section for clarify-skill in the `skills.md` of the language pack for the language the target is written in, if any. The language packs are in the `lang/` folder of the `writing-rules` skill. How to treat terms defined by the environment's documents is as in the "Handling terms" section of SKILL.md.
 - Treat rules for how output is written (rules on style or form of documents the skill produces) as domain rules and keep them as they are.
 
 ## Re-reading after a rewrite

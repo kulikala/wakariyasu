@@ -23,11 +23,12 @@ python3 -B scripts/build.py --diff <name> <diff file> --data-version '<version>'
 | `--diff NAME FILE` | A target made of an existing unified diff. The format can be the `git diff` form (including the `--no-prefix` form without prefixes) or the `diff -u` / `diff -ru` form with only `---` and `+++`. |
 | `--merge-base NAME` | Compare the target whose `--repo` name is `NAME` from the divergence point of `BASE` and `TARGET` to `TARGET` (the same range as `git diff BASE...TARGET`). |
 | `--data-version` | The data version, shown as is in the header. Any form. Required when collecting new data. |
-| `--title` | The page title. If omitted, the title is "Diff review" (or the `defaultTitle` label when `--labels` is given). |
+| `--title` | The page title. If omitted, the title is "Diff review" (or the `defaultTitle` word of the page's language). |
 | `--group-depth N` | The directory depth at which the file list is grouped. Default 2; 0 means no grouping. |
 | `--full-text` | Also include the full text of changed files. |
-| `--lang CODE` | The language of the page, such as `ja`. It sets the `lang` of the page and takes the page's words from that language's pack (see "The page language"). |
-| `--labels FILE` | A JSON file of label words that replace the page's English words (buttons, headings, tooltips, notices and dates). The names are in the `/*__LABELS__*/` block of `scripts/template.html`. Use it only to change words that `--lang` takes from the pack. An unknown name stops the build. |
+| `--lang CODE` | The language of the page, such as `ja`. The language of the page you are producing. It sets the `lang` of the page and takes the page's words from `lang/CODE/labels.json` (see "The page language"). |
+| `--labels FILE` | A JSON file of the page's words (buttons, headings, tooltips, notices and dates). For a language that has no `lang/CODE/labels.json`, it holds every word; for a language that has one, it holds only the words to change. An unknown key, a missing key and a dropped word in braces stop the build. |
+| `--init CODE` | With `-o FILE`: write the English words as a JSON file to translate for the language `CODE`, then stop. |
 | `--artifact` | Write the HTML without the DOCTYPE, html, head and body tags. Add it when handing the page to a destination that wraps pages in a document skeleton on publishing, as Claude artifacts do. Without it, the output is a complete HTML file that opens as is. |
 | `-o` / `--output` | The HTML output path. `-` writes to standard output. |
 | `--json-out` | Write the diff data as JSON. `-` writes to standard output. Can be used together with `-o`. |
@@ -55,7 +56,7 @@ python3 -B scripts/build.py --data <output>.json --title '<title>' -o <output2>.
 
 ## What the viewer can do on the page
 
-Use this to tell the viewer how to use the page when handing it over. The page's own text (buttons, labels) is in English unless a language was chosen (see "The page language").
+Use this to tell the viewer how to use the page when handing it over. The page's own text (buttons, labels) is in English unless `--lang` was given (see "The page language").
 
 - Select a target, and filter by file name or by the text of lines (the filter does not match `@@` lines or the leading `+` and `-`). Clear the entered text with the ✕ button at the right end of the input or with the Esc key.
 - Open and close each file, and open all or close all. If the viewer scrolls partway into a file and closes it by its heading, the page scrolls so that the next file's heading is visible.
@@ -68,13 +69,20 @@ Use this to tell the viewer how to use the page when handing it over. The page's
 
 ## The page language
 
-The page is in English by default. Pass `--lang <code>` with the language of the conversation with the viewer. The script then takes the page's words from the section of `skills/writing-rules/lang/<code>/conventions.md` whose heading names `show-changes` and that holds a JSON block of labels. Japanese has one:
+The page is in English by default. Pass `--lang <code>` with the language of the page you are producing, which is the language the viewer reads. It is not the language of your conversation with the person who asked: a user who instructs you in Japanese and asks for a page for an English-speaking reviewer gets `--lang en` or no `--lang`. The script takes the page's words from `lang/<code>/labels.json` of this skill. Japanese has one:
 
 ```
 python3 -B scripts/build.py --repo <name> <path> <BASE> <TARGET> --data-version '<version>' --lang ja -o <output>.html
 ```
 
-If the pack or its section is missing (for example, when this skill was installed without `writing-rules`), the script says so on standard error and the words stay English. `--labels <file>` overrides single words. The diff itself (file paths, lines, commit subjects) is shown as it is. The language and the words are stored in the JSON that `--json-out` writes, so a rebuild with `--data` keeps them.
+For a language without `lang/<code>/labels.json`, the script stops with a message such as "no labels for fr; run `build.py --init fr -o <file>`". Run that command. It writes the English words as a JSON file. Translate the values into the language of the page and keep the words in braces, such as `{n}` and `{path}`, as they are; the page fills them in. Then pass the file:
+
+```
+python3 -B scripts/build.py --init fr -o <labels>.json
+python3 -B scripts/build.py --repo <name> <path> <BASE> <TARGET> --data-version '<version>' --lang fr --labels <labels>.json -o <output>.html
+```
+
+The script stops on an unknown key, a missing key and a dropped word in braces, and says which. Do not open `scripts/template.html` to look for the words. With a language that has a pack, `--labels <file>` changes single words, and the file holds only those keys. The diff itself (file paths, lines, commit subjects) is shown as it is. The language and the words are stored in the JSON that `--json-out` writes, so a rebuild with `--data` keeps them.
 
 ## Page size
 

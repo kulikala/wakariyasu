@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Print the decision question template with its column names and "(recommended)" filled in for one language.
+
+The words come from lang/<code>/labels.json of the writing-rules skill. A language without a pack gets a
+labels file from --init, translated, and passed with --labels. Uses only the Python standard library.
+"""
+import argparse
+from pathlib import Path
+import sys
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import labels as labels_module  # noqa: E402
+
+
+def mark(word):
+    """The mark after the letter of the recommended option; a space separates it from the letter unless the word starts with a non-ASCII character."""
+    return word if ord(word[0]) > 127 else ' ' + word
+
+
+def render(L):
+    return '\n'.join(['### 1. …', '', '…', '',
+                      f'| {L["colOption"]} | {L["colOptionDetail"]} |', '|---|---|',
+                      f'| A{mark(L["recommended"])} | … |', '| B | … |']) + '\n'
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--lang', metavar='CODE', help='the language of the reply (default: English)')
+    parser.add_argument('--labels', metavar='FILE', help='a labels file: every word for a language without a pack, or single words that replace the pack\'s')
+    parser.add_argument('--init', metavar='CODE', help='write the English labels to translate for this language (with -o)')
+    parser.add_argument('-o', '--output', metavar='FILE', help='where --init writes the file')
+    args = parser.parse_args(argv)
+    try:
+        if args.init:
+            if not args.output:
+                parser.error('--init needs -o FILE')
+            Path(args.output).expanduser().write_text(labels_module.init_text(), encoding='utf-8')
+            return 0
+        override = labels_module.read(args.labels) if args.labels else None
+        sys.stdout.write(render(labels_module.resolve(args.lang, override, 'asking-skeleton')))
+    except labels_module.LabelsError as error:
+        print(f'asking-skeleton: {error}', file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

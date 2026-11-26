@@ -37,7 +37,7 @@ Readers go through a text from the start and do not go back to fill in gaps. The
 - When you use a general word that does not say what it is about or whose it is, give that information in the same sentence. Words everyone knows look already settled to the writer, so they are easy to miss. When a sentence applies a reason, limit, comparison, negation, or contrast to a general word, state what or whose it is first.
 - When you rely on something written in an earlier reply, in another document or file, or in a distant part of the same reply, do not only point to where it is. Restate as much of it as the user needs to understand or decide, at the place where you use it.
 
-The language pack's `polishing.md` may add checks specific to the language you write in.
+The `reply.md` of the language pack for the language of the reply may add checks specific to that language.
 
 ## Use session-status for reports and decision questions
 

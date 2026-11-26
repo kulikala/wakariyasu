@@ -22,11 +22,11 @@ Polish for readability. Do not change the claims, conditions, numbers, or the st
 
 ## Checks for the language you wrote in
 
-Apply the `polishing.md` in the language pack for the language of the text. If the pack has a `styles.md`, choose notation by it. The language packs are in `lang/<code>/` of the `writing-rules` skill's folder. A language with no pack gets only the checks for every language.
+Take the language of the text you wrote, not the language of the conversation, and apply the checks in that language's pack: `reply.md` for a reply to the user, `documents.md` for a document. If `documents.md` has a table of the kinds of text, choose notation by it. The language packs are in `lang/<code>/` of the `writing-rules` skill's folder. A language with no pack gets only the checks for every language.
 
 ## Pass documents for people through a skill that refines prose, if one is available
 
-Documents that people will read or that will be published (READMEs, manuals, specifications, proposals) go through a skill that refines prose in the document's language, after you polish them yourself, if such a skill is among the available skills. A skill of this kind audits and rewrites text that AI wrote, to remove the patterns of AI writing (unnatural metaphors, unclear links between subject and predicate, skewed sentence patterns, decoration and promotional tone) while keeping the meaning and conditions. Choose it by its description: the skill must name the language of the document. If the skill takes the kind of document or how much the readers know, give them. The language pack's `styles.md`, if any, names the kinds of document.
+Documents that people will read or that will be published (READMEs, manuals, specifications, proposals) go through a skill that refines prose in the document's language, after you polish them yourself, if such a skill is among the available skills. A skill of this kind audits and rewrites text that AI wrote, to remove the patterns of AI writing (unnatural metaphors, unclear links between subject and predicate, skewed sentence patterns, decoration and promotional tone) while keeping the meaning and conditions. Choose it by its description: the skill must name the language of the document. If the skill takes the kind of document or how much the readers know, give them. The table of kinds in the document language's `documents.md`, if it has one, names the kinds of document.
 
 Check that the refined text keeps every claim, condition, number, and level of certainty of your text. Where the skill changed the meaning, restore your wording.
 

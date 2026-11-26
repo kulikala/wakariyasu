@@ -82,6 +82,6 @@ Do not write insight sentences until you have read the whole original text. Late
 
 ## Finishing
 
-If the language pack has a `styles.md`, choose the kind of text from it. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill), and the language pack's `skills.md` may add points for this skill. For finishing, follow the "When you finish writing" section of `writing-documents.md`. If the caller says it will do the finishing, leave it to the caller.
+If the `documents.md` of the document language's pack has a table of kinds of text, choose the kind of text from it. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill), and the section for this skill in the `skills.md` of that pack may add points. For finishing, follow the "When you finish writing" section of `writing-documents.md`. If the caller says it will do the finishing, leave it to the caller.
 
 In the reply that presents the document, state where it is saved, the number of insights by kind, how you told the kind of original text, which insights are inferences, and any place where a misrecognized word could not be corrected and the meaning stayed unclear.

@@ -25,7 +25,7 @@ review-for-readers rereads a document meant for people from the viewpoint of a r
 
 ## Checkpoints
 
-Apply every checkpoint. For a checkpoint that does not fit the target, state that it does not apply and why. How to check and how to fix each checkpoint is in `references/skill-checkpoints.md`. Checks specific to a language are in the language pack (see checkpoint 16).
+Apply every checkpoint. For a checkpoint that does not fit the target, state that it does not apply and why. How to check and how to fix each checkpoint is in `references/skill-checkpoints.md`. Checks specific to a language are in the `skills.md` of the pack for the language of the target (see checkpoint 16).
 
 | # | Checkpoint | Condition to meet |
 |---|---|---|

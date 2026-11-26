@@ -25,7 +25,7 @@ Phrase lists are kept per language in `lang/<code>/` of this skill's folder, whe
 - `terms.tsv` holds phrases to avoid. Always replace a phrase used in the listed sense.
 - `terms-caution.tsv` holds phrases that are not wrong, but for which another word is often more natural. Its second column gives candidate words. Replace a phrase only when, in its context, a candidate word is clearer to the reader. When in doubt, keep the phrase.
 
-When you write a document yourself, read the first two columns of the lists for its language before you write, and avoid the phrases from the start. The language pack of the `writing-rules` skill (`lang/<code>/` of that skill's folder) may say more about using the lists for its language. In environments that load wakariyasu's language snippet for a language (AGENTS.snippet.<code>.md), the lists for that language appear there as tables. If those tables are in the conversation, you need not read the lists again. When you use this skill after writing, start from the steps below.
+When you write a document yourself, read the first two columns of the lists for its language before you write, and avoid the phrases from the start. The `documents.md` and `reply.md` of the language pack of the `writing-rules` skill (`lang/<code>/` of that skill's folder) may say more about using the lists for its language. In environments that load wakariyasu's language snippet for a language (AGENTS.snippet.<code>.md), the lists for that language appear there as tables. If those tables are in the conversation, you need not read the lists again. When you use this skill after writing, start from the steps below.
 
 ## Find and replace
 
@@ -46,7 +46,7 @@ The script's options, output and exit code are as follows.
 
 The script searches with regular expressions, so a match is not always used in the listed sense. For each match, check in context whether it is used in the sense given in the first column, and handle it as the "Phrase lists" section above says. If it is used in another sense, keep it.
 
-The lists collect phrases that have been found. They do not hold every phrase that should be replaced. The language pack of the `writing-rules` skill may say how to check words that are not in the lists. Some uses cannot be found with regular expressions. If you notice a listed phrase while rereading the document, replace it when it is used in the listed sense, even if the script did not report it.
+The lists collect phrases that have been found. They do not hold every phrase that should be replaced. The `documents.md` of the language pack of the `writing-rules` skill may say how to check words that are not in the lists. Some uses cannot be found with regular expressions. If you notice a listed phrase while rereading the document, replace it when it is used in the listed sense, even if the script did not report it.
 
 After replacing, run the script again. Keep the places you already checked and decided to keep (a phrase from `terms.tsv` used in another sense, and a phrase from `terms-caution.tsv` you decided not to replace), even if the script reports them again. Line numbers shift as you replace, so tell the reported places apart by the content of the line. Stop when the script reports nothing except the places you decided to keep. If you kept a phrase from `terms.tsv`, the exit code stays 1, so decide that you are done by the reported places, not by the exit code.
 

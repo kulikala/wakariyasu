@@ -13,53 +13,42 @@ Follow rule `writing-to-user.md` ("Write replies that someone who has not follow
 
 ## Structure of the reply
 
-Write the sections in this order. Omit a section, including its heading, if there is nothing to put in it.
+Write the reply in the language of the reply (the language the user reads it in). Before you write, take the filled skeleton for that language and write the reply into it. Use its headings, column names, state words and the "(recommended)" mark as printed; do not translate them and do not look them up elsewhere.
 
-```markdown
-## Current goal
+- If `lang/<code>/reply-template.md` exists in this skill's folder, read it. Codes with a template: the folders under `lang/` that have this file.
+- For a language without one, run `python3 -B scripts/skeleton.py --init <code> -o <file>`. It writes the English words as a JSON file. Translate the values into the language, keeping the words in braces as they are. Then run `python3 -B scripts/skeleton.py --lang <code> --labels <file>` and write the reply into what it prints. The script stops with a one-line message when a key is missing, a key is unknown, or a word in braces was dropped. Use the same file for the page (see `references/status-page.md`).
 
-<What the session as a whole is doing, and why>
+The skeleton has the sections in this order. Omit a section, including its heading, if there is nothing to put in it.
 
-## Latest instruction
+1. The current goal: what the session as a whole is doing, and why.
+2. The latest instruction: what you are working on for the last request, what, and why.
+3. The tasks: one table row per task, with a number, the task, its state, and background and notes.
+4. The latest status: where things stand now, what just finished, what is running, and what comes next.
+5. The decisions needed, if the user has something to decide.
 
-<What you are working on for the last request: what, and why>
+Write the decisions in the form given in `asking.md` ("How to write a decision question") in the `writing-rules` skill; the skeleton has the question form with the words of the language. Decide what to ask by following the "Ask only what the user must decide, in a form they can answer without the history" section of `writing-to-user.md`.
+Put what you chose and went ahead with in the latest status, or in the background and notes of the tasks. Do not put it in the decisions.
+If the request is finished, say so in the latest status and stop. Write points of caution that the results of the work brought to light as sentences, not as questions.
 
-## Tasks
-
-| # | Task | State | Background and notes |
-|---|---|---|---|
-| 1 | … | … | … |
-
-## Latest status
-
-<Where things stand now: what just finished, what is running, and what comes next>
-```
-
-If the user has something to decide, add a "## Decisions needed" section at the end. Write it in the form given in `asking.md` ("How to write a decision question") in the `writing-rules` skill. Decide what to ask by following the "Ask only what the user must decide, in a form they can answer without the history" section of `writing-to-user.md`.
-Put what you chose and went ahead with in "Latest status", or in the background and notes of "Tasks". Do not put it in "Decisions needed".
-If the request is finished, say so in "Latest status" and stop. Write points of caution that the results of the work brought to light as sentences, not as questions.
-
-If there is only one thing to decide and nothing else to report, such as task progress, the reply may consist of the "Decisions needed" section alone.
-
-The headings, column names, and state words in the template above and in the state table below are the English labels. Use them as written in a reply in English. In a reply in another language, use the names that the `conventions.md` of that language's pack defines. If that pack has no `conventions.md`, write the labels in the reply's language. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
+If there is only one thing to decide and nothing else to report, such as task progress, the reply may consist of the decisions section alone.
 
 ## Notation of the task state
 
-Write the state column as an emoji plus a state word. The seven states below are fixed. When one applies, use its emoji with its state word. In an English reply, use the exact pair from the table. The emoji are the same in every language. In a reply in another language, write the state word as described above.
+Write the state column as an emoji plus the state word the skeleton prints for that emoji. The seven states below are fixed. When one applies, use its emoji with the printed word. The emoji are the same in every language.
 
-| State column | When to use |
+| Emoji | When to use |
 |---|---|
-| ✅ Done | Finished, and the result is verified |
-| 🚧 In progress | You are working on it now |
-| ⏳ Waiting on a process | You are waiting for something that has left your hands to finish, such as a background process, a subagent or CI |
-| 🙋 Waiting for your decision | You cannot proceed until the user decides. Add the number of the question in "Decisions needed", for example 🙋 Waiting for your decision (1) |
-| 📝 Not started | The work is decided but not begun |
-| ❗ Problem | It failed, or the result differs from what was expected and work has stopped. Write what happened in the background and notes |
-| ⛔ Cancelled | It was decided not to do it. Write who decided in the background and notes |
+| ✅ | Finished, and the result is verified |
+| 🚧 | You are working on it now |
+| ⏳ | You are waiting for something that has left your hands to finish, such as a background process, a subagent or CI |
+| 🙋 | You cannot proceed until the user decides. Add the number of the question in the decisions, written as the skeleton prints it |
+| 📝 | The work is decided but not begun |
+| ❗ | It failed, or the result differs from what was expected and work has stopped. Write what happened in the background and notes |
+| ⛔ | It was decided not to do it. Write who decided in the background and notes |
 
 If the user has asked you not to use emoji, write only the state word.
 
-For a state that fits none of the seven, you may make a new pair of an emoji and a word that expresses the state. Do not use the seven emoji for any other meaning.
+For a state that fits none of the seven, you may make a new pair of an emoji and a word in the language of the reply that expresses the state. Do not use the seven emoji for any other meaning.
 
 The emoji in the state column carry meaning, so keep them when polishing.
 

@@ -1,18 +1,41 @@
 #!/bin/sh
-# Build AGENTS.snippet.md (for agents other than Claude Code) from the rules and asking.md, and one AGENTS.snippet.<code>.md per language pack, with that language's phrase lists of check-terms.
-# dev/build --check fails if a snippet differs from the sources (it does not rewrite the files).
+# Build, from the sources:
+#   - the decision question template of each language, skills/writing-rules/lang/<code>/asking-template.md (from labels.json)
+#   - the status report skeleton of each language, skills/session-status/lang/<code>/reply-template.md (from labels.json)
+#   - AGENTS.snippet.md (for agents other than Claude Code), from the rules and asking.md
+#   - one AGENTS.snippet.<code>.md per language pack: reply.md, documents.md, skills.md, the decision question template, and the phrase lists of check-terms
+# dev/build --check fails if a built file differs from the sources (it does not rewrite the files). Building the templates runs python3.
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 W="$ROOT/skills/writing-rules"
+S="$ROOT/skills/session-status"
 TMP="$(mktemp -d)"
 trap 'rm -r -- "$TMP"' EXIT
+
+# The templates: where each is built from labels.json, and where it is kept
+for d in "$W"/lang/*/; do
+    code="$(basename "$d")"
+    [ -e "$d/labels.json" ] && python3 -B "$W/scripts/asking-skeleton" --lang "$code" > "$TMP/asking-template.$code.md"
+    [ -e "$S/lang/$code/labels.json" ] && python3 -B "$S/scripts/skeleton.py" --lang "$code" > "$TMP/reply-template.$code.md"
+done
+for d in "$S"/lang/*/; do
+    code="$(basename "$d")"
+    [ -e "$TMP/reply-template.$code.md" ] || { [ -e "$d/labels.json" ] && python3 -B "$S/scripts/skeleton.py" --lang "$code" > "$TMP/reply-template.$code.md"; }
+done
+template_target() {
+    case "$1" in
+        asking-template.*) c="${1#asking-template.}"; echo "$W/lang/${c%.md}/asking-template.md" ;;
+        reply-template.*) c="${1#reply-template.}"; echo "$S/lang/${c%.md}/reply-template.md" ;;
+    esac
+}
 
 {
     printf '<!-- wakariyasu:AGENTS.snippet.md -->\n'
     printf '\n# wakariyasu: file locations and language packs\n\n'
     printf 'This text holds the rules (writing-to-user.md, writing-documents.md, polishing.md) and asking.md. Each file starts after a comment line with its name. Files in this text need not be opened again. Other files are in the folders of the wakariyasu skills.\n\n'
-    printf 'What to add when writing in a particular language is in that language'"'"'s pack. A pack pasted next to this text, as AGENTS.snippet.<code>.md, starts with a comment line naming it. Read the pack of a language before you write a reply or a document in it. A language without a pack follows the rules alone.\n\n'
+    printf 'What to add when writing in a particular language is in that language'"'"'s pack. A pack pasted next to this text, as AGENTS.snippet.<code>.md, starts with a comment line naming it. It holds the checks for a reply to the user (reply.md), the checks and notation for a document (documents.md), additions for the wakariyasu skills (skills.md), the decision question template with that language'"'"'s column names, and phrase lists where the language has them.\n\n'
+    printf 'Choose the pack for each thing you write by the language of that thing, not by the language of the conversation. A user who writes to you in Japanese and asks for an English README gets a reply by the Japanese pack and a README by the English pack; one turn can need two packs. For a reply use reply.md, and for a document use documents.md. A language without a pack follows the rules alone; write the column names and the "(recommended)" mark of a decision question by translating those of the template in asking.md.\n\n'
     printf -- '- References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them\n'
     printf -- '- Language packs: lang/<code>/ in the folder of the writing-rules skill\n'
     printf -- '- The check-terms skill (a checker, and phrase lists per language in its lang/ folder): its own skill folder\n'
@@ -31,11 +54,17 @@ for d in "$W"/lang/*/; do
     {
         printf '<!-- wakariyasu:%s -->\n' "$name"
         printf '\n# wakariyasu: the language pack for %s\n\n' "$code"
-        printf 'Read this pack, together with the rules in AGENTS.snippet.md, before you write a reply or a document in this language. Each file starts after a comment line with its name.\n'
-        for f in "$d"*.md; do
-            printf '\n<!-- lang/%s/%s -->\n\n' "$code" "$(basename "$f")"
-            cat "$f"
+        printf 'Use this pack, together with the rules in AGENTS.snippet.md, for what you write in this language, whatever language the conversation is in: reply.md for a reply to the user, documents.md for a document, skills.md for a wakariyasu skill. Each file starts after a comment line with its name.\n'
+        for f in reply.md documents.md skills.md; do
+            [ -e "$d$f" ] || continue
+            printf '\n<!-- lang/%s/%s -->\n\n' "$code" "$f"
+            cat "$d$f"
         done
+        if [ -e "$TMP/asking-template.$code.md" ]; then
+            printf '\n<!-- lang/%s/asking-template.md -->\n\n' "$code"
+            printf 'Write a decision question in this form in this language, with these column names and this mark as printed.\n\n'
+            cat "$TMP/asking-template.$code.md"
+        fi
         if [ -d "$ROOT/skills/check-terms/lang/$code" ]; then
             printf '\n'
             sh "$ROOT/skills/check-terms/scripts/terms-table" "$code"
@@ -50,6 +79,15 @@ if [ "${1:-}" = "--check" ]; then
     done
     for f in "$ROOT"/AGENTS.snippet*.md; do
         [ -e "$TMP/$(basename "$f")" ] || { echo "no source for: $(basename "$f")" >&2; exit 1; }
+    done
+    for f in "$TMP"/asking-template.*.md "$TMP"/reply-template.*.md; do
+        [ -e "$f" ] || continue
+        cmp -s "$f" "$(template_target "$(basename "$f")")" || { echo "differs from labels.json: $(template_target "$(basename "$f")")" >&2; exit 1; }
+    done
+    for f in "$W"/lang/*/asking-template.md "$S"/lang/*/reply-template.md; do
+        [ -e "$f" ] || continue
+        code="$(basename "$(dirname "$f")")"
+        [ -e "$TMP/$(basename "$f" .md).$code.md" ] || { echo "no labels.json for: ${f#"$ROOT"/}" >&2; exit 1; }
     done
     # No other skill holds a file with the same name as a rule, a reference, a phrase list or a check-terms script
     ok=0
@@ -70,4 +108,9 @@ done
 for f in "$TMP"/AGENTS.snippet*.md; do
     cp "$f" "$ROOT/$(basename "$f")"
     echo "built: $(basename "$f")"
+done
+for f in "$TMP"/asking-template.*.md "$TMP"/reply-template.*.md; do
+    [ -e "$f" ] || continue
+    cp "$f" "$(template_target "$(basename "$f")")"
+    echo "built: $(template_target "$(basename "$f")" | sed "s|^$ROOT/||")"
 done

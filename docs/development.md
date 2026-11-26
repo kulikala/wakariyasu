@@ -10,20 +10,24 @@ skills/<name>/references/        References read only by that skill
 skills/<name>/scripts/           Scripts that skill runs
 skills/writing-rules/rules/      Rules (writing-to-user, writing-documents, polishing)
 skills/writing-rules/references/ References the rules point to (questions for a decision, how to write instructions, how to write a README, how to write a changelog)
-skills/writing-rules/lang/<language>/ Per-language additions (language packs; ja is Japanese, en is English)
+skills/writing-rules/lang/<language>/ Per-language additions (language packs; ja is Japanese, en is English): reply.md, documents.md, skills.md, and for tools labels.json and the generated asking-template.md
+skills/writing-rules/scripts/    asking-skeleton (prints the decision question template of a language, or starts the labels file of a new one)
+skills/session-status/lang/<code>/ labels.json (the words of the status page and report) and the generated reply-template.md
+skills/show-changes/lang/<code>/ labels.json (the words of the diff page)
+skills/*/scripts/labels.py       Reads, checks and starts a labels file; the same file in session-status, show-changes and writing-rules
 skills/check-terms/lang/<code>/  For each language, the list of phrases the language does not use (terms.tsv) and the list of phrases to check in context (terms-caution.tsv)
 skills/check-terms/scripts/      check-terms (searches documents for phrases) and terms-table (turns the lists into the table put into the hook and the language snippets)
 tests/lang/<code>/terms-cases.txt   Examples that check-terms matches (deny) and examples it does not (allow)
 tests/lang/<code>/caution-cases.txt Examples that check-terms prints marked "(check in context)" (flag) and examples it does not (allow)
 tests/session-status-report.json A fictional report used by the test that builds the session-status page
-hooks/                           Hooks that load the rules at the start of a session and tell where the language packs are (load-rules.sh, lang-index.sh)
+hooks/                           Hooks that load the rules at the start of a session and give the index of language packs and filled templates (load-rules.sh, lang-index.sh)
 AGENTS.snippet.md                The body of the rules to paste into agents other than Claude Code (made by dev/build)
-AGENTS.snippet.<code>.md         The language pack of one language, with its phrase lists, to paste after AGENTS.snippet.md (made by dev/build)
-dev/build                        Joins the rules and asking.md into AGENTS.snippet.md, and each language pack with its phrase lists into AGENTS.snippet.<code>.md
+AGENTS.snippet.<code>.md         The language pack of one language (reply.md, documents.md, skills.md, the decision question template, the phrase lists), to paste after AGENTS.snippet.md (made by dev/build)
+dev/build                        Prints asking-template.md and reply-template.md from labels.json, joins the rules and asking.md into AGENTS.snippet.md, and each language pack with its template and phrase lists into AGENTS.snippet.<code>.md
 dev/test                         Checks the repository's rules
 dev/test-show-changes.py         Test to run after changing build.py and template.html of show-changes (docs/show-changes.md)
 dev/test-show-changes-page.mjs   Test that opens the show-changes page in a browser and tries operating it
-dev/test-session-status.py       Test to run after changing build.py and template.html that build the session-status page, and the page wording in the Japanese language pack
+dev/test-session-status.py       Test to run after changing build.py, template.html or a labels.json of session-status (dev/test runs it)
 .github/workflows/test.yml       GitHub Actions configuration that runs dev/test on every push and pull request
 evals/                           Cases for claude plugin eval that measure whether skills are called
 docs/                            Development guides
@@ -31,11 +35,11 @@ docs/agreements.md               Constraints agreed with the author (wording and
 CHANGELOG.md                     Changes for each version (CHANGELOG.ja.md is the Japanese version)
 ```
 
-The hooks, `dev/build`, `check-terms` and `terms-table` run with only `sh` and standard commands. `dev/test` also uses `git`. No other runtime such as Python is needed.
+The hooks, `check-terms` and `terms-table` run with only `sh` and standard commands. `dev/test` also uses `git`. `dev/build` and `dev/test` also run `python3`, because the templates are printed by Python scripts.
 
 `build.py`, which builds the page of the skill `show-changes`, runs on the Python 3 standard library. The test after changing `build.py` also uses node and Chrome. The steps for changing it are in [How to modify show-changes](show-changes.md).
 
-`build.py`, which builds the page of the skill `session-status`, also runs on the Python 3 standard library. After changing `build.py`, `template.html` or the page wording in the Japanese language pack, run `python3 dev/test-session-status.py`.
+`build.py`, which builds the page of the skill `session-status`, and the scripts that print templates (`skeleton.py`, `asking-skeleton`) also run on the Python 3 standard library. After changing `build.py`, `template.html` or a `labels.json`, run `python3 dev/test-session-status.py` (`dev/test` runs it too).
 
 ## Changing the body
 
@@ -57,12 +61,23 @@ A language pack file has one of the following fixed names. A file with nothing t
 
 | File | Contents |
 |---|---|
-| `polishing.md` | Checks added when polishing writing in that language. It also points to the list of phrases not to use and to external proofreading skills |
-| `styles.md` | How to choose notation and style for each kind of writing |
-| `conventions.md` | Names familiar to readers of that language (README section names, changelog subheadings, session-status headings and state words, column names of questions for a decision) |
+| `reply.md` | The register of replies to the user and the checks added when polishing a reply. Kept small, because the agent reads it before most replies |
+| `documents.md` | The table of kinds of text and the choice of notation, the checks added when polishing a document, and the names readers expect (README sections, changelog subheadings). It also points to the list of phrases not to use and to external proofreading skills |
 | `skills.md` | What to add for each skill (written in a section named after the skill) |
+| `labels.json` | Words for tools only: the column names of decision questions and "(recommended)". The agent does not read it |
+| `asking-template.md` | The decision question template with those words filled in. `dev/build` writes it; do not edit it by hand |
 
-There is no setting for the user to switch languages. The hook outputs only the bodies of the rules and `asking.md`, and the list of language packs (language codes and folder locations). If a language pack exists for the language of the reply or document being written, the agent reads the files in that folder before writing. To add a language, create a folder named with the language code under `lang/` and place files with the names above. The hooks, `dev/build` and `dev/test` count the folders under `lang/`, so they need no rewriting.
+The fixed words of the two pages and of the status report are in the `lang/<code>/` folder of the skill that renders them: `labels.json` (every word of the page, with the same keys in every language, and with the English words in `lang/en/labels.json`), and for `session-status` also `reply-template.md`, the status report with its headings, column names and state words filled in (written by `dev/build`). The decision question words are in both `skills/writing-rules/lang/<code>/labels.json` and `skills/session-status/lang/<code>/labels.json`, because the page shows them; `dev/test` checks that the two agree.
+
+There is no setting for the user to switch languages. A language pack is chosen for each thing the agent writes, by the language of that thing and not by the language of the conversation, so one turn can use two packs. The hook outputs the bodies of the rules and `asking.md`, and an index: the language packs (language codes, folder locations and file names), how to choose one, and where the filled templates are. It does not output the contents of a pack. Before writing a reply or a document, the agent reads `reply.md` or `documents.md` of the pack for the language of that text (and the section of `skills.md` for a skill it uses). To add a language, create a folder named with the language code under `lang/` and place files with the names above. The hooks, `dev/build` and `dev/test` count the folders under `lang/`, so they need no rewriting.
+
+Headings, column names, state words and the words of the pages are not looked up by the agent. Tools fill them in:
+
+- `build.py` of `session-status` and `show-changes` read `lang/<code>/labels.json` of their own skill, and `lang/en/labels.json` supplies the English words (`build.py` puts them into the template, which holds only an empty block).
+- `skeleton.py` (session-status) and `asking-skeleton` (writing-rules) print the filled template for a language.
+- For a language without a pack, `--init <code> -o <file>` writes the English words, the agent translates the values, and `--labels <file>` passes them to the same scripts. The scripts stop with a one-line message on an unknown key, a missing key and a dropped placeholder (`{n}`), and with "no labels for <code>; run `<script> --init <code> -o <file>`" when no file was given. With a language that has a pack, `--labels` changes single words.
+
+After changing a `labels.json`, run `dev/build` to rewrite the templates and the snippets, and `python3 dev/test-session-status.py` (and `dev/test-show-changes.py`, see [How to modify show-changes](show-changes.md)).
 
 ## Checking
 
@@ -76,8 +91,10 @@ dev/test
 - The version is the same in `plugin.json`, `marketplace.json` and `CHANGELOG.md`.
 - The marketplace (`marketplace.json`) lists only one plugin.
 - For each skill, `SKILL.md` starts with frontmatter and has a `name` equal to the folder name and a `description`.
-- The hook output contains the heading lines of the rules and `asking.md` and the folder location of each language pack, and does not contain the contents of the language packs.
-- Language pack files have one of the fixed names.
+- The hook output contains the heading lines of the rules and `asking.md`, the folder location of each language pack, and the index of how to choose a pack and where the filled templates are, and does not contain the contents of the language packs.
+- Language pack files have one of the fixed names, and every language folder with words for tools has a `labels.json`.
+- `asking-template.md` and `reply-template.md` match what `labels.json` prints (`dev/build --check`), the copies of `labels.py` are the same file, the decision question words agree between `writing-rules` and `session-status`, `asking.md` uses the English words, and no agent-read file sends the agent to a template or a markdown table for words (`conventions.md`, `pack_labels`, `DEFAULT_LABELS`).
+- `dev/test-session-status.py` passes: the labels of each language, the words of a language without a pack, and the skeleton.
 - When a rule, reference, language pack or skill refers by name to a section of another rule or reference (in English bodies in the form ``the "<heading>" section of `x.md` ``, in Japanese bodies in the form ``（`x.md`）の「<見出し>」の節``), the named heading exists in the rule or reference it refers to.
 - The files in the repository that the README links to exist.
 - `check-terms` matches and does not match as the examples in `tests/lang/<code>/terms-cases.txt` say, for each language.

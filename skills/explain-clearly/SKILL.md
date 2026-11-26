@@ -45,4 +45,4 @@ Follow rule `writing-to-user.md` ("Write replies that someone who has not follow
 ## Check before sending
 
 - Read the restated text from the start, in order, as someone who has not read your last reply. If you had to go back and reread any part, fix it.
-- Polish it following rule `polishing.md` ("Polish what you wrote before handing it over") in the `writing-rules` skill. If you are unsure about notation or register and the language pack has a `styles.md`, read it. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
+- Polish it following rule `polishing.md` ("Polish what you wrote before handing it over") in the `writing-rules` skill. If you are unsure about the register of the reply, read the `reply.md` of the language pack for the reply's language. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).

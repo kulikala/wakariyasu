@@ -2,6 +2,8 @@
 
 The page of the skill `show-changes` is built by `build.py` in `skills/show-changes/scripts/` (the script that collects the diff and builds the page), which embeds the data into `template.html` (the page template).
 
+The page's fixed words are not in the template. `template.html` holds an empty `/*__LABELS__*/{}/*__LABELS_END__*/` block, and `build.py` fills it with the English words of `lang/en/labels.json` of the skill; the words of another language are stored in the page's data under `labels`. To add or change a word, change `lang/en/labels.json` and the `labels.json` of every other language (the test checks that the keys and the words in braces agree), and use the word in the template as `T('<key>')`.
+
 ## Testing after a change
 
 ```sh

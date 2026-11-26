@@ -31,7 +31,7 @@ for d in skills/*/; do
     grep -q '^description: .' "$s/SKILL.md" || ng "$s/SKILL.md has no description"
 done
 
-# 5. The hook prints the rules and asking.md, and gives only the location of each language pack, not its content
+# 5. The hook prints the rules and asking.md, and gives only the location of each language pack and how to choose one, not the content of the packs
 out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh failed"
 for r in writing-to-user writing-documents polishing; do
     printf '%s\n' "$out" | grep -qxF "$(head -1 "skills/writing-rules/rules/$r.md")" || ng "the hook output lacks skills/writing-rules/rules/$r.md"
@@ -41,6 +41,9 @@ for f in readme writing-instructions changelog; do
     [ -e "skills/writing-rules/references/$f.md" ] || ng "skills/writing-rules/references/$f.md, whose location the hook gives, is missing"
 done
 printf '%s\n' "$out" | grep -q "$ROOT/skills/writing-rules/references/" || ng "the hook output lacks the location of the references"
+printf '%s\n' "$out" | grep -q 'not by the language of the conversation' || ng "the hook output does not say that a pack is chosen by the language of what is written"
+printf '%s\n' "$out" | grep -q '^## Fixed words$' || ng "the hook output lacks the Fixed words section"
+printf '%s\n' "$out" | sed -n '/^# wakariyasu: file locations/,$p' | grep -q '|---|' && ng "the index of the hook output holds a table (labels reach the agent only through templates and tools)"
 for d in skills/writing-rules/lang/*/; do
     code="$(basename "$d")"
     printf '%s\n' "$out" | grep -q "^- $code: $ROOT/${d%/}/ (" || ng "the hook output lacks the location of language pack $code"
@@ -49,13 +52,42 @@ for d in skills/writing-rules/lang/*/; do
     done
 done
 
-# 5b. Each language pack file has one of the fixed names
+# 5b. Each language pack file has one of the fixed names. labels.json and the templates are for tools and for printing, so no skill tells the agent to look words up in them.
 for f in skills/writing-rules/lang/*/*; do
     case "$(basename "$f")" in
-        polishing.md | styles.md | conventions.md | skills.md) ;;
+        reply.md | documents.md | skills.md | labels.json | asking-template.md) ;;
         *) ng "a language pack has a file without a fixed name: $f" ;;
     esac
 done
+for f in skills/session-status/lang/*/* skills/show-changes/lang/*/*; do
+    case "$(basename "$f")" in
+        labels.json) ;;
+        reply-template.md) case "$f" in skills/session-status/*) ;; *) ng "only session-status has reply-template.md: $f" ;; esac ;;
+        *) ng "a skill's lang folder has a file without a fixed name: $f" ;;
+    esac
+done
+for d in skills/writing-rules/lang/*/ skills/session-status/lang/*/ skills/show-changes/lang/*/; do
+    [ -e "${d}labels.json" ] || ng "$d has no labels.json"
+done
+
+# 5c. Words for tools are in labels.json only. Nothing the agent reads sends it to a template or a markdown table for them.
+grep -rnE 'conventions\.md|pack_labels|DEFAULT_LABELS|__LABELS__' skills/*/SKILL.md skills/*/references skills/writing-rules/rules skills/writing-rules/lang/*/*.md hooks README.md README.ja.md >&2 &&
+    ng "an agent-read file or a README mentions the old label lookup (conventions.md, pack_labels, DEFAULT_LABELS, __LABELS__)"
+# labels.py is the same file in every skill that has it
+cmp -s skills/session-status/scripts/labels.py skills/show-changes/scripts/labels.py && cmp -s skills/session-status/scripts/labels.py skills/writing-rules/scripts/labels.py ||
+    ng "labels.py differs between session-status, show-changes and writing-rules (it must be the same file)"
+# The words of a decision question are the same in writing-rules and in session-status, and asking.md shows the English ones
+for d in skills/writing-rules/lang/*/; do
+    code="$(basename "$d")"
+    for k in colOption colOptionDetail recommended; do
+        a="$(grep "\"$k\":" "$d/labels.json" | sed 's/,$//')"; b="$(grep "\"$k\":" "skills/session-status/lang/$code/labels.json" 2>/dev/null | sed 's/,$//')"
+        [ "$a" = "$b" ] || ng "[$code] $k differs between writing-rules and session-status labels.json"
+    done
+done
+en_opt="$(sed -n 's/.*"colOption": "\(.*\)",$/\1/p' skills/writing-rules/lang/en/labels.json)"
+en_detail="$(sed -n 's/.*"colOptionDetail": "\(.*\)",$/\1/p' skills/writing-rules/lang/en/labels.json)"
+grep -qF "| $en_opt | $en_detail |" skills/writing-rules/references/asking.md || ng "the table of asking.md does not use the English words of labels.json"
+python3 -B dev/test-session-status.py >/dev/null || ng "dev/test-session-status.py failed (run it to see which check)"
 
 # 6. When a rule, reference, language pack or skill names a section of a rule or reference, the named heading exists there.
 # English text names it as the "<heading>" section of `x.md`; Japanese text as `x.md`）の「<heading>」の節

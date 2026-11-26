@@ -108,6 +108,6 @@ Log output is a document that records the work itself, so it may be in time orde
 
 ## Finishing
 
-If the language pack has a `styles.md`, choose the kind of text from it. Except for log output, use `article` if none of the kinds fits. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill). For finishing, follow the "When you finish writing" section of `writing-documents.md`. Treat log output as a work log under the "How the history of the work is handled depends on the kind of text" section of `writing-documents.md`.
+If the `documents.md` of the document language's pack has a table of kinds of text, choose the kind of text from it. Except for log output, use `article` if none of the kinds fits. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill). For finishing, follow the "When you finish writing" section of `writing-documents.md`. Treat log output as a work log under the "How the history of the work is handled depends on the kind of text" section of `writing-documents.md`.
 
 In the reply that presents the document, state the mode you chose and the result of deciding whether the content changes over time. If no mode applied and you built a structure, say so and state the structure you built. Also state the records you based it on, so that the user can tell whether you read the original conversation record or took from a summary.

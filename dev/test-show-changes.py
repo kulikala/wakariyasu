@@ -17,6 +17,7 @@ sys.path.insert(0, str(SCRIPTS))
 # Do not leave build.py's cache (__pycache__) in the repository.
 sys.dont_write_bytecode = True
 import build  # noqa: E402
+import labels as labels_module  # noqa: E402
 
 
 def snapshot(path):
@@ -106,12 +107,9 @@ def main():
     # English is the default: the page says "Diff review" and carries no labels.
     english = command([*cli, '--data-version', 'for-check', '--json-out', '-'])
     assert json.loads(english)['title'] == 'Diff review' and 'labels' not in json.loads(english) and 'lang' not in json.loads(english)
-    # Japanese comes from the language pack: --lang ja and --labels with the pack's words.
-    conventions = (DEV.parent / 'skills' / 'writing-rules' / 'lang' / 'ja' / 'conventions.md').read_text(encoding='utf-8')
-    block = re.search(r'## show-changes のページ.*?```json\n(.*?)```', conventions, re.S)
-    assert block, 'the ja pack has no show-changes page labels'
-    ja_labels = json.loads(block.group(1))
-    template_labels = build.default_labels((SCRIPTS / 'template.html').read_text(encoding='utf-8'))
+    # Japanese comes from the pack lang/ja/labels.json of the skill: --lang ja alone takes its words.
+    ja_labels = labels_module.read(SCRIPTS.parent / 'lang' / 'ja' / 'labels.json')
+    template_labels = labels_module.english()
     assert set(ja_labels) == set(template_labels), sorted(set(ja_labels) ^ set(template_labels))
     for key, english_word in template_labels.items():
         placeholders = set(re.findall(r'\{\w+\}', ja_labels[key]))
@@ -119,6 +117,8 @@ def main():
             assert placeholders <= {'{y}', '{m}', '{d}', '{mm}', '{dd}', '{w}'}, key
         else:
             assert placeholders == set(re.findall(r'\{\w+\}', english_word)), key
+    assert json.loads(command([*cli, '--data-version', 'for-check', '--lang', 'ja', '--json-out', '-']))['labels'] == ja_labels
+    assert json.loads(command([*cli, '--data-version', 'for-check', '--lang', 'en', '--json-out', '-'])).get('labels') is None
     with tempfile.TemporaryDirectory(prefix='labels-') as label_folder:
         label_file = Path(label_folder) / 'ja.json'
         label_file.write_text(json.dumps(ja_labels, ensure_ascii=False), encoding='utf-8')
@@ -138,9 +138,27 @@ def main():
         override = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'build.py'), '--data', '-', '-o', '-', '--lang', 'ja', '--labels', str(label_file)], input=english, text=True, capture_output=True)
         assert override.returncode == 0 and 'const DATA' in override.stdout and json.loads(re.search(r'const DATA = (.*?);?\n', override.stdout).group(1))['lang'] == 'ja'
         bad_file = Path(label_folder) / 'bad.json'
-        bad_file.write_text('{"copyButton": "x"}', encoding='utf-8')
-        bad = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'build.py'), '--data', '-', '-o', '-', '--labels', str(bad_file)], input=english, text=True, capture_output=True)
-        assert bad.returncode == 2 and 'unknown labels' in bad.stderr and 'Traceback' not in bad.stderr
+        build_py = [sys.executable, '-B', str(SCRIPTS / 'build.py')]
+        for name, content, message in (('an unknown key', '{"copyButton": "x"}', 'unknown label keys'),
+                                       ('a dropped placeholder', json.dumps({'filesMany': 'files'}), 'must keep the placeholders')):
+            bad_file.write_text(content, encoding='utf-8')
+            bad = subprocess.run([*build_py, '--data', '-', '-o', '-', '--labels', str(bad_file)], input=english, text=True, capture_output=True)
+            assert bad.returncode == 2 and message in bad.stderr and 'Traceback' not in bad.stderr, name
+        # A language without a pack: --init writes the English words, and --labels with every word builds the page.
+        refused = subprocess.run([*build_py, '--data', '-', '-o', '-', '--lang', 'fr'], input=english, text=True, capture_output=True)
+        assert refused.returncode == 2 and 'no labels for fr; run `build.py --init fr -o <file>`' in refused.stderr and 'Traceback' not in refused.stderr
+        started = Path(label_folder) / 'fr.json'
+        init = subprocess.run([*build_py, '--init', 'fr', '-o', str(started)])
+        assert init.returncode == 0 and json.loads(started.read_text(encoding='utf-8')) == template_labels
+        started.write_text(json.dumps({**template_labels, 'sidebar': 'Fichiers modifiés'}, ensure_ascii=False), encoding='utf-8')
+        french = subprocess.run([*build_py, '--data', '-', '-o', '-', '--lang', 'fr', '--labels', str(started)], input=english, text=True, capture_output=True)
+        fr_data = json.loads(re.search(r'const DATA = (.*?);?\n', french.stdout).group(1))
+        assert french.returncode == 0 and fr_data['lang'] == 'fr' and fr_data['labels']['sidebar'] == 'Fichiers modifiés'
+        started.write_text(json.dumps({k: v for k, v in template_labels.items() if k != 'sidebar'}), encoding='utf-8')
+        partial = subprocess.run([*build_py, '--data', '-', '-o', '-', '--lang', 'fr', '--labels', str(started)], input=english, text=True, capture_output=True)
+        assert partial.returncode == 2 and 'missing label keys: sidebar' in partial.stderr
+        page_en = command(['--data', '-', '-o', '-'], english)
+        assert page_en.count('"sidebar": "Changed files"') + page_en.count('"sidebar":"Changed files"') == 1
     missing = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'build.py'), *cli, '--json-out', '-'], capture_output=True, text=True)
     assert missing.returncode == 2 and '--data-version' in missing.stderr
     assert build.numstats(b'2\t1\t\0old\tname\0new\nname\0' + b'1\t0\told\tname\0') == {'new\nname': (b'2', b'1'), 'old\tname': (b'1', b'0')}

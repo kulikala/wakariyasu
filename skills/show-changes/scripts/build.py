@@ -13,7 +13,12 @@ from pathlib import Path
 import subprocess
 import sys
 
+sys.dont_write_bytecode = True
+import labels as labels_module  # noqa: E402
+
 SCHEMA_VERSION = 1
+# Dates offer more words than a language needs, so these labels may leave some out.
+LOOSE_LABELS = {'dayFormat': {'{y}', '{m}', '{d}', '{mm}', '{dd}', '{w}'}, 'monthDay': {'{m}', '{d}', '{mm}', '{dd}'}}
 UNREADABLE = 'Bytes that are not valid UTF-8 are shown as \\xNN.'
 NOTICE_BINARY = 'This is a binary file.'
 NOTICE_NO_DIFF = 'There is no difference in content.'
@@ -440,16 +445,8 @@ def collect_patch(name, location, include_full):
                 base='', target='', commits=[], files=files)
 
 
-def default_labels(template):
-    """Read the label names and their English words from the template."""
-    match = re.search(r'/\*__LABELS__\*/(\{.*?\})/\*__LABELS_END__\*/', template, re.S)
-    if not match:
-        raise ValueError('The template has no /*__LABELS__*/ block')
-    return json.loads(match.group(1))
-
-
-def validate(data, labels=None):
-    """Check the data. Pass the template's default labels to also check the names in data["labels"]."""
+def validate(data):
+    """Check the data, including the words in data["labels"]."""
     if not isinstance(data, dict) or data.get('schema_version') != SCHEMA_VERSION:
         raise ValueError(f'schema_version of the JSON must be {SCHEMA_VERSION}')
     for key in ('title', 'data_version', 'generated_at'):
@@ -467,8 +464,7 @@ def validate(data, labels=None):
     for key, value in given.items():
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f'labels.{key} must be a non-empty string')
-    if labels is not None and set(given) - set(labels):
-        raise ValueError(f'unknown labels: {", ".join(sorted(set(given) - set(labels)))}')
+    labels_module.check(given, complete=False, loose=LOOSE_LABELS)
     names = set()
     for repo in data['sources']:
         if not isinstance(repo, dict):
@@ -511,11 +507,15 @@ def validate(data, labels=None):
 
 
 def make_html(data, template, artifact=False):
-    data = validate(data, default_labels(template))
+    data = validate(data)
     payload = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
     if template.count('/*__DATA__*/null') != 1:
         raise ValueError('The template must contain the data placeholder exactly once')
     before, after = template.split('/*__DATA__*/null')
+    english = json.dumps(labels_module.english(), ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
+    if template.count('/*__LABELS__*/{}/*__LABELS_END__*/') != 1:
+        raise ValueError('The template must contain /*__LABELS__*/{}/*__LABELS_END__*/ exactly once')
+    before, after = before.replace('/*__LABELS__*/{}/*__LABELS_END__*/', english), after.replace('/*__LABELS__*/{}/*__LABELS_END__*/', english)
     page = (before.replace('__TITLE__', html.escape(data['title'])) + payload
             + after.replace('__TITLE__', html.escape(data['title'])))
     return artifact_body(page) if artifact else page
@@ -568,33 +568,20 @@ def write(filename, content):
         Path(filename).expanduser().write_text(content, encoding='utf-8')
 
 
-def pack_labels(skill, lang):
-    """Read the page labels for a language from the writing-rules language pack.
+def apply_language(data, lang, override):
+    """Record the page language and its words (--data keeps the JSON's own when neither is given).
 
-    The pack's conventions.md has a section whose heading names the skill and holds a JSON block of labels.
-    Returns None when the pack, the section or the block is missing (for example, when this skill was
-    installed without writing-rules), so the page keeps its English words.
+    The words are the pack of the language (or English) with the words of --labels over them; for a
+    language without a pack, --labels holds every word. English words are not stored.
     """
-    path = Path(__file__).resolve().parents[2] / 'writing-rules' / 'lang' / lang / 'conventions.md'
-    if not lang or not path.is_file():
-        return None
-    for section in re.split(r'(?m)^(?=## )', path.read_text(encoding='utf-8')):
-        heading = section.split('\n', 1)[0]
-        block = re.search(r'```json\n(.*?)```', section, re.S)
-        if heading.startswith('## ') and re.search(r'(?<![\w-])' + re.escape(skill) + r'(?![\w-])', heading) and block:
-            return json.loads(block.group(1))
-    return None
-
-
-def apply_language(data, lang, labels):
-    """Record the page language and the label words given on the command line (--data keeps the JSON's own when none are given)."""
+    if lang is None and override is None:
+        return
     if lang is not None:
         data['lang'] = lang
-        pack = pack_labels('show-changes', lang)
-        if pack is None and lang != 'en' and not labels:
-            print(f'build.py: no labels for {lang} in the language pack; the page words stay English', file=sys.stderr)
-        labels = {**(pack or {}), **(labels or {})}
-    if labels:
+    labels = labels_module.resolve(lang if lang is not None else data.get('lang'), override, 'build.py', LOOSE_LABELS)
+    if labels == labels_module.english():
+        data.pop('labels', None)
+    else:
         data['labels'] = labels
 
 
@@ -611,21 +598,27 @@ def main(argv=None):
     parser.add_argument('--data-version', metavar='VERSION', help='the data version, any string; required when collecting new data; --data keeps the JSON\'s value')
     parser.add_argument('--group-depth', type=int, default=None, metavar='N', help='the directory depth for grouping the file list (default 2; 0 means no grouping)')
     parser.add_argument('--full-text', action='store_true', help='also include the full text of changed files')
-    parser.add_argument('--lang', metavar='CODE', help='the language of the page, such as ja; the words come from that language\'s pack in writing-rules, and --labels overrides them')
-    parser.add_argument('--labels', metavar='JSON', help='a JSON file of label words that replace the English or pack words on the page (the names are in the template\'s /*__LABELS__*/ block)')
+    parser.add_argument('--lang', metavar='CODE', help='the language of the page being produced, such as ja; the words come from lang/CODE/labels.json of this skill, and --labels changes single words')
+    parser.add_argument('--labels', metavar='JSON', help='a JSON file of the page words: every word for a language that has no lang/CODE/labels.json, or single words that replace the pack\'s (start the file with --init CODE -o FILE)')
+    parser.add_argument('--init', metavar='CODE', help='write the English words to translate for this language to the -o file, then stop')
     parser.add_argument('--template', type=Path, default=Path(__file__).with_name('template.html'), metavar='PATH', help='the HTML template')
     parser.add_argument('--json-out', metavar='PATH', help='write the diff data as JSON; - writes to standard output')
     parser.add_argument('--artifact', action='store_true', help='write the HTML without the DOCTYPE, html, head and body tags (for destinations that add a document skeleton)')
     parser.add_argument('-o', '--output', metavar='PATH', help='the HTML output path; - writes to standard output')
     args = parser.parse_args(argv)
+    if args.init:
+        if not args.output or args.output == '-':
+            parser.error('--init needs -o FILE')
+        try:
+            Path(args.output).expanduser().write_text(labels_module.init_text(), encoding='utf-8')
+        except OSError as exc:
+            parser.exit(2, f'error: {exc}\n')
+        return 0
     try:
         protected_paths = []
         template = args.template.read_text(encoding='utf-8')
-        labels = {}
-        if args.labels:
-            labels = json.loads(Path(args.labels).expanduser().read_text(encoding='utf-8'))
-            if not isinstance(labels, dict):
-                raise ValueError('--labels must be a JSON object')
+        override = labels_module.read(args.labels) if args.labels else None
+        words = labels_module.resolve(args.lang, override, 'build.py', LOOSE_LABELS) if args.lang is not None or override is not None else labels_module.english()
         if not args.output and not args.json_out:
             raise ValueError('give --output or --json-out')
         if args.output == '-' and args.json_out == '-':
@@ -637,7 +630,7 @@ def main(argv=None):
                 raise ValueError('--data cannot be combined with the options that collect diffs')
             data = validate(json.loads(sys.stdin.read() if args.data == '-' else Path(args.data).read_text(encoding='utf-8')))
             data['generated_at'] = datetime.datetime.now().astimezone().isoformat(timespec='seconds')
-            apply_language(data, args.lang, labels)
+            apply_language(data, args.lang, override)
             for key, value in [('title', args.title), ('data_version', args.data_version), ('group_depth', args.group_depth)]:
                 if value is not None:
                     data[key] = value
@@ -653,15 +646,15 @@ def main(argv=None):
             protected_paths += [Path(location).expanduser().resolve() for _, a, b in args.dirs for location in (a, b)]
             protected_paths += [Path(location).expanduser().resolve() for _, location in args.diff]
             now = datetime.datetime.now().astimezone().isoformat(timespec='seconds')
-            data = dict(schema_version=SCHEMA_VERSION, title=args.title or labels.get('defaultTitle') or DEFAULT_TITLE,
+            data = dict(schema_version=SCHEMA_VERSION, title=args.title or words.get('defaultTitle') or DEFAULT_TITLE,
                         generated_at=now, data_version=args.data_version,
                         group_depth=2 if args.group_depth is None else args.group_depth,
                         full_text=args.full_text, sources=[
                             *[collect(*repo, repo[0] in args.merge_base, args.full_text) for repo in args.repo],
                             *[collect_plain(*item, args.full_text) for item in args.dirs],
                             *[collect_patch(*item, args.full_text) for item in args.diff]])
-            apply_language(data, args.lang, labels)
-        validate(data, default_labels(template))
+            apply_language(data, args.lang, override)
+        validate(data)
         for output in (args.output, args.json_out):
             if output:
                 check_output(output, protected_paths, data_only=bool(args.data))

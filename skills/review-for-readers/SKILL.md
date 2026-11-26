@@ -31,7 +31,7 @@ Ask the reader to read the document from the start, in order, without going back
 - Places the reader went back to reread, with the reason they went back.
 - Questions the reader is left with after finishing and cannot answer: what the subject of the document can do, what the reader should do, and so on.
 
-Then apply the language pack's `skills.md` section for review-for-readers, if any, to what you ask the reader. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
+Then apply the section for review-for-readers in the `skills.md` of the language pack for the language of the document, if any, to what you ask the reader. Language packs are in `skills/writing-rules/lang/<code>/` (the `lang/` folder of the `writing-rules` skill).
 
 ## 3. Fix and reread
 
@@ -41,7 +41,7 @@ If you find sentences about the history of the writing or about the document its
 After fixing, have a different reader, again one who does not know the history, read the document once more. The same reader remembers the earlier version.
 Repeat until the reader raises nothing that hinders understanding. As a rough guide, expect two or three rounds.
 
-When the reader no longer raises anything, apply the language pack's `skills.md` section for review-for-readers, if any, to the finished document.
+When the reader no longer raises anything, apply the same section to the finished document.
 
 ## 4. What to report
 

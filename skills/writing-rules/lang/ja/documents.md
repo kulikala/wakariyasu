@@ -14,7 +14,6 @@
 
 | 記述するもの | 種類 | 文末 | 体言止め | 箇条書き |
 |---|---|---|---|---|
-| ユーザーへの返答・チャット | mail | 敬体 | 使わない | 並んだ項目だけに使う |
 | コミットメッセージ・PR の本文 | pr | 常体 | 変更点の行で使ってよい | 変更点と確かめたことに使う |
 | README・技術記事 | article | 文書に合わせる | 見出し以外では使わない | 並んだ項目だけに使う |
 | 手順書・使い方の説明 | manual | 文書に合わせる | 見出し以外では使わない | 番号つきの手順に使う |
@@ -117,3 +116,7 @@ README は、人が手で保守している日本語の README で見慣れた�
 ## 変更履歴
 
 Keep a Changelog の日本語の版（https://keepachangelog.com/ja/1.1.0/）とセマンティック バージョニングの日本語の版（https://semver.org/lang/ja/）を参照する。変更の種類の小見出しは「追加」「変更」「非推奨」「削除」「修正」「セキュリティ」にする。
+
+## Before you reply
+
+This file is about the document only. Your reply to the user stays in the language of the user's latest message: if the user wrote to you in English, report on this Japanese document in English.

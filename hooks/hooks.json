@@ -6,7 +6,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/load-rules.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/load-rules.sh\" writing-to-user"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/load-rules.sh\" writing-documents"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/load-rules.sh\" polishing"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/load-rules.sh\" asking"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/load-rules.sh\" index"
           }
         ]
       }

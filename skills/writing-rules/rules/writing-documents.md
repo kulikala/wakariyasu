@@ -17,6 +17,7 @@ When you are unsure which kind applies, ask whether someone who knows nothing of
 
 ## Writing the body of a document
 
+- Write the document in the language requested for it, not necessarily the language of your reply. Before you write, read `documents.md` of the language pack for that language (see `writing-to-user.md`, "Choose the language of each thing you write").
 - Speak about the subject itself. Do not write about the document's own structure, how it came to be, or responses to instructions.
 - Do not rely on anything outside the document. If the reader needs a decision made in conversation, the content of another document, or an agreement reached in conversation, put the necessary part in the body.
 - Point to files and folders in a form the reader can follow in their own environment. Inside the same repository as the document, give the location relative to the repository or the document. Outside the repository, give the role or the name. Do not write locations that exist only on the writer's machine, because in the reader's environment they are missing or point to something else.

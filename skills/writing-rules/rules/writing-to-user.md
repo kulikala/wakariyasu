@@ -2,6 +2,12 @@
 
 The user may read a reply without having followed the history of the session. Make the reply tell them, on its own, what is happening and, if they must decide something, what they must decide. Every reply to the user follows the sections below, including reports, decision questions, and answers to follow-up questions.
 
+## Choose the language of each thing you write
+
+The reply follows the language the user writes in, unless the user asks for another. Every other thing you produce (a document, a file, a page, a commit message) follows the language requested for it, which can differ from the language of the reply: a user who instructs you in Japanese and asks for an English README gets a Japanese reply and an English README. The same turn can therefore need two language packs.
+
+Before you write each thing, read the pack file for its kind in its language, unless that file's text is already in the conversation: `reply.md` for a reply, `documents.md` for a document (the index of files lists the packs). Do this for every reply and every document, because the pack holds the register and the fixed words (headings, column names, state words) that readers of that language expect. Never translate those words yourself.
+
 ## Choose what to write
 
 Include what the user needs in order to understand the situation and decide. Include the history of the work only as far as the user needs it to understand the situation. When you say what you did, say what it was for. When you explain how something works or what a change does, first describe the whole: which parts act and what ends up different. Then give the details. A user who has read the whole can tell where each detail fits.

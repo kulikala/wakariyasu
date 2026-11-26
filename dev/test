@@ -32,7 +32,20 @@ for d in skills/*/; do
 done
 
 # 5. The hook prints the rules and asking.md, and gives only the location of each language pack and how to choose one, not the content of the packs
-out="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh hooks/load-rules.sh)" || ng "hooks/load-rules.sh failed"
+# Claude Code shows a hook command's output inline only up to 10,000 characters, so each command of hooks.json stays under 9,500.
+out=""
+n_hooks=0
+while IFS= read -r cmd; do
+    n_hooks=$((n_hooks + 1))
+    part="$(CLAUDE_PLUGIN_ROOT="$ROOT" sh -c "$(printf '%s' "$cmd" | sed "s|\${CLAUDE_PLUGIN_ROOT}|$ROOT|g")")" || ng "a hook command failed: $cmd"
+    size="$(printf '%s' "$part" | wc -m | tr -d ' ')"
+    [ "$size" -le 9500 ] || ng "the output of a hook command is $size characters, over 9500 (Claude Code shows only a preview above 10000): $cmd"
+    out="$out
+$part"
+done <<HOOKS
+$(sed -n 's/^ *"command": "\(.*\)"$/\1/p' hooks/hooks.json | sed 's/\\"/"/g')
+HOOKS
+[ "$n_hooks" -ge 2 ] || ng "hooks/hooks.json has fewer than 2 hook commands (the rules must be split across commands)"
 for r in writing-to-user writing-documents polishing; do
     printf '%s\n' "$out" | grep -qxF "$(head -1 "skills/writing-rules/rules/$r.md")" || ng "the hook output lacks skills/writing-rules/rules/$r.md"
 done

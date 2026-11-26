@@ -18,6 +18,12 @@ Choose the pack for each thing you write by the language of that thing, not by t
 
 The user may read a reply without having followed the history of the session. Make the reply tell them, on its own, what is happening and, if they must decide something, what they must decide. Every reply to the user follows the sections below, including reports, decision questions, and answers to follow-up questions.
 
+## Choose the language of each thing you write
+
+The reply follows the language the user writes in, unless the user asks for another. Every other thing you produce (a document, a file, a page, a commit message) follows the language requested for it, which can differ from the language of the reply: a user who instructs you in Japanese and asks for an English README gets a Japanese reply and an English README. The same turn can therefore need two language packs.
+
+Before you write each thing, read the pack file for its kind in its language, unless that file's text is already in the conversation: `reply.md` for a reply, `documents.md` for a document (the index of files lists the packs). Do this for every reply and every document, because the pack holds the register and the fixed words (headings, column names, state words) that readers of that language expect. Never translate those words yourself.
+
 ## Choose what to write
 
 Include what the user needs in order to understand the situation and decide. Include the history of the work only as far as the user needs it to understand the situation. When you say what you did, say what it was for. When you explain how something works or what a change does, first describe the whole: which parts act and what ends up different. Then give the details. A user who has read the whole can tell where each detail fits.
@@ -91,6 +97,7 @@ When you are unsure which kind applies, ask whether someone who knows nothing of
 
 ## Writing the body of a document
 
+- Write the document in the language requested for it, not necessarily the language of your reply. Before you write, read `documents.md` of the language pack for that language (see `writing-to-user.md`, "Choose the language of each thing you write").
 - Speak about the subject itself. Do not write about the document's own structure, how it came to be, or responses to instructions.
 - Do not rely on anything outside the document. If the reader needs a decision made in conversation, the content of another document, or an agreement reached in conversation, put the necessary part in the body.
 - Point to files and folders in a form the reader can follow in their own environment. Inside the same repository as the document, give the location relative to the repository or the document. Outside the repository, give the role or the name. Do not write locations that exist only on the writer's machine, because in the reader's environment they are missing or point to something else.
@@ -200,7 +207,7 @@ Before writing a question, check that you can name the requested work that the a
 - In the "Background and what happens if chosen" column, state the content of the option instead of only its label. Then state what happens toward the purpose of the work if the option is chosen. When the content of the option alone does not show why it is a choice at all, state the background that led to the option too.
 - If one option is especially recommended, write "(recommended)" after the letter of the top option. End the "Background and what happens if chosen" column of that row with the reason for recommending it.
 - For a question that cannot list options, omit the table and state in the question what you want answered.
-- The column names in the template and "(recommended)" are English. In a reply in another language, write the question in the form of that language's `asking-template.md` (see "Fixed words" in the index of files), so that the column names and "(recommended)" are the words printed there.
+- The column names in the template and "(recommended)" are English. In a reply in another language, write the question in the form of that language's `asking-template.md`, so that the column names and "(recommended)" are the words printed there. The file is in `lang/<code>/` of the `writing-rules` skill; where the packs are pasted instead (AGENTS.snippet.<code>.md), it is inside that file. Do not translate the column names yourself. For a language without such a file, run `python3 -B scripts/asking-skeleton --init <code> -o <file>` in the skill's folder, translate the values, and print the template with `--lang <code> --labels <file>`; where you cannot run scripts, translate the column names and "(recommended)" of the template above.
 - When there are several questions, put first the question whose answer changes the later work the most.
 - Even for a question with a recommendation, the user decides which option to choose. You list what happens for each option.
 

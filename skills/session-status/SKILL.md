@@ -13,7 +13,7 @@ Follow rule `writing-to-user.md` ("Write replies that someone who has not follow
 
 ## Structure of the reply
 
-Write the reply in the language of the reply (the language the user reads it in). Before you write, take the filled skeleton for that language and write the reply into it. Use its headings, column names, state words and the "(recommended)" mark as printed; do not translate them and do not look them up elsewhere.
+Write the reply in the language the user writes in, unless they ask for another. Before you write, take the filled skeleton for that language and write the reply into it. Use its headings, column names, state words and the "(recommended)" mark as printed; do not translate them and do not look them up elsewhere.
 
 - If `lang/<code>/reply-template.md` exists in this skill's folder, read it. Codes with a template: the folders under `lang/` that have this file.
 - For a language without one, run `python3 -B scripts/skeleton.py --init <code> -o <file>`. It writes the English words as a JSON file. Translate the values into the language, keeping the words in braces as they are. Then run `python3 -B scripts/skeleton.py --lang <code> --labels <file>` and write the reply into what it prints. The script stops with a one-line message when a key is missing, a key is unknown, or a word in braces was dropped. Use the same file for the page (see `references/status-page.md`).

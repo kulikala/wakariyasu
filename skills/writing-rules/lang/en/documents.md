@@ -1,6 +1,6 @@
 # Checks to add when writing a document in English
 
-Apply these checks in addition to the "Checks for every language" section of `polishing.md`.
+Read this when you write a document in English. It is about documents only and does not decide the language of your reply to the user: that follows the language the user writes in (rule `writing-to-user.md`). Apply these checks in addition to the "Checks for every language" section of `polishing.md`.
 
 ## Prefer plain words
 

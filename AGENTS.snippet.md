@@ -6,7 +6,49 @@ This text holds the rules (writing-to-user.md, writing-documents.md, polishing.m
 
 What to add when writing in a particular language is in that language's pack. A pack pasted next to this text, as AGENTS.snippet.<code>.md, starts with a comment line naming it. It holds the checks for a reply to the user (reply.md), the checks and notation for a document (documents.md), additions for the wakariyasu skills (skills.md), the decision question template with that language's column names, and phrase lists where the language has them.
 
-Choose the pack for each thing you write by the language of that thing, not by the language of the conversation. A user who writes to you in Japanese and asks for an English README gets a reply by the Japanese pack and a README by the English pack; one turn can need two packs. For a reply use reply.md, and for a document use documents.md. A language without a pack follows the rules alone; write the column names and the "(recommended)" mark of a decision question by translating those of the template in asking.md.
+Choose the pack for each thing you write by the language of that thing, not by the language of the conversation. A user who writes in one language and asks for a document in another gets the reply in the user's language and the document in the requested one, so one turn can need two packs. For a reply use reply.md, and for a document use documents.md. A language without a pack follows the rules alone; write the column names and the "(recommended)" mark of a decision question by translating those of the template in asking.md.
+
+
+## Status report
+
+When you report the state of the work, or stop to ask the user to decide, write the report in this form, with these headings, column names and state words as printed (in the language of the reply, take the form from the language file pasted next to this text). Leave out a section, with its heading, if it has nothing to say. The state column is an emoji and its word: done (finished and verified), in progress, waiting on a process (something that has left your hands, such as CI or a subagent; the number of the question goes in brackets when it waits for a decision), waiting for the user's decision, not started, problem (it failed or stopped; say what happened), cancelled (say who decided). Put decisions in the form of asking.md.
+
+## Current goal
+
+…
+
+## Latest instruction
+
+…
+
+## Tasks
+
+| # | Task | State | Background and notes |
+|---|---|---|---|
+| 1 | … | ✅ Done | … |
+| 2 | … | 🚧 In progress | … |
+| 3 | … | ⏳ Waiting on a process | … |
+| 4 | … | 🙋 Waiting for your decision (1) | … |
+| 5 | … | 📝 Not started | … |
+| 6 | … | ❗ Problem | … |
+| 7 | … | ⛔ Cancelled | … |
+
+<!-- The emoji and state words stay as printed. For a language without a template, translate only the words. -->
+
+## Latest status
+
+…
+
+## Decisions needed
+
+### 1. …
+
+…
+
+| Option | Background and what happens if chosen |
+|---|---|
+| A (recommended) | … |
+| B | … |
 
 - References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them
 - Language packs: lang/<code>/ in the folder of the writing-rules skill
@@ -20,7 +62,7 @@ The user may read a reply without having followed the history of the session. Ma
 
 ## Choose the language of each thing you write
 
-The reply follows the language the user writes in, unless the user asks for another. Every other thing you produce (a document, a file, a page, a commit message) follows the language requested for it, which can differ from the language of the reply: a user who instructs you in Japanese and asks for an English README gets a Japanese reply and an English README. The same turn can therefore need two language packs.
+The reply follows the language of the user's latest message, unless the user asks for another. This is a step of its own: a document or a pack file you just read or wrote in another language does not change it. Every other thing you produce (a document, a file, a page, a commit message) follows the language requested for it, which can differ from the language of the reply: a user who writes in one language and asks for a document in another gets the reply in the user's language and the document in the requested one. Writing the document in another language does not make the reply follow it. The same turn can therefore need two language packs.
 
 Before you write each thing, read the pack file for its kind in its language, unless that file's text is already in the conversation: `reply.md` for a reply, `documents.md` for a document (the index of files lists the packs). Do this for every reply and every document, because the pack holds the register and the fixed words (headings, column names, state words) that readers of that language expect. Never translate those words yourself.
 
@@ -146,6 +188,7 @@ Polish for readability. Do not change the claims, conditions, numbers, or the st
 
 ## Checks for every language
 
+- For a reply to the user, check that it is in the language of the user's latest message (unless the user asked for another), whatever language you wrote or read just before.
 - Put one point in each sentence. Split a long sentence that states two or more points.
 - When a subject and its predicate, or a modifier and the word it modifies, are far apart, bring them closer.
 - Delete metaphors, decorative words, and promotional phrases if deleting them does not change what the reader understands. If deleting them does change it, replace them with words that state the content.

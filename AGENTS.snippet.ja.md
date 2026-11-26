@@ -8,7 +8,7 @@ Use this pack, together with the rules in AGENTS.snippet.md, for what you write 
 
 # 日本語でユーザーへ返答するときに足すこと
 
-日本語で返答（報告・判断の問いかけ・質問への答え）を記述するときに足す内容。返答以外の文書は `documents.md` に従う。
+ユーザーが日本語で書いていて、日本語で返答（報告・判断の問いかけ・質問への答え）を記述するときに読む。ユーザーが別の言語で書いているなら、返答はその言語で記述し、このファイルは読まない。
 
 ## 文体
 
@@ -26,7 +26,7 @@ Use this pack, together with the rules in AGENTS.snippet.md, for what you write 
 
 # 日本語で文書を記述するときに足すこと
 
-日本語で文書（README・仕様書・手順書・SKILL.md・コミットメッセージ・PR の本文など、ユーザーへの返答以外の文章）を記述するときに足す内容。ユーザーへの返答は `reply.md` に従う。
+日本語で文書（README・仕様書・手順書・SKILL.md・コミットメッセージ・PR の本文など）を記述するときに読む。このファイルは文書だけの内容で、返答の言語は決めない。返答の言語は、文書の言語ではなく、ユーザーが書いている言語で決める（規則 `writing-to-user.md`）。
 
 ## 表記の選び方
 
@@ -165,7 +165,48 @@ wakariyasu のスキルを日本語の文書や返答に使うときは、スキ
 
 ## check-terms
 
-日本語の文書は `--lang ja` で探す。一覧に無い語の確かめ方はこの言語パックの `documents.md` の「日本語では使わない言い回しを探す」の節にある。
+日本語の文書は `--lang ja` で探す。一覧に無い語は、和語の動詞や名詞を日常の具体的な意味から離れて使っていないかを確かめ、示す対象を正確に表す語に言い換えられないかを見る。
+
+<!-- session-status/lang/ja/reply-template.md -->
+
+Write a status report in this language in this form, with these headings, column names and state words as printed (see "Status report" in AGENTS.snippet.md).
+
+## 現在のゴール
+
+…
+
+## 直近の指示
+
+…
+
+## タスク
+
+| # | タスク | 状態 | 背景・補足 |
+|---|---|---|---|
+| 1 | … | ✅ 完了 | … |
+| 2 | … | 🚧 作業中 | … |
+| 3 | … | ⏳ 処理待ち | … |
+| 4 | … | 🙋 判断待ち（1） | … |
+| 5 | … | 📝 未着手 | … |
+| 6 | … | ❗ 問題あり | … |
+| 7 | … | ⛔ 中止 | … |
+
+<!-- The emoji and state words stay as printed. For a language without a template, translate only the words. -->
+
+## 直近のステータス
+
+…
+
+## 判断を求めていること
+
+### 1. …
+
+…
+
+| 案 | 背景・選ぶと起きること |
+|---|---|
+| A（お勧め） | … |
+| B | … |
 
 <!-- lang/ja/asking-template.md -->
 

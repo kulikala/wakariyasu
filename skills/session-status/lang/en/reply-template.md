@@ -18,6 +18,8 @@
 | 6 | … | ❗ Problem | … |
 | 7 | … | ⛔ Cancelled | … |
 
+<!-- The emoji and state words stay as printed. For a language without a template, translate only the words. -->
+
 ## Latest status
 
 …

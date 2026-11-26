@@ -32,6 +32,7 @@ def render(labels):
              f'## {L["instruction"]}', '', '…', '',
              f'## {L["tasks"]}', '',
              f'| {L["colNumber"]} | {L["colTask"]} | {L["colState"]} | {L["colNotes"]} |', '|---|---|---|---|', *rows, '',
+             '<!-- The emoji and state words stay as printed. For a language without a template, translate only the words. -->', '',
              f'## {L["status"]}', '', '…', '',
              f'## {L["decisions"]}', '',
              '### 1. …', '', '…', '',

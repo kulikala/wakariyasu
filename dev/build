@@ -35,7 +35,11 @@ template_target() {
     printf '\n# wakariyasu: file locations and language packs\n\n'
     printf 'This text holds the rules (writing-to-user.md, writing-documents.md, polishing.md) and asking.md. Each file starts after a comment line with its name. Files in this text need not be opened again. Other files are in the folders of the wakariyasu skills.\n\n'
     printf 'What to add when writing in a particular language is in that language'"'"'s pack. A pack pasted next to this text, as AGENTS.snippet.<code>.md, starts with a comment line naming it. It holds the checks for a reply to the user (reply.md), the checks and notation for a document (documents.md), additions for the wakariyasu skills (skills.md), the decision question template with that language'"'"'s column names, and phrase lists where the language has them.\n\n'
-    printf 'Choose the pack for each thing you write by the language of that thing, not by the language of the conversation. A user who writes to you in Japanese and asks for an English README gets a reply by the Japanese pack and a README by the English pack; one turn can need two packs. For a reply use reply.md, and for a document use documents.md. A language without a pack follows the rules alone; write the column names and the "(recommended)" mark of a decision question by translating those of the template in asking.md.\n\n'
+    printf 'Choose the pack for each thing you write by the language of that thing, not by the language of the conversation. A user who writes in one language and asks for a document in another gets the reply in the user'"'"'s language and the document in the requested one, so one turn can need two packs. For a reply use reply.md, and for a document use documents.md. A language without a pack follows the rules alone; write the column names and the "(recommended)" mark of a decision question by translating those of the template in asking.md.\n\n'
+    printf '\n## Status report\n\n'
+    printf 'When you report the state of the work, or stop to ask the user to decide, write the report in this form, with these headings, column names and state words as printed (in the language of the reply, take the form from the language file pasted next to this text). Leave out a section, with its heading, if it has nothing to say. The state column is an emoji and its word: done (finished and verified), in progress, waiting on a process (something that has left your hands, such as CI or a subagent; the number of the question goes in brackets when it waits for a decision), waiting for the user'"'"'s decision, not started, problem (it failed or stopped; say what happened), cancelled (say who decided). Put decisions in the form of asking.md.\n\n'
+    cat "$TMP/reply-template.en.md"
+    printf '\n'
     printf -- '- References not included (writing-instructions.md, readme.md, changelog.md): references/ in the folder of the writing-rules skill. The rule writing-documents.md says when to read them\n'
     printf -- '- Language packs: lang/<code>/ in the folder of the writing-rules skill\n'
     printf -- '- The check-terms skill (a checker, and phrase lists per language in its lang/ folder): its own skill folder\n'
@@ -60,6 +64,11 @@ for d in "$W"/lang/*/; do
             printf '\n<!-- lang/%s/%s -->\n\n' "$code" "$f"
             cat "$d$f"
         done
+        if [ -e "$TMP/reply-template.$code.md" ]; then
+            printf '\n<!-- session-status/lang/%s/reply-template.md -->\n\n' "$code"
+            printf 'Write a status report in this language in this form, with these headings, column names and state words as printed (see "Status report" in AGENTS.snippet.md).\n\n'
+            cat "$TMP/reply-template.$code.md"
+        fi
         if [ -e "$TMP/asking-template.$code.md" ]; then
             printf '\n<!-- lang/%s/asking-template.md -->\n\n' "$code"
             printf 'Write a decision question in this form in this language, with these column names and this mark as printed.\n\n'

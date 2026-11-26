@@ -18,6 +18,8 @@
 | 6 | … | ❗ 問題あり | … |
 | 7 | … | ⛔ 中止 | … |
 
+<!-- The emoji and state words stay as printed. For a language without a template, translate only the words. -->
+
 ## 直近のステータス
 
 …

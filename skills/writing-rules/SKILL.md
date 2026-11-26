@@ -32,7 +32,7 @@ Read a reference when a rule tells you to. They are in `references/` of the skil
 
 A language pack holds what applies only when writing in one language. Packs are in `lang/<code>/` of the skill's folder, where `<code>` is the ISO 639-1 language code of the language.
 
-Choose the pack for each thing you are about to write by the language of that thing, not by the language of the conversation. A user who writes to you in Japanese and asks for an English README gets a reply from the Japanese pack and a README from the English pack; one turn can need two packs. For each thing, read only the pack file for its kind, unless the text of the file is already in the conversation. If the folder for the language does not exist, only the rules apply.
+Choose the pack for each thing you are about to write by the language of that thing, not by the language of the conversation. A user who writes in one language and asks for a document in another gets the reply in the user's language and the document in the requested one, so one turn can need two packs. For each thing, read only the pack file for its kind, unless the text of the file is already in the conversation. If the folder for the language does not exist, only the rules apply.
 
 | File | Read it when you write | Holds |
 |---|---|---|

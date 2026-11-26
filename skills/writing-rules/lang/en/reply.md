@@ -1,6 +1,6 @@
 # Checks to add when replying in English
 
-Apply these checks in addition to the "Checks for every language" section of `polishing.md`.
+Read this when the user writes in English and you reply in English. If the user writes in another language, reply in that language and do not read this file. Apply these checks in addition to the "Checks for every language" section of `polishing.md`.
 
 ## Prefer plain words
 

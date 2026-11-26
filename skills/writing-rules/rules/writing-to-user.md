@@ -4,7 +4,7 @@ The user may read a reply without having followed the history of the session. Ma
 
 ## Choose the language of each thing you write
 
-The reply follows the language the user writes in, unless the user asks for another. Every other thing you produce (a document, a file, a page, a commit message) follows the language requested for it, which can differ from the language of the reply: a user who instructs you in Japanese and asks for an English README gets a Japanese reply and an English README. The same turn can therefore need two language packs.
+The reply follows the language of the user's latest message, unless the user asks for another. This is a step of its own: a document or a pack file you just read or wrote in another language does not change it. Every other thing you produce (a document, a file, a page, a commit message) follows the language requested for it, which can differ from the language of the reply: a user who writes in one language and asks for a document in another gets the reply in the user's language and the document in the requested one. Writing the document in another language does not make the reply follow it. The same turn can therefore need two language packs.
 
 Before you write each thing, read the pack file for its kind in its language, unless that file's text is already in the conversation: `reply.md` for a reply, `documents.md` for a document (the index of files lists the packs). Do this for every reply and every document, because the pack holds the register and the fixed words (headings, column names, state words) that readers of that language expect. Never translate those words yourself.
 

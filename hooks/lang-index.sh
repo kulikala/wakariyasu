@@ -6,7 +6,7 @@ W="$1"; T="$2"; S="$3"
 printf '# wakariyasu: file locations and language packs\n\n'
 printf 'The text above holds the rules (writing-to-user.md, writing-documents.md, polishing.md) and asking.md. Do not read them again.\n\n'
 printf '## Language packs\n\n'
-printf 'Choose the pack for each thing you are about to write by the language of that thing, not by the language of the conversation. A user who writes to you in Japanese and asks for an English README gets a reply from the ja pack and a README from the en pack; one turn can need two packs. Read only the file for that kind of text in that language'"'"'s pack, unless its text is already in the conversation:\n\n'
+printf 'Choose the pack for each thing you are about to write by the language of that thing, not by the language of the conversation. A user who writes in one language and asks for a document in another gets the reply in the user'"'"'s language and the document in the requested one, so one turn can need two packs. Read only the file for that kind of text in that language'"'"'s pack, unless its text is already in the conversation:\n\n'
 printf -- '- reply.md: a reply to the user\n'
 printf -- '- documents.md: a document (README, specification, SKILL.md, commit message, and so on)\n'
 printf -- '- skills.md: what a wakariyasu skill adds in that language; read the section for the skill you are using\n\n'

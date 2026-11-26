@@ -4,6 +4,7 @@ Polish for readability. Do not change the claims, conditions, numbers, or the st
 
 ## Checks for every language
 
+- For a reply to the user, check that it is in the language of the user's latest message (unless the user asked for another), whatever language you wrote or read just before.
 - Put one point in each sentence. Split a long sentence that states two or more points.
 - When a subject and its predicate, or a modifier and the word it modifies, are far apart, bring them closer.
 - Delete metaphors, decorative words, and promotional phrases if deleting them does not change what the reader understands. If deleting them does change it, replace them with words that state the content.

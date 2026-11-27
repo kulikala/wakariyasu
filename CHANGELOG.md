@@ -7,8 +7,6 @@ A change to how the rules or skills are written that changes the agent's behavio
 
 ## [1.0.0] - 2026-11-27
 
-The first stable release.
-
 ### Added
 
 - The skill `compose-page`, which builds a page for people to read (a report, a proposal, a comparison) starting from what the reader wants to know.
@@ -22,7 +20,7 @@ The first stable release.
 ### Changed
 
 - The agent asks for a decision only when the work cannot continue without it, and reports other findings as facts. It asks for the final conclusion, such as whether to publish or send, only when the work is finished and the request covers it.
-- `show-changes` pages are about a third of their former size, because their data is compressed. A page loads the decompressor from jsDelivr when it opens; `build.py --embed-decoder` puts it into the page instead.
+- `show-changes` pages are about a third of their former size, because their data is compressed. A page loads the decoder that unpacks its data from jsDelivr when it opens, so opening it needs a network connection; `build.py --embed-decoder` puts the decoder into the page instead.
 - Replies that explain a mechanism or a change state the whole first.
 - Instructions the agent writes, and the checks of `clarify-skill`, avoid sample data, sample output and quoted tool messages that the agent would copy.
 - READMEs the agent writes fold details into collapsible blocks, use the Markdown GitHub renders, and write each language version for its own readers rather than translating it.

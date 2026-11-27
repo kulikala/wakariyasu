@@ -4,8 +4,8 @@ Read this when you build or rebuild a page.
 
 ## Requirements
 
-- Python 3.9 or later. Only the standard library is used. When building, the bundled `scripts/utfpack_pack.py` compresses the page's data into a string.
-- When the page opens, it loads its scripts from jsDelivr, including the decoder that turns that string back into the data. The viewer needs a network connection, and the place that shows the page (a browser, or a host such as Claude artifacts) must allow jsDelivr. `--embed-decoder` puts the decoder into the page instead.
+- Python 3.9 or later. Only the standard library is used. When building, the bundled `scripts/utfpack_pack.py` (from utfpack, a library that compresses data into a string a page can carry) compresses the page's data.
+- When the page opens, it loads its scripts from the CDN jsDelivr, including utfpack's decoder, which turns that string back into the data. The viewer needs a network connection, and the place that shows the page (a browser, or a host such as Claude artifacts) must allow jsDelivr. `--embed-decoder` puts the decoder into the page instead.
 - git is required to collect a git two-commit target (`--repo`). Other targets and `--data` work without git. When git is available, the diff of a two-folder target is also built with git, which is fast even for large files.
 
 ## Build a page
@@ -23,7 +23,7 @@ python3 -B scripts/build.py --files <name> <file or folder>... --data-version '<
 | `--repo NAME PATH BASE TARGET` | A target made of two git commits. `PATH` can be anywhere inside the repository. `BASE` is the before state and `TARGET` is the after state; pass each as a branch, commit or tag. |
 | `--dirs NAME BEFORE AFTER` | A target made of two ordinary folders or two files. It does not look inside `.git`, but it compares files that git ignores. It does not follow symbolic links and compares the link target paths. A change between a regular file and a symbolic link appears as a type change (T). |
 | `--diff NAME FILE` | A target made of an existing unified diff. The format can be the `git diff` form (including the `--no-prefix` form without prefixes) or the `diff -u` / `diff -ru` form with only `---` and `+++`. |
-| `--files NAME PATH...` | Files to show in full, not a change. Each path is a file or a folder; nothing is compared. The page holds the full text of each file and opens on the view of the text after the change. With several paths, each file's path on the page starts with the name of the file or folder that was passed. |
+| `--files NAME PATH...` | Files to show in full, not a change. Each path is a file or a folder; nothing is compared. The page holds the full text of each file and opens on the range "after", which shows the text without diff marks. With several paths, each file's path on the page starts with the last part of the path that was passed (the file or folder name). |
 | `--merge-base NAME` | Compare the target whose `--repo` name is `NAME` from the divergence point of `BASE` and `TARGET` to `TARGET` (the same range as `git diff BASE...TARGET`). |
 | `--data-version` | The data version, shown as is in the header. Any form. Required when collecting new data. |
 | `--title` | The page title. If omitted, the title is "Diff review" (or the `defaultTitle` word of the page's language). |

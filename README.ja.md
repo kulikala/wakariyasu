@@ -187,7 +187,7 @@ npx openskills sync -y
 ## 別途必要なソフトウェア
 
 > [!NOTE]
-> `show-changes` と `session-status` のページを作るとき、言語パックの無い言語で雛形を出すときに、Python 3 を使います。規則とほかのスキルには要りません。
+> `show-changes` と `session-status` のページを作るとき、言語パック（1つの言語の慣習。「仕組み」を参照）の無い言語で雛形を出すときに、Python 3 を使います。規則とほかのスキルには要りません。
 
 ## 仕組み
 

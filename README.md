@@ -187,7 +187,7 @@ Updating the skills does not update what you pasted. After an update, replace ev
 ## Requirements
 
 > [!NOTE]
-> Python 3 is needed to build the pages of `show-changes` and `session-status`, and to print the templates for a language without a language pack. The rules and the other skills need nothing else.
+> Python 3 is needed to build the pages of `show-changes` and `session-status`, and to print the templates for a language without a language pack (the conventions of one language; see "How it works"). The rules and the other skills need nothing else.
 
 ## How it works
 

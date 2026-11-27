@@ -22,7 +22,7 @@ A README is read on GitHub more than anywhere else, so write it with the Markdow
 - Give every code block its language, so that GitHub colors it and the reader sees at once whether to run it in a shell or type it into the tool.
 - When there are versions in several languages, link them to each other on the first lines, so that a reader who landed on the wrong one can switch.
 - Show a badge only when it answers a question the reader has before reading on, such as the current version or the license. A row of badges reads as noise.
-- Check the result with GitHub's own renderer before publishing (`gh api markdown -f mode=gfm -f context=<owner>/<repo> -F text=@README.md`): a block inside `<details>` or an alert that does not render shows its Markdown as plain text.
+- Check the result with GitHub's own renderer before publishing (`gh api markdown -f mode=gfm -f context=<owner>/<repo> -F text=@README.md`, which returns the HTML GitHub shows): a block inside `<details>` or an alert that does not render appears in that HTML as its Markdown source rather than as HTML elements.
 
 ## Sections
 

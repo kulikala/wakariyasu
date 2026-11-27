@@ -3,7 +3,7 @@
   "name": "wakariyasu",
   "description": "Claude Code marketplace for wakariyasu",
   "owner": {
-    "name": "kulikala"
+    "name": "Kaz Namba"
   },
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "description": "Rules and skills that make what an AI agent writes understandable to readers who have not followed its work",
       "version": "0.12.0",
       "author": {
-        "name": "kulikala"
+        "name": "Kaz Namba"
       },
       "source": "./",
       "category": "productivity",

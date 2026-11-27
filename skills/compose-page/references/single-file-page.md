@@ -1,6 +1,6 @@
 # A single-file page with Vue, Tailwind CSS and Lucide
 
-This is the starting point when nothing in the environment or the project sets the page's code. The page is one HTML file with no build step, so it opens directly in a browser and can be published as an artifact as it is. It uses Vue 3 for state (switching views, filtering, opening details), Tailwind CSS v4 for styling, and Lucide for icons, all loaded from jsDelivr.
+This is the starting point when nothing in the environment or the project sets the page's code. The page is one HTML file with no build step, so it opens directly in a browser. Publishing it as a Claude artifact changes how the libraries are loaded (see "Publishing as a Claude artifact"). It uses Vue 3 for state (switching views, filtering, opening details), Tailwind CSS v4 for styling, and Lucide for icons, all loaded from jsDelivr.
 
 The URLs name only the major versions of Vue (3) and Tailwind CSS (4), so the page loads the latest release within each major version. The Lucide URL names no version and loads the latest release.
 
@@ -122,7 +122,8 @@ Vue reads the template from the HTML in the page, which the browser parses first
 
 When the page is published as a Claude artifact, follow the environment's rules for artifacts (the instructions of the tool that publishes them); they take precedence over this file. The points below are where those rules touch this file.
 
-- The publishing step wraps the page in the document skeleton (DOCTYPE, `html`, `head`, `body`). Leave out those four parts and start the file with the `<title>`, followed by the import map, the Tailwind script, the Tailwind style and the color-switching style described below, then the element with the id `app` and the module script. With no `html` element to carry `lang`, put `lang` on the element with the id `app`.
+- The publishing step wraps the page in the document skeleton (DOCTYPE, `html`, `head`, `body`) and puts what you publish inside `<body>`. Leave out those four parts and start the file with the `<title>`, followed by the Tailwind script, the Tailwind style and the color-switching style described below, then the element with the id `app` and the module script. With no `html` element to carry `lang`, put `lang` on the element with the id `app`.
+- An import map is not allowed inside `<body>`, so an artifact has none. Write each import in the module script with the full jsDelivr URL that the import map would have given (`import { createApp, ref } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-bundler.js/+esm'`, and the same for `@lucide/vue`).
 - Scripts load only from the hosts the environment allows. jsDelivr, which the file uses, is one of them.
 - The viewer can force a theme by setting `data-theme="dark"` or `data-theme="light"` on the root element, while the default leaves it unset and follows the device. The publishing skeleton also sets `color-scheme: light` on `:root` outside any CSS layer, and a rule outside a layer wins over Tailwind's layered rules, so `color-scheme: dark` inside `@layer base` has no effect and form controls and scrollbars stay light. Remove the `:root` rule and the media query from the `@layer base` block, leaving only the `body` rule there, and put the color switching in a plain `<style>` element (without `type="text/tailwindcss"`) after the Tailwind style, guarded so that the page follows whichever applies.
 

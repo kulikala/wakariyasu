@@ -7,6 +7,10 @@ A change to how the rules or skills are written that changes the agent's behavio
 
 ## [Unreleased]
 
+### Added
+
+- The `show-changes` page has an inline layout that reads like tracked changes in a word processor: the text after the change without diff marks, changed words colored, a narrow mark where text was removed, and the earlier text shown on hover.
+
 ### Changed
 
 - `show-changes` and `session-status` pages are built from the same single-file page template as the pages of `compose-page`, with the same light and dark themes.

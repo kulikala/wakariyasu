@@ -37,8 +37,15 @@
          data-old and is shown in the one floating #popup (user-select: none), so selecting and copying never take it along. */
       .inline-change[data-old], .inline-del, .inline-band-mark { cursor: help }
       .inline-change { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px }
-      .inline-del { display: inline-block; width: 3px; height: 1.15em; margin: 0 1px; vertical-align: text-bottom; border-radius: 1px; background: var(--color-del-mark) }
-      .inline-band-mark { display: block; height: 4px; margin: 2px 0; border-radius: 2px; background: var(--color-del-mark) }
+      .inline-del { position: relative; display: inline-block; width: 3px; height: 1.15em; margin: 0 1px; vertical-align: text-bottom; border-radius: 1px; background: var(--color-del-mark) }
+      .inline-band-mark { position: relative; display: block; height: 4px; margin: 2px 0; border-radius: 2px; background: var(--color-del-mark) }
+      /* The deletion bars grow on hover and focus without moving anything: a box-shadow thickens the bar, and a transparent
+         absolutely positioned ::before is the hit area, a little wider than the bar at rest and wider than the thick bar when it is hovered. */
+      .inline-del::before, .inline-band-mark::before { content: ''; position: absolute; inset: 0 -2px }
+      .inline-band-mark::before { inset: -3px 0 }
+      .inline-del:is(:hover, :focus)::before { inset: -2px -6px }
+      .inline-band-mark:is(:hover, :focus)::before { inset: -6px 0 }
+      .inline-del:is(:hover, :focus), .inline-band-mark:is(:hover, :focus) { box-shadow: 0 0 0 2px var(--color-del-mark) }
       :is(.inline-change[data-old], .inline-del, .inline-band-mark):focus { outline: 2px solid #0d9488; outline-offset: 1px }
       /* The line or file heading the search has moved to. */
       .hit-current { outline: 2px solid #0d9488; outline-offset: -2px; background-image: linear-gradient(rgba(13, 148, 136, .22), rgba(13, 148, 136, .22)) }

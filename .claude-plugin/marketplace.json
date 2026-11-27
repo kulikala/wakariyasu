@@ -9,7 +9,7 @@
     {
       "name": "wakariyasu",
       "description": "Rules and skills that make what an AI agent writes understandable to readers who have not followed its work",
-      "version": "0.12.0",
+      "version": "1.0.0",
       "author": {
         "name": "Kaz Namba"
       },

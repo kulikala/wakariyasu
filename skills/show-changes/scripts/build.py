@@ -634,7 +634,8 @@ def make_html(data, template, artifact=False, embed_decoder=False):
     words = {key: (data.get('labels') or {}).get(key, english[key]) for key in ('loadingData', 'dataLoadError')}
     # The data is a JSON string that the page's module reads and unpacks. With --embed-decoder the decoder is a classic
     # inline script that defines the global `utfpack`; otherwise the module imports the decoder module.
-    data_script = f'<script type="application/json" id="packed">{json.dumps(packed["string"], ensure_ascii=False)}</script>\n'
+    # The packed string is plain text, not JSON: it goes into a script element that the browser does not run, as is.
+    data_script = f'<script type="text/plain" id="packed">{packed["string"]}</script>\n'
     if embed_decoder:
         data_script = f'<script>{utfpack_pack.decoder_script(packed["entry"])}</script>\n' + data_script
     libraries = dict(LIBRARIES)

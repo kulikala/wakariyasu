@@ -52,9 +52,9 @@ def command(args, stdin=None):
 
 def check_page_structure(page, artifact=False, embedded=False):
     """Read the HTML text of a built page: how the libraries and the decoder are loaded, the data string, and a packed string that cannot break out of its script."""
-    match = re.search(r'<script type="application/json" id="packed">(.*?)</script>', page, re.S)
+    match = re.search(r'<script type="text/plain" id="packed">(.*?)</script>', page, re.S)
     assert match and page.count('id="packed"') == 1
-    packed = json.loads(match.group(1))
+    packed = match.group(1)
     assert '</script' not in packed and '<!--' not in packed
     assert page.count('<!--__PACKED__-->') == 0 and page.count('<!--__IMPORTMAP__-->') == 0 and '/*__LABELS__*/' not in page and '/*__UNPACK__*/' not in page
     assert '"layoutInline"' in page and "id: 'inline'" in page and 'data-old' in page, 'the inline layout is in the page'

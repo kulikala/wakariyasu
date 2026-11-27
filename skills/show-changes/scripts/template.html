@@ -178,13 +178,13 @@
     const LOAD_WORDS = /*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/
     const L = { ...DEFAULT_LABELS }
     const T = (key, vars = {}) => String(L[key] ?? key).replace(/\{(\w+)\}/g, (match, name) => name in vars ? vars[name] : match)
-    // The packed data is a JSON string in the page. Show a word until it is unpacked.
+    // The packed data is a text string in the page. Show a word until it is unpacked.
     const appRoot = document.getElementById('app')
     const loading = document.getElementById('loading')
     loading.textContent = LOAD_WORDS.loadingData
     let DATA
     try {
-      DATA = JSON.parse((await unpack(JSON.parse(document.getElementById('packed').textContent)))['data.json'])
+      DATA = JSON.parse((await unpack(document.getElementById('packed').textContent))['data.json'])
     } catch (error) {
       loading.textContent = LOAD_WORDS.dataLoadError
       appRoot.hidden = true

@@ -14,7 +14,7 @@ From two commits of the repository passed with `--repo`, `dev/test-show-changes.
 
 - A page built with `--artifact` starts with `<title>` and has no DOCTYPE, html, head or body tags and no charset or viewport meta. A page built without it is a complete document.
 - The parts come in this order: title, import map (a plain page only), inline decoder (only with `--embed-decoder`), data string, Tailwind script, Tailwind style, color-switching style, `#app`, module script. A plain page imports the libraries through the import map, an artifact by full URL, and the checks cover both, with and without `--embed-decoder`.
-- The data is one JSON string in a `<script type="application/json" id="packed">`, and it holds neither `</script` nor `<!--`, either of which would end the script early. In a plain page, the import map's `integrity` value for the decoder module (the hash the browser checks before running the file) is present when `build.py` could fetch it. utfpack is described under "Decisions and reasons".
+- The data is the packed string, as is, in a `<script type="text/plain" id="packed">` that the browser does not run, and it holds neither `</script` nor `<!--`, either of which would end the script early. In a plain page, the import map's `integrity` value for the decoder module (the hash the browser checks before running the file) is present when `build.py` could fetch it. utfpack is described under "Decisions and reasons".
 - Data does not change when written out to JSON and read back.
 - Mistakes fixed in the past have not happened again (the list of mistakes is `regressions`, which `dev/test-show-changes.py` prints).
 - The state of the compared repository is the same before and after the test.

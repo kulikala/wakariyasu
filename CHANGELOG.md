@@ -18,6 +18,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 
 - The agent asks for a decision only when the work cannot continue without it, and reports other findings as facts.
 - Replies that explain a mechanism or a change state the whole first.
+- Instructions the agent writes, and the checks of `clarify-skill`, avoid sample data, sample output and quoted tool messages that the agent would copy.
 - READMEs the agent writes fold details into collapsible blocks, and each language version is written for its own readers rather than translated.
 - Web pages, artifacts, slides and Office documents are finished before handover like other documents.
 - The rules and skills are written in English. The README and the changelog are also in Japanese.

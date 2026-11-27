@@ -128,17 +128,19 @@
 
     // The English words are put in by build.py from lang/en/labels.json. The data may replace any of them through "labels".
     const DEFAULT_LABELS = /*__LABELS__*/{}/*__LABELS_END__*/
+    // The words for loading and for a failure, in the page's language; they cannot come from the data that failed to open.
+    const LOAD_WORDS = /*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/
     const L = { ...DEFAULT_LABELS }
     const T = (key, vars = {}) => String(L[key] ?? key).replace(/\{(\w+)\}/g, (match, name) => name in vars ? vars[name] : match)
     // The decoder script and the data script run before this module. Show a word until the data is ready.
     const appRoot = document.getElementById('app')
     const loading = document.getElementById('loading')
-    loading.textContent = T('loadingData')
+    loading.textContent = LOAD_WORDS.loadingData
     let DATA
     try {
       DATA = JSON.parse((await globalThis.utfpackData)['data.json'])
     } catch (error) {
-      loading.textContent = T('dataLoadError')
+      loading.textContent = LOAD_WORDS.dataLoadError
       appRoot.hidden = true
       throw error
     }
@@ -418,18 +420,18 @@
     }
 
     /** The changed file as it reads afterwards: changed lines by background color only, numbered by the new file. */
-    function renderAfter (file, rows, query) {
+    function renderAfter (file, rows, query, plain) {
       if (typeof file.full_body !== 'string') return '<p class="p-3 text-xs text-[var(--muted)]">' + T('fullMissing') + '</p>'
       if (file.status[0] === 'D') return '<p class="after-empty p-3 text-[var(--muted)]">' + T('afterDeleted') + '</p>'
       if (!rows.length) return '<p class="after-empty p-3 text-[var(--muted)]">' + T('afterEmpty') + '</p>'
       const digits = String(rows.reduce((max, row) => Math.max(max, row.current || 0), 1)).length
-      const body = rows.map(row => `<tr class="${row.kind === 'add' ? 'bg-[var(--add)]' : ''}"${row.kind === 'add' ? ' data-changed="true"' : ''}><td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${row.current}</td><td class="px-1 align-top whitespace-pre-wrap break-all"><span class="line-text">${textHTML(row.text, file.path, query, null, row.kind)}</span></td></tr>`)
+      const body = rows.map(row => `<tr class="${row.kind === 'add' && !plain ? 'bg-[var(--add)]' : ''}"${row.kind === 'add' && !plain ? ' data-changed="true"' : ''}><td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${row.current}</td><td class="px-1 align-top whitespace-pre-wrap break-all"><span class="line-text">${textHTML(row.text, file.path, query, null, row.kind)}</span></td></tr>`)
       return `<table data-layout="after" data-scope="after" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup><col class="w-[calc(${digits}ch+10px)]"><col></colgroup><tbody>${body.join('')}</tbody></table>`
     }
 
-    function renderDiff (file, layout, scope, query, whitespace) {
+    function renderDiff (file, layout, scope, query, whitespace, plain = false) {
       const { parsed, rows } = displayRows(file, scope, whitespace)
-      if (scope === 'after') return renderAfter(file, rows, query)
+      if (scope === 'after') return renderAfter(file, rows, query, plain)
       if (parsed.length && !hasChange(rows) && hasChange(parsed)) return '<p class="space-only p-3 text-[var(--muted)]">' + T('spaceOnly') + '</p>'
       const digits = key => String(rows.reduce((max, row) => Math.max(max, row[key] || 0), 1)).length
       const gutter = key => `<col class="w-[calc(${digits(key)}ch+10px)]">`
@@ -500,7 +502,7 @@
         const visited = ref(false)
         watch(() => props.open, open => { if (!open) visited.value = false })
         watch(() => [near.value, props.open], ([nearby, open]) => { if (nearby && open) visited.value = true }, { immediate: true })
-        const html = computed(() => props.open && (near.value || visited.value) ? renderDiff(props.item.file, props.layout, props.scope, props.query, props.whitespace) : '')
+        const html = computed(() => props.open && (near.value || visited.value) ? renderDiff(props.item.file, props.layout, props.scope, props.query, props.whitespace, props.item.source.kind === 'files') : '')
         const copied = ref(false)
         const copyPath = async () => {
           if (!await copyText(props.item.file.path)) return
@@ -801,7 +803,10 @@
         const hitLabel = computed(() => !hits.value.length ? T('hitNone') : current.value < 0 ? T(hits.value.length === 1 ? 'hitTotalOne' : 'hitTotal', { n: hits.value.length }) : T('hitPosition', { i: current.value + 1, n: hits.value.length }))
         const settle = () => new Promise(resolve => setTimeout(resolve, 25))
         /** Bring a hit to the middle of the screen, opening its file and waiting for its lines to be drawn. */
+        let revealing = 0
         async function reveal ({ id, line }) {
+          // A later move takes over: an earlier one that is still waiting for lines to be drawn gives up.
+          const turn = ++revealing
           document.querySelectorAll('.hit-current').forEach(node => node.classList.remove('hit-current'))
           if (line >= 0) opened[id] = true
           screen.value = 'diff'
@@ -819,10 +824,12 @@
           for (let tries = 0; tries < 120 && !row; tries++) {
             row = node.querySelectorAll('.diff-body tbody tr')[line]
             if (!row) await settle()
+            if (turn !== revealing) return
           }
           if (!row) return
           place(row, true)
           await settle()
+          if (turn !== revealing) return
           place(row, true)
           row.classList.add('hit-current')
         }

@@ -209,7 +209,7 @@ def main():
     # A packed string that could close the script or open an HTML comment is refused.
     real_pack = build.utfpack_pack.pack
     for bad in ('</script', '<!--'):
-        build.utfpack_pack.pack = lambda files, emit='html', embed_decoder=False, bad=bad: {
+        build.utfpack_pack.pack = lambda files, emit='html', embed_decoder=False, bad=bad, **options: {
             'string': 'x' + bad, 'codec': 'deflate', 'format': 'base91', 'entry': 'utfpack/base91', 'module': ''}
         try:
             build.make_html(data, template)
@@ -217,7 +217,20 @@ def main():
             assert 'packed data' in str(error)
         else:
             raise AssertionError(f'The packed data check did not stop {bad}')
+    # A first pack that would close the script is packed again in another format.
+    calls = []
+    def flaky(files, emit='html', embed_decoder=False, **options):
+        calls.append(options)
+        return real_pack(files, emit=emit, embed_decoder=embed_decoder, **options) if len(calls) > 1 else {
+            'string': 'x</script', 'codec': 'deflate', 'format': 'base91', 'entry': 'utfpack/base91', 'module': ''}
+    build.utfpack_pack.pack = flaky
+    retried = build.make_html(data, template)
+    assert len(calls) == 2 and calls[1] == {'ascii': True} and 'x</script' not in retried
     build.utfpack_pack.pack = real_pack
+    # The words for a failed load come in the page's language, outside the packed data.
+    ja_words = json.loads((SCRIPTS.parent / 'lang' / 'ja' / 'labels.json').read_text(encoding='utf-8'))
+    ja_page = command([*cli, '--data-version', 'for-check', '--lang', 'ja', '-o', '-'])
+    assert json.dumps(ja_words['dataLoadError'], ensure_ascii=False)[1:-1] in ja_page and ja_words['dataLoadError'] not in escaped
     artifact = command([*cli, '--data-version', 'for-check', '--artifact', '-o', '-'])
     assert not re.search(r'(?i)<!doctype|<html[\s>]|<head>|</head>|<body[\s>]|</body>|</html>', artifact)
     result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags], input=artifact,
@@ -247,6 +260,7 @@ def main():
         by_path = {f['path']: f for f in source['files']}
         assert sorted(by_path) == ['docs/a.md', 'docs/sub/b.py', 'empty.txt'], sorted(by_path)
         assert all(f['status'] == 'A' and f['deleted'] == 0 for f in source['files'])
+        assert by_path['empty.txt']['notice'] == ''
         assert by_path['docs/a.md']['full_body'] == '@@ -0,0 +1,2 @@\n+# Title\n+second line' and by_path['docs/a.md']['added'] == 2
         mixed = json.loads(command([*files_cli, '--dirs', 'plain', str(folder / 'docs'), str(folder / 'docs'), '--json-out', '-']))
         assert mixed['initial_scope'] == 'diff' and mixed['full_text'] is True

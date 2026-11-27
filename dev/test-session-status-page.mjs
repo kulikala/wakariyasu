@@ -36,10 +36,9 @@ try {
   await waitFor("document.querySelector('#copySelection').hidden", 'the button disappears when the selection is cleared', 5000)
   // Text typed into a field is the viewer's own; no button there.
   const field = await evaluate("(() => { const f = document.querySelector('#status-page textarea, #status-page input[type=text]'); if (!f) return false; f.value = 'typed text'; f.focus(); f.select(); return true })()")
-  if (field) {
-    await sleep(400)
-    check(await evaluate("document.querySelector('#copySelection').hidden"), 'no button for text selected in a field')
-  }
+  check(field, 'the page has a field to select text in')
+  await sleep(400)
+  check(await evaluate("document.querySelector('#copySelection').hidden"), 'no button for text selected in a field')
   // Without the Clipboard API and without execCommand the page says that copying was refused.
   await evaluate("document.activeElement?.blur()")
   await select('#status-page h1')

@@ -21,7 +21,7 @@
   "showList": "ファイル一覧を出す",
   "hideList": "ファイル一覧を隠す",
   "backToList": "ファイル一覧に戻る",
-  "copySelection": "選んだ文字列をコピー",
+  "copySelection": "選んだ文字をコピー",
   "copiedSelection": "選んだ文字列をコピーしました",
   "copied": "コピーしました",
   "noNewline": "行末に改行がありません",

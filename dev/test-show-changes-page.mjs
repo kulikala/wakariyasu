@@ -7,7 +7,6 @@ import { spawn } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { createServer } from 'node:net'
 
-const decoderUrl = 'https://cdn.jsdelivr.net/npm/utfpack@0.1.0/dist/cdn/utfpack.js'
 const decoderFile = process.env.UTFPACK_DECODER
 const urls = [
   'https://cdn.jsdelivr.net/npm/vue@3.5.44/+esm',
@@ -26,7 +25,6 @@ const urls = [
   'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/sql.js/+esm',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap'
 ]
-const allowedUrls = new Set([...urls, decoderUrl])
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const staticOnly = process.argv.includes('--static-only')
 const filesPage = process.argv.includes('--files-page')
@@ -37,6 +35,9 @@ if (!page) {
   process.stdin.setEncoding('utf8')
   for await (const chunk of process.stdin) page += chunk
 }
+// The decoder address is the one build.py wrote into the page, so a version bump there needs no change here.
+const decoderUrl = page.match(/https:\/\/cdn\.jsdelivr\.net\/npm\/utfpack@[^"']+\/dist\/cdn\/utfpack\.js/)?.[0] ?? 'https://cdn.jsdelivr.net/npm/utfpack/dist/cdn/utfpack.js'
+const allowedUrls = new Set([...urls, decoderUrl])
 const dataScript = /<script>globalThis\.utfpackData=[\s\S]*?<\/script>\n?/
 assert(dataScript.test(page), 'The packed data script is missing')
 /** Check application resource declarations, excluding the embedded user data. */

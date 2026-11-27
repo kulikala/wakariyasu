@@ -325,6 +325,9 @@ def collect_files(name, locations):
             files[shown] = source
     entries = [text_entry(path, b'', read_plain(source), True, None, 'A', None, (None, plain_mode(source)))
                for path, source in files.items()]
+    for entry in entries:
+        # Nothing is compared, so an empty file has no "no difference" to report.
+        entry['notice'] = notices(*(part.strip() for part in entry['notice'].split(NOTICE_NO_DIFF)))
     return dict(name=name, kind='files', base_ref='', target_ref='', base='', target='', commits=[], files=entries)
 
 
@@ -535,20 +538,29 @@ def validate(data):
 def make_html(data, template, artifact=False, embed_decoder=False):
     data = validate(data)
     payload = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
-    packed = utfpack_pack.pack({'data.json': payload}, emit='html', embed_decoder=embed_decoder)
-    if '</script' in packed['string'] or '<!--' in packed['string']:
-        raise ValueError('The packed data contains "</script" or "<!--", so it cannot be put in an HTML page safely')
+    # The text that closes a script or opens a comment cannot go into the page; pack again in a plainer format.
+    for options in ({}, {'ascii': True}, {'format': 'base64'}):
+        packed = utfpack_pack.pack({'data.json': payload}, emit='html', embed_decoder=embed_decoder, **options)
+        if '</script' not in packed['string'] and '<!--' not in packed['string']:
+            break
+    else:
+        raise ValueError('The packed data contains "</script" or "<!--" in every format, so it cannot be put in an HTML page safely')
     data_script = utfpack_pack.emit(packed, 'html', embed_decoder=embed_decoder)
-    if template.count('<!--__PACKED__-->') != 1:
-        raise ValueError('The template must contain <!--__PACKED__--> exactly once')
-    english = json.dumps(labels_module.english(), ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
-    if template.count('/*__LABELS__*/{}/*__LABELS_END__*/') != 1:
-        raise ValueError('The template must contain /*__LABELS__*/{}/*__LABELS_END__*/ exactly once')
+    for marker in ('<!--__PACKED__-->', '/*__LABELS__*/{}/*__LABELS_END__*/', '/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/'):
+        if template.count(marker) != 1:
+            raise ValueError(f'The template must contain {marker} exactly once')
+    safe = lambda value: json.dumps(value, ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
+    english = labels_module.english()
+    # The words for the loading and error messages stay outside the packed data, in the page's language, so they show when the data cannot be opened.
+    words = {key: (data.get('labels') or {}).get(key, english[key]) for key in ('loadingData', 'dataLoadError')}
     decoder = '' if embed_decoder else (
         f'<script src="{UTFPACK_DECODER_URL}" integrity="{utfpack_pack.decoder_sri("utfpack")}" crossorigin="anonymous"></script>\n')
-    page = (template.replace('<!--__PACKED__-->', decoder + data_script)
-                    .replace('/*__LABELS__*/{}/*__LABELS_END__*/', english)
+    # Replace in the template first and put the data in last, so no replacement can touch the data.
+    page = (template.replace('/*__LABELS__*/{}/*__LABELS_END__*/', safe(english))
+                    .replace('/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/', safe(words))
                     .replace('__TITLE__', html.escape(data['title'])))
+    before, after = page.split('<!--__PACKED__-->')
+    page = before + decoder + data_script + after
     return artifact_body(page) if artifact else page
 
 

@@ -45,18 +45,55 @@ Vue is loaded from jsDelivr's `+esm` build of the bundler file, which includes t
 <body>
   <div id="app">
     <!-- Page content -->
+    <button v-if="selection.show" type="button" class="fixed z-50 rounded-md border p-1 shadow" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="selection.copied ? '{{word for copied, in the page's language}}' : '{{word for copy, in the page's language}}'" :title="selection.copied ? '{{word for copied, in the page's language}}' : '{{word for copy, in the page's language}}'" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
   </div>
 
   <script type="module">
     import { createApp, ref, computed, reactive } from 'vue'
     // Import each icon the page uses by its Lucide component name, and list the same names in components
-    import { {{IconName}} } from '@lucide/vue'
+    import { Copy, Check, {{IconName}} } from '@lucide/vue'
+
+    // Copy text: the clipboard API where the host allows it, otherwise a hidden textarea
+    async function copyText (text) {
+      try { await navigator.clipboard.writeText(text); return true } catch {}
+      const area = Object.assign(document.createElement('textarea'), { value: text })
+      area.style.cssText = 'position:fixed;opacity:0'
+      document.body.append(area)
+      area.select()
+      const ok = document.execCommand('copy')
+      area.remove()
+      return ok
+    }
 
     const app = createApp({
-      components: { {{IconName}} },
+      components: { Copy, Check, {{IconName}} },
       setup () {
+        // A small copy button floats at the end of any text the reader selects
+        const selection = reactive({ show: false, x: 0, y: 0, text: '', copied: false })
+        function placeSelection () {
+          const range = getSelection()
+          const text = range && !range.isCollapsed ? range.toString() : ''
+          const anchor = range?.anchorNode?.parentElement
+          if (!text.trim() || !anchor?.closest('#app') || anchor.closest('input, textarea')) {
+            if (!selection.copied) selection.show = false
+            return
+          }
+          const rects = range.getRangeAt(range.rangeCount - 1).getClientRects()
+          const box = rects[rects.length - 1] || range.getRangeAt(0).getBoundingClientRect()
+          Object.assign(selection, { show: true, copied: false, text, x: Math.min(Math.max(box.right + 4, 4), innerWidth - 32), y: Math.max(box.top - 30, 4) })
+        }
+        async function copySelection () {
+          if (!await copyText(selection.text)) return
+          selection.copied = true
+          setTimeout(() => { selection.copied = false; placeSelection() }, 1200)
+        }
+        let timer
+        const onSelection = () => { clearTimeout(timer); timer = setTimeout(placeSelection, 120) }
+        document.addEventListener('selectionchange', onSelection)
+        document.addEventListener('scroll', onSelection, true)
+
         // Composition API state for the page
-        return {}
+        return { selection, copySelection }
       }
     })
     app.mount('#app')
@@ -67,6 +104,7 @@ Vue is loaded from jsDelivr's `+esm` build of the bundler file, which includes t
 
 - Set `lang` to the language the page is written in. Browsers choose the default font from it, so a page with the wrong `lang` can show text in a typeface meant for another language.
 - The page specifies no font and uses the browser's default.
+- Keep the copy button and its code. Readers take parts of a page into their own notes and messages, and a button at the end of the selection saves them from hunting for a copy command. Give the button the page's border, background and text color roles, and write its two words in the page's language.
 - Decide the color roles and their values from what the page shows and what its cues must tell apart. The roles include one for the page background and one for the body text. A role's name becomes part of Tailwind class names, so use a name that is valid there. Define each role once in `@theme` with its light value, and redefine it with its dark value under `prefers-color-scheme: dark`. Utilities built from a token (`bg-{{role}}`, `text-{{role}}`) then follow the device's setting without a `dark:` variant on every element. Give `body` its background and text color from the tokens.
 
 ## Writing Lucide icons in the template

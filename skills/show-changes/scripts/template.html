@@ -34,12 +34,11 @@
       .ws-zwsp::after { content: 'ZWSP' }
       .ws-bom::after { content: 'BOM' }
       /* The inline layout: a changed span or a deletion mark shows the earlier text when hovered or focused. The text sits in
-         data-old and is drawn by ::after, so selecting and copying never take it along. */
-      .inline-change[data-old], .inline-del, .inline-band-mark { position: relative; cursor: help }
+         data-old and is shown in the one floating #popup (user-select: none), so selecting and copying never take it along. */
+      .inline-change[data-old], .inline-del, .inline-band-mark { cursor: help }
       .inline-change { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px }
       .inline-del { display: inline-block; width: 3px; height: 1.15em; margin: 0 1px; vertical-align: text-bottom; border-radius: 1px; background: var(--color-del-mark) }
       .inline-band-mark { display: block; height: 4px; margin: 2px 0; border-radius: 2px; background: var(--color-del-mark) }
-      :is(.inline-change[data-old], .inline-del, .inline-band-mark):is(:hover, :focus)::after { content: attr(data-old); position: absolute; left: 0; top: 100%; z-index: 20; width: max-content; max-width: min(48ch, 80vw); margin-top: 2px; padding: 2px 6px; border: 1px solid var(--color-del-mark); border-radius: 4px; background: var(--color-panel); color: var(--color-ink); box-shadow: 0 2px 8px rgb(0 0 0 / .25); font-weight: normal; line-height: 1.5; text-decoration: none; white-space: pre-wrap; overflow-wrap: anywhere; user-select: none; pointer-events: none }
       :is(.inline-change[data-old], .inline-del, .inline-band-mark):focus { outline: 2px solid #0d9488; outline-offset: 1px }
       /* The line or file heading the search has moved to. */
       .hit-current { outline: 2px solid #0d9488; outline-offset: -2px; background-image: linear-gradient(rgba(13, 148, 136, .22), rgba(13, 148, 136, .22)) }
@@ -157,6 +156,7 @@
         </main>
       </section>
     </div>
+    <div v-show="popup.show" id="popup" ref="popupBox" role="tooltip" class="fixed z-50 max-h-[40vh] max-w-[min(48ch,calc(100vw-8px))] overflow-auto whitespace-pre-wrap break-words rounded border border-del-mark bg-panel px-1.5 py-0.5 font-mono text-xs leading-normal text-ink shadow-lg select-none" :style="{ left: popup.x + 'px', top: popup.y + 'px' }" @mouseenter="cancelHide" @mouseleave="hidePopup">{{ popup.text }}</div>
     <button v-if="selection.show" id="copySelection" type="button" class="fixed z-50 cursor-pointer rounded-md border border-line bg-panel p-1 text-ink shadow hover:bg-hover focus-visible:outline-2 focus-visible:outline-teal-500" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="T(selection.copied ? 'copiedSelection' : 'copySelection')" :title="T(selection.copied ? 'copied' : 'copySelection')" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
   </div>
   </div>
@@ -783,6 +783,46 @@
         const onSelection = () => { clearTimeout(selectionTimer); selectionTimer = setTimeout(placeSelection, 120) }
         document.addEventListener('selectionchange', onSelection)
         document.addEventListener('scroll', onSelection, true)
+        // The earlier text of an inline mark is shown in one floating box outside the file panels, which clip their content.
+        const popup = reactive({ show: false, x: 0, y: 0, text: '' })
+        const popupBox = ref(null)
+        let popupTarget = null
+        let hideTimer
+        const cancelHide = () => clearTimeout(hideTimer)
+        const hidePopup = () => { cancelHide(); hideTimer = setTimeout(() => { popup.show = false; popupTarget = null }, 120) }
+        function placePopup () {
+          if (!popupTarget || !popupBox.value) return
+          if (!popupTarget.isConnected) { popup.show = false; popupTarget = null; return }
+          const rect = popupTarget.getClientRects()[0] || popupTarget.getBoundingClientRect()
+          if (rect.bottom < 0 || rect.top > innerHeight) { popup.show = false; popupTarget = null; return }
+          const box = popupBox.value.getBoundingClientRect()
+          const below = rect.bottom + 4
+          const y = below + box.height > innerHeight - 4 && rect.top - box.height - 4 >= 4 ? rect.top - box.height - 4 : below
+          popup.x = Math.round(Math.min(Math.max(rect.left, 4), Math.max(4, innerWidth - box.width - 4)))
+          popup.y = Math.round(Math.min(Math.max(y, 4), Math.max(4, innerHeight - box.height - 4)))
+        }
+        async function showPopup (target) {
+          cancelHide()
+          popupTarget = target
+          popup.text = target.dataset.old
+          popup.show = true
+          await nextTick()
+          placePopup()
+        }
+        const markOf = event => event.target instanceof Element ? event.target.closest('#app [data-old]') : null
+        document.addEventListener('mouseover', event => { const mark = markOf(event); if (mark) showPopup(mark) })
+        document.addEventListener('mouseout', event => { if (markOf(event)) hidePopup() })
+        document.addEventListener('focusin', event => { const mark = markOf(event); if (mark) showPopup(mark) })
+        document.addEventListener('focusout', event => { if (markOf(event)) hidePopup() })
+        // A touch has no hover: a tap shows the box, and a tap elsewhere hides it.
+        document.addEventListener('pointerdown', event => {
+          if (event.pointerType !== 'touch') return
+          const mark = markOf(event)
+          if (mark) showPopup(mark)
+          else if (!event.target.closest?.('#popup')) hidePopup()
+        })
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') { popup.show = false; popupTarget = null } })
+        document.addEventListener('scroll', () => { if (popup.show) placePopup() }, true)
         const source = ref(-1)
         const input = ref('')
         const query = ref('')
@@ -1008,7 +1048,7 @@
           event.preventDefault()
           step(event.shiftKey ? -1 : 1)
         }
-        return { split, sidebarWidth, sidebarHidden, dragging, minWidth, maxWidth, defaultWidth, setWidth, startDrag, data, ready, selection, copySelection, source, input, contentOnly, query, layout, scope, whitespace, shown, theme, screen, mobile, opened, commits, visible, groups, totals, hasFull, controls, selected, activate, jump, canFilter, toggleFile, clearFilter, hits, hitLabel, step, onEnter }
+        return { popup, popupBox, cancelHide, hidePopup, split, sidebarWidth, sidebarHidden, dragging, minWidth, maxWidth, defaultWidth, setWidth, startDrag, data, ready, selection, copySelection, source, input, contentOnly, query, layout, scope, whitespace, shown, theme, screen, mobile, opened, commits, visible, groups, totals, hasFull, controls, selected, activate, jump, canFilter, toggleFile, clearFilter, hits, hitLabel, step, onEnter }
       }
     })
     app.config.globalProperties.T = T

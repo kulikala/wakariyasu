@@ -2,6 +2,8 @@
 
 [English](README.md) | 日本語
 
+[![Release](https://img.shields.io/github/v/release/kulikala/wakariyasu)](https://github.com/kulikala/wakariyasu/releases/latest) [![License: MIT](https://img.shields.io/github/license/kulikala/wakariyasu)](LICENSE)
+
 wakariyasu は、AI エージェントの書く文章を、作業の経緯を知らない人が読んでも分かるようにする、Claude Code と Claude のアプリ向けのプラグインです。エージェントからの報告や質問と、エージェントが書く文書（README・仕様書・コミットメッセージなど）の両方が対象です。
 
 エージェントに長い作業を任せると、報告は、作業の途中で付けた呼び名や、黙って置いた前提のまま書かれがちです。読んだ人は「結局どういうこと？」と聞き返すことになります。wakariyasu は規則とスキルを足して、何をしたのかを読み手の知っている言葉で書かせます。
@@ -184,7 +186,8 @@ npx openskills sync -y
 
 ## 別途必要なソフトウェア
 
-`show-changes` と `session-status` のページを作るとき、言語パックの無い言語で雛形を出すときに、Python 3 を使います。規則とほかのスキルには要りません。
+> [!NOTE]
+> `show-changes` と `session-status` のページを作るとき、言語パックの無い言語で雛形を出すときに、Python 3 を使います。規則とほかのスキルには要りません。
 
 ## 仕組み
 

@@ -2,6 +2,8 @@
 
 English | [日本語](README.ja.md)
 
+[![Release](https://img.shields.io/github/v/release/kulikala/wakariyasu)](https://github.com/kulikala/wakariyasu/releases/latest) [![License: MIT](https://img.shields.io/github/license/kulikala/wakariyasu)](LICENSE)
+
 wakariyasu is a plugin for Claude Code and the Claude apps that makes an AI agent write for someone who hasn't followed its work. It covers the agent's reports and questions to you, and the documents it writes: READMEs, specs, commit messages and the like.
 
 Give an agent a long task and its reports fill up with names it made up along the way and assumptions it settled on without telling you. You end up asking, "So what does that mean?" wakariyasu adds rules and skills that make the agent say what it did, in words you already know.
@@ -184,7 +186,8 @@ Updating the skills does not update what you pasted. After an update, replace ev
 
 ## Requirements
 
-Python 3 is needed to build the pages of `show-changes` and `session-status`, and to print the templates for a language without a pack. The rules and the other skills need nothing else.
+> [!NOTE]
+> Python 3 is needed to build the pages of `show-changes` and `session-status`, and to print the templates for a language without a pack. The rules and the other skills need nothing else.
 
 ## How it works
 

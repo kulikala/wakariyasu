@@ -6,25 +6,25 @@ wakariyasu is a plugin for Claude Code and the Claude apps that adds rules and s
 
 When you hand an agent a long task, its reports and questions tend to be written in terms of names the agent coined along the way and assumptions it settled on midway. The person reading the report has to ask, "So what does that mean?" wakariyasu adds instructions that make the agent write in a form that a reader who does not know the history can follow.
 
-## Before and after installing
+## How the agent's writing changes
 
-Suppose a user asks an agent, "The product list screen is slow, please fix it," and steps away. When the user comes back, they read the agent's report and questions and the documents the agent wrote. Here they are before and after installing wakariyasu.
+Suppose a user asks an agent, "The product list screen is slow, please fix it," and steps away. When the user comes back, they read the agent's report and questions and the documents the agent wrote. Here they are as the agent writes them without wakariyasu and with it.
 
 ### Progress report
 
-**Before installing**
+**Without wakariyasu**
 
 > Went with plan B and moved the cache to v2. The screen is lighter now. Only the zero-stock problem is left.
 
-**After installing**
+**With wakariyasu**
 
 > For the slow product list screen, I now keep product information in the server's memory for 5 minutes, so the screen no longer reads from the database on every display. The time to display the screen went from 2.1 seconds to 0.4 seconds.
 >
 > One issue remains: the screen layout breaks for products whose stock is 0.
 
-For each term in the report before installing, here is what the user thinks and how the report after installing writes it.
+For each term in the report without wakariyasu, here is what the user thinks and how the report with wakariyasu writes it.
 
-| Term in the report before installing | What the user thinks | How the report after installing writes it |
+| Term in the report without wakariyasu | What the user thinks | How the report with wakariyasu writes it |
 |---|---|---|
 | Plan B | What is plan A, and what is plan B? | States what was done |
 | v2 | A name that came up during the work; no idea what it refers to | Drops the name and states the content |
@@ -35,11 +35,11 @@ For each term in the report before installing, here is what the user thinks and 
 
 This is a moment before the report, partway through the work, when the agent needs the user to decide something.
 
-**Before installing**
+**Without wakariyasu**
 
 > Which TTL for the cache?
 
-**After installing**
+**With wakariyasu**
 
 > **1. Whether to keep product information on the server for 5 minutes or 1 hour**
 >
@@ -50,19 +50,19 @@ This is a moment before the report, partway through the work, when the agent nee
 > | A (recommended) | 5 minutes. Stock counts are shown up to 5 minutes late. The screen displays in 0.4 seconds. The reason for recommending it: a product that has sold out keeps showing as in stock for no more than 5 minutes. |
 > | B | 1 hour. The screen displays in 0.3 seconds, but stock counts lag by up to 1 hour. |
 
-The question after installing states what is being decided, why the user is the one to decide, and what happens with each choice. The user can answer with only the question number (1) and the option letter in the table (A or B), such as "1 is A".
+The question with wakariyasu states what is being decided, why the user is the one to decide, and what happens with each choice. The user can answer with only the question number (1) and the option letter in the table (A or B), such as "1 is A".
 
 ### Written documents
 
-**Before installing** (a passage from a design document)
+**Without wakariyasu** (a passage from a design document)
 
 > Following the review comments, this chapter organizes the cache policy. Details below.
 
-**After installing**
+**With wakariyasu**
 
 > Product information is kept in the server's memory for 5 minutes. Information older than 5 minutes is read again from the database the next time it is displayed.
 
-The sentence before installing cannot be understood without reading the exchange in which it was written (the review comments) and another place in the document (below). The sentence after installing states the policy on its own.
+The sentence without wakariyasu cannot be understood without reading the exchange in which it was written (the review comments) and another place in the document (below). The sentence with wakariyasu states the policy on its own.
 
 ## Rules and skills
 

@@ -2,6 +2,8 @@
 
 The changelog of a published tool (CHANGELOG, release notes) tells people who use the tool, and people who are considering it, about the new version. Readers read only the changelog to decide whether to update the tool to the new version and whether they must change how they use it. So each entry states what changed for the reader: what became possible, how behavior changed, and what the reader must do.
 
+Keep the changelog as short as the reader's decision allows. It says what reaches the user, not how the change was made: a reader scanning many versions reads each entry once, and every extra line hides the change that matters to them. Write one short line per change, at the level the user notices: a new skill or command, a behavior that changed, a step they must take. When several changes reach the user as one effect, write one entry. Leave out the specifics behind a change, such as the words added to a list, the names of labels, options, files or checks, and details that hold for one language only; the README, the guides and the diff hold those.
+
 Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for how to write it, and [Semantic Versioning](https://semver.org/) for version numbers. If you can read files or the web, open the two originals to check when in doubt. Agents tend to miss the following points.
 
 - Write in an entry the changes the reader notices when using the tool. As Keep a Changelog requires, do not list commits or work records. The reader does not use the following to decide on an update, so leave them out: how the tool was built, what was compared to decide, and which sentence in which file was fixed. After writing an entry, check that the reader does not have to ask what changes for them.

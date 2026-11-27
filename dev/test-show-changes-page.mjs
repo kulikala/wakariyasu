@@ -29,6 +29,7 @@ const urls = [
 const allowedUrls = new Set([...urls, decoderUrl])
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const staticOnly = process.argv.includes('--static-only')
+const filesPage = process.argv.includes('--files-page')
 const pagePath = process.argv.slice(2).find(arg => !arg.startsWith('--'))
 let page = pagePath ? readFileSync(resolve(pagePath), 'utf8') : ''
 if (!page) {
@@ -241,7 +242,18 @@ try {
   data = JSON.parse((await evaluate('globalThis.utfpackData'))['data.json'])
   const total = data.sources.reduce((n, source) => n + source.files.length, 0)
   const availableFull = data.sources.some(source => source.files.some(file => typeof file.full_body === 'string'))
+  scenario: {
   check(await evaluate(fileCount) === total, 'sample: a heading for every file')
+  if (filesPage) {
+    // A page of whole files (--files) opens on the text after the change, with no diff marks.
+    await click('#openAll')
+    await waitFor("document.querySelectorAll('#files table').length > 0", 'the first table of the files page')
+    check(await evaluate("document.querySelector('#after').getAttribute('aria-pressed') === 'true' && document.querySelector('#diff').getAttribute('aria-pressed') === 'false'"), 'files page: opens on the text after the change')
+    check(await evaluate("[...document.querySelectorAll('#files table')].every(t => t.dataset.scope === 'after') && [...document.querySelectorAll('#files tr')].every(tr => tr.children.length === 2)"), 'files page: no diff marks and one number column')
+    await click('#diff')
+    check(await evaluate("[...document.querySelectorAll('#files table')].every(t => t.dataset.scope === 'diff')"), 'files page: the diff view is one click away')
+    break scenario
+  }
   check(await evaluate('document.documentElement.dataset.theme') === 'dark', 'follows the OS color scheme at first')
   check(await evaluate("!!document.querySelector('#full') && !!document.querySelector('#diff')") === availableFull, 'no range switch without full text')
   check(await evaluate("!!document.querySelector('#source')") === (data.sources.length > 1), 'no target select for a single target')
@@ -392,6 +404,87 @@ try {
   check(await evaluate(allClosed), 'open all and close all within a target')
   await pickSource('Home')
   check(await evaluate("[...document.querySelectorAll('#files .file-header')].filter(e => e.getAttribute('aria-expanded') === 'true').length") === 2, 'keeps the open state of files outside the target')
+  // Search navigation: Enter goes to the next matching line, Shift+Enter to the previous one.
+  const hitFile = (path, body) => ({ path, old: null, status: 'M', added: 1, deleted: 1, binary: false, notice: '', body, full_body: body })
+  const searchFixture = { ...fixture, sources: [{ name: 'hits', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [
+    hitFile('a.txt', '@@ -1,4 +1,4 @@\n keep needle\n-old\n+new needle\n tail'),
+    hitFile('needle-name.txt', '@@ -1 +1 @@\n-x\n+y'),
+    hitFile('b.txt', '@@ -1,2 +1,2 @@\n-needle old\n+needle new\n ctx needle')
+  ] }] }
+  await navigate(withData(page, searchFixture), 'hits')
+  const key = (name, code, extra = {}) => send('Input.dispatchKeyEvent', { type: 'keyDown', key: name, code: name, windowsVirtualKeyCode: code, ...extra })
+  const pressEnter = async (shift = false) => { await key('Enter', 13, { text: '\r', modifiers: shift ? 8 : 0 }); await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 }); await waitFor("!!document.querySelector('.hit-current')", 'the current hit is marked', 8000); await sleep(150) }
+  const hitCount = () => evaluate("document.querySelector('#hitCount')?.textContent")
+  const hitOpen = id => evaluate(`document.querySelector('#files article[data-file-id="${id}"] .file-header')?.getAttribute('aria-expanded')`)
+  const centered = () => evaluate("(() => { const hit = document.querySelector('.hit-current'); const main = document.getElementById('main').getBoundingClientRect(); const r = hit.getBoundingClientRect(); return r.top >= main.top && r.bottom <= main.bottom })()")
+  await search('needle')
+  check(await hitCount() === '6 matches', 'search count: a changed line with both sides matching counts once per row (unified): ' + await hitCount())
+  check(await evaluate("document.querySelectorAll('.hit-current').length === 0 && document.querySelectorAll('#files .diff-body').length === 0"), 'nothing moves before Enter')
+  await pressEnter()
+  check(await hitCount() === '1 / 6' && await hitOpen('f-0-0') === 'true', 'Enter opens the first file and goes to the first hit')
+  check(await evaluate("document.querySelector('.hit-current').textContent.includes('keep needle')") && await centered(), 'the first hit is the matching line, on the screen')
+  await pressEnter()
+  check(await hitCount() === '2 / 6' && await evaluate("document.querySelector('.hit-current').textContent.includes('new needle')"), 'Enter goes to the next line')
+  await pressEnter()
+  check(await hitCount() === '3 / 6' && await evaluate("document.querySelector('.hit-current').closest('article')?.dataset.fileId") === 'f-0-1' && await hitOpen('f-0-1') === 'false', 'a file matched by name only is one hit on its heading, and stays closed')
+  await pressEnter()
+  check(await hitCount() === '4 / 6' && await hitOpen('f-0-2') === 'true' && await centered(), 'Enter opens a closed file and goes to its line')
+  await pressEnter()
+  await pressEnter()
+  check(await hitCount() === '6 / 6', 'goes through to the last hit')
+  await pressEnter()
+  check(await hitCount() === '1 / 6' && await evaluate("document.querySelector('.hit-current').textContent.includes('keep needle')"), 'after the last hit, Enter goes to the first')
+  await pressEnter(true)
+  check(await hitCount() === '6 / 6', 'Shift+Enter before the first hit goes to the last')
+  await pressEnter(true)
+  check(await hitCount() === '5 / 6', 'Shift+Enter goes to the previous hit')
+  await evaluate("document.querySelector('#filter').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 229, isComposing: true, bubbles: true, cancelable: true }))")
+  await sleep(300)
+  check(await hitCount() === '5 / 6', 'the Enter that confirms a conversion does not move')
+  await click('#hitNext')
+  check(await hitCount() === '6 / 6', 'the next button moves too')
+  await click('#split')
+  check(await hitCount() === '5 matches', 'in the split layout a changed line is one hit: ' + await hitCount())
+  await search('needle ')
+  check(await hitCount() === '1 match', 'a changed search starts again: ' + await hitCount())
+  await search('zzzz')
+  check(await hitCount() === 'No match' && await evaluate("document.querySelector('#hitNext').disabled"), 'no match is told, and the buttons are off')
+  await search('')
+  check(await evaluate("!document.querySelector('#hits')"), 'the count goes away with the search text')
+  // A hit far down a long file is brought to the middle of the screen.
+  const longLines = Array.from({ length: 200 }, (_, i) => ' line ' + i + (i === 150 ? ' needle' : ''))
+  const hitBody = '@@ -1,200 +1,200 @@\n' + longLines.join('\n')
+  await navigate(withData(page, { ...fixture, sources: [{ name: 'long', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [hitFile('long.txt', hitBody), hitFile('z.txt', '@@ -1 +1 @@\n-q\n+r')] }] }), 'long-hit')
+  await search('needle')
+  await pressEnter()
+  check(await evaluate("(() => { const main = document.getElementById('main').getBoundingClientRect(); const r = document.querySelector('.hit-current').getBoundingClientRect(); return Math.abs((r.top + r.bottom) / 2 - (main.top + main.bottom) / 2) < main.height / 4 })()"), 'a hit far down a long file is brought to the middle of the screen')
+  // The text after the change: removed lines and diff marks are gone, lines are numbered by the new file.
+  const afterFile = (path, status, body, fullBody) => ({ path, old: null, status, added: 1, deleted: 1, binary: false, notice: '', body, full_body: fullBody })
+  const afterFixture = { ...fixture, sources: [{ name: 'after', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [
+    afterFile('x.py', 'M', '@@ -2 +2 @@\n-removed\n+added', '@@ -1,4 +1,4 @@\n keep1\n-removed\n+added\n keep2\n keep3\n\\ No newline at end of file'),
+    afterFile('gone.py', 'D', '@@ -1,2 +0,0 @@\n-a\n-b', '@@ -1,2 +0,0 @@\n-a\n-b'),
+    { ...afterFile('pic.png', 'M', '', null), binary: true, added: null, deleted: null }
+  ] }] }
+  await navigate(withData(page, afterFixture), 'after')
+  check(await evaluate("document.querySelector('#after')?.getAttribute('aria-pressed') === 'false' && !!document.querySelector('#after').title"), 'the after-change switch is offered with full text')
+  await click('#openAll')
+  await click('#after')
+  await waitFor("document.querySelectorAll('#files table[data-scope=after]').length === 1", 'the after view')
+  check(await evaluate("document.querySelector('#after').getAttribute('aria-pressed') === 'true'"), 'the after switch is pressed')
+  const afterText = await evaluate("document.querySelector('#files article[data-file-id=f-0-0] table').innerText")
+  check(!afterText.includes('removed') && !afterText.includes('@@') && !afterText.includes('No newline') && afterText.includes('added'), 'removed lines, @@ lines and notes are gone')
+  check(await evaluate("[...document.querySelectorAll('#files article[data-file-id=f-0-0] tr')].map(tr => tr.firstElementChild.textContent).join(',')") === '1,2,3,4', 'lines are numbered by the new file')
+  check(await evaluate("[...document.querySelectorAll('#files article[data-file-id=f-0-0] tr')].every(tr => tr.children.length === 2 && !/^[+-]/.test(tr.children[1].textContent.trim()))"), 'no diff marks')
+  check(await evaluate("(() => { const rows = [...document.querySelectorAll('#files article[data-file-id=f-0-0] tr')]; const bg = tr => getComputedStyle(tr).backgroundColor; return rows.filter(tr => tr.dataset.changed).length === 1 && bg(rows[1]) !== bg(rows[0]) && bg(rows[0]) === bg(rows[2]) })()"), 'a changed line is shown by its background color alone')
+  check(await evaluate("document.querySelector('#files article[data-file-id=f-0-1] .after-empty')?.textContent") === 'This file is deleted, so nothing remains after the change.', 'a deleted file says nothing remains')
+  check(await evaluate("document.querySelector('#files article[data-file-id=f-0-2]').textContent.includes('The full text is not included')"), 'a file without full text keeps the missing-text notice')
+  await search('removed')
+  check(await evaluate(fileCount) === 0, 'removed text is not searched in the after view')
+  await search('')
+  await click('#diff')
+  check(await evaluate("document.querySelector('#files article[data-file-id=f-0-0] table').dataset.scope === 'diff' && document.querySelector('#files article[data-file-id=f-0-0] table').innerText.includes('removed')"), 'the diff view comes back')
+  await click('#full')
+  check(await evaluate("document.querySelector('#files article[data-file-id=f-0-0] table').dataset.scope === 'full'"), 'the full view is still one click away')
   // Whitespace: changed blanks carry marks drawn by CSS, and ignoring whitespace hides blank-only changes.
   const spaceFile = (path, body) => ({ path, old: null, status: 'M', added: 2, deleted: 2, binary: false, notice: '', body })
   const spaceFixture = { ...fixture, sources: [{ name: 'blanks', kind: 'plain', base_ref: 'before', target_ref: 'after', base: '', target: '', commits: [], files: [
@@ -505,6 +598,7 @@ try {
   failDecoder = false
   errors.length = 0
   networkFailures.length = 0
+  }
   process.stdout.write(JSON.stringify({ ok: true, files: total, checks: checks.length, results: checks, staticExternalLoads: urls, consoleErrors: errors, networkFailures }) + '\n')
 } catch (error) {
   process.stderr.write(JSON.stringify({ ok: false, browser: 'failed', message: error.message, consoleErrors: errors, networkFailures }) + '\n')

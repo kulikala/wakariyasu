@@ -37,5 +37,7 @@
   "copyAnswer": "Answer",
   "copyNoAnswer": "(no answer)",
   "copyNote": "Message",
-  "copyOverall": "Message about the whole report"
+  "copyOverall": "Message about the whole report",
+  "copySelection": "Copy the selected text",
+  "copySelectionFailed": "Copying was refused here. Copy the selected text with the copy shortcut."
 }

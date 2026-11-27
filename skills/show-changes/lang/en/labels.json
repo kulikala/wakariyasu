@@ -99,5 +99,17 @@
   "noticeUnreadable": "Bytes that are not valid UTF-8 are shown as \\xNN.",
   "noticeNoFull": "The full text cannot be restored from a diff file, so it is not included.",
   "loadingData": "Loading the diff…",
-  "dataLoadError": "The diff data could not be opened. The decoder may not have loaded, the integrity check may have failed, or the data could not be unpacked. A page built with --embed-decoder does not need the CDN."
+  "dataLoadError": "The diff data could not be opened. The decoder may not have loaded, the integrity check may have failed, or the data could not be unpacked. A page built with --embed-decoder does not need the CDN.",
+  "hitNone": "No match",
+  "hitTotal": "{n} matches",
+  "hitTotalOne": "1 match",
+  "hitPosition": "{i} / {n}",
+  "hitPrev": "Previous match",
+  "hitPrevTitle": "Go to the previous match (Shift+Enter)",
+  "hitNext": "Next match",
+  "hitNextTitle": "Go to the next match (Enter)",
+  "scopeAfter": "After",
+  "scopeAfterTitle": "Show the file as it is after the change, without removed lines, and color the changed lines",
+  "afterDeleted": "This file is deleted, so nothing remains after the change.",
+  "afterEmpty": "The file is empty after the change."
 }

@@ -229,7 +229,42 @@ def main():
     assert build.UTFPACK_DECODER_URL not in embedded
     assert 'globalThis.utfpackData=' in embedded and 'var utfpack=' in embedded
     report['embeddedDecoder'] = True
-    report['regressions'] = ['file type change patches and stats', 'NUL-delimited rename stats', 'LF-only full-text lines', 'missing final newline', 'protected output paths', 'HTML/script escaping', 'packed data script safety', 'required data version', 'arbitrary and empty versions', 'JSON version preservation', 'title data-marker separation', 'no repository path metadata', 'JSON-only output guards', 'malformed JSON files', 'non-UTF-8 bytes', 'artifact page', 'diff -ru binary lines', 'suppressed blank context', '-diff attribute text', 'symlink type change', 'renamed plain diff', 'CRLF diff file', 'file modes', 'embedded decoder']
+    # A page of whole files: no comparison, every file an addition with its text, opening on the text after the change.
+    with tempfile.TemporaryDirectory(prefix='files-') as folder:
+        folder = Path(folder)
+        (folder / 'docs' / 'sub').mkdir(parents=True)
+        (folder / 'docs' / 'a.md').write_text('# Title\nsecond line\n', encoding='utf-8')
+        (folder / 'docs' / 'sub' / 'b.py').write_text('print(1)\n', encoding='utf-8')
+        (folder / 'empty.txt').write_text('', encoding='utf-8')
+        files_cli = ['--files', 'whole', str(folder / 'docs'), str(folder / 'empty.txt'), '--data-version', 'files check']
+        json_path = folder / 'files.json'
+        files_page = command([*files_cli, '-o', '-', '--json-out', str(json_path)])
+        files_data = json.loads(json_path.read_text(encoding='utf-8'))
+        build.validate(files_data)
+        assert files_data['schema_version'] == 2 and files_data['initial_scope'] == 'after' and files_data['full_text'] is True
+        source = files_data['sources'][0]
+        assert source['kind'] == 'files' and source['base_ref'] == '' and source['base'] == '' and source['commits'] == []
+        by_path = {f['path']: f for f in source['files']}
+        assert sorted(by_path) == ['docs/a.md', 'docs/sub/b.py', 'empty.txt'], sorted(by_path)
+        assert all(f['status'] == 'A' and f['deleted'] == 0 for f in source['files'])
+        assert by_path['docs/a.md']['full_body'] == '@@ -0,0 +1,2 @@\n+# Title\n+second line' and by_path['docs/a.md']['added'] == 2
+        mixed = json.loads(command([*files_cli, '--dirs', 'plain', str(folder / 'docs'), str(folder / 'docs'), '--json-out', '-']))
+        assert mixed['initial_scope'] == 'diff' and mixed['full_text'] is True
+        for bad in ({**files_data, 'initial_scope': 'sideways'}, {**files_data, 'initial_scope': 'after', 'full_text': False}, {**files_data, 'schema_version': 1}):
+            try:
+                build.validate(bad)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError('validate accepted data that does not fit schema version 2')
+        again = json.loads(command(['--data', '-', '--json-out', '-'], json_path.read_text(encoding='utf-8')))
+        assert again['sources'] == files_data['sources'] and again['initial_scope'] == 'after'
+        result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags, '--files-page'], input=files_page,
+                                capture_output=True, text=True, timeout=600)
+        if result.returncode:
+            raise AssertionError(result.stderr)
+        report['filesPage'] = json.loads(result.stdout)
+    report['regressions'] = ['file type change patches and stats', 'NUL-delimited rename stats', 'LF-only full-text lines', 'missing final newline', 'protected output paths', 'HTML/script escaping', 'packed data script safety', 'required data version', 'arbitrary and empty versions', 'JSON version preservation', 'title data-marker separation', 'no repository path metadata', 'JSON-only output guards', 'malformed JSON files', 'non-UTF-8 bytes', 'artifact page', 'diff -ru binary lines', 'suppressed blank context', '-diff attribute text', 'symlink type change', 'renamed plain diff', 'CRLF diff file', 'file modes', 'embedded decoder', 'files page']
     with tempfile.TemporaryDirectory(prefix='plain-', dir=args.sample_dir or None) as folder:
         folder = Path(folder); left = folder / 'before'; right = folder / 'after'
         left.mkdir(); right.mkdir()

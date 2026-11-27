@@ -358,6 +358,86 @@
         return { data, L, fill, ready, tasks, summary, summaryLabel, decisions, answers, overall, isAnswered, clearAnswer, progressText, answerText, copyState, answerBox, copyAnswers, jump }
       }
     }).mount('#app')
+
+    // A small copy button floats above the end of any text the viewer selects. Plain DOM code: it needs no framework.
+    {
+      const words = { ...DEFAULT_LABELS, ...((DATA && DATA.labels) || {}) }
+      const svg = paths => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`
+      const copyIcon = svg('<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>')
+      const checkIcon = svg('<path d="M20 6 9 17l-5-5"/>')
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.id = 'copySelection'
+      button.hidden = true
+      button.style.cssText = 'position:fixed;z-index:50;display:flex;align-items:center;cursor:pointer;padding:4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.2)'
+      const notice = document.createElement('p')
+      notice.id = 'copySelectionNotice'
+      notice.hidden = true
+      notice.setAttribute('role', 'status')
+      notice.style.cssText = 'position:fixed;z-index:50;max-width:min(20rem,calc(100vw - 16px));margin:0;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--problem);font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.2)'
+      document.body.append(button, notice)
+      let text = ''
+      let timer = 0
+      const label = (state) => {
+        const name = state === 'copied' ? words.copied : words.copySelection
+        button.setAttribute('aria-label', name)
+        button.title = name
+        button.innerHTML = state === 'copied' ? checkIcon : copyIcon
+      }
+      label('')
+      const hide = () => { button.hidden = true; notice.hidden = true }
+      const place = () => {
+        const selection = getSelection()
+        const anchor = selection && selection.anchorNode && selection.anchorNode.parentElement
+        const picked = selection && !selection.isCollapsed ? selection.toString() : ''
+        if (!picked.trim() || !anchor || !anchor.closest('#status-page') || anchor.closest('input, textarea')) {
+          if (button.title !== words.copied) hide()
+          return
+        }
+        const rects = selection.getRangeAt(selection.rangeCount - 1).getClientRects()
+        const box = rects[rects.length - 1] || selection.getRangeAt(0).getBoundingClientRect()
+        text = picked
+        notice.hidden = true
+        label('')
+        button.style.left = Math.min(Math.max(box.right + 4, 4), innerWidth - 32) + 'px'
+        button.style.top = Math.max(box.top - 30, 4) + 'px'
+        button.hidden = false
+      }
+      const later = () => { clearTimeout(timer); timer = setTimeout(place, 120) }
+      document.addEventListener('selectionchange', later)
+      document.addEventListener('scroll', later, true)
+      /** Copy from the click; fall back to a hidden textarea where the Clipboard API is missing or refused. */
+      const copy = () => {
+        const fallback = () => {
+          const selection = getSelection()
+          const ranges = Array.from({ length: selection.rangeCount }, (_, i) => selection.getRangeAt(i))
+          const area = document.createElement('textarea')
+          area.value = text
+          area.style.cssText = 'position:fixed;top:0;left:0;opacity:0'
+          document.body.append(area)
+          area.select()
+          let done = false
+          try { done = document.execCommand('copy') } catch {}
+          area.remove()
+          selection.removeAllRanges()
+          ranges.forEach(range => selection.addRange(range))
+          return done
+        }
+        return !navigator.clipboard || !navigator.clipboard.writeText ? Promise.resolve(fallback()) : navigator.clipboard.writeText(text).then(() => true, fallback)
+      }
+      button.addEventListener('mousedown', event => event.preventDefault())
+      button.addEventListener('click', async () => {
+        if (await copy()) {
+          label('copied')
+          setTimeout(() => { label(''); place() }, 1200)
+          return
+        }
+        notice.textContent = words.copySelectionFailed
+        notice.style.left = button.style.left
+        notice.style.top = (parseFloat(button.style.top) + 32) + 'px'
+        notice.hidden = false
+      })
+    }
   </script>
 </body>
 </html>

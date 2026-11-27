@@ -119,4 +119,16 @@ for code in ('en', 'ja'):
 check('the ja skeleton has the ja state words', '🙋 判断待ち（1）' in skeleton.render(ja) and '## 現在のゴール' in skeleton.render(ja))
 check('the skeleton prints the state words once each', all(skeleton.render(labels).count(f'{e} {labels[k]}') == 1 for e, k in skeleton.STATES))
 
+# The browser run needs Chrome and the network, so dev/test leaves it out; run `python3 -B dev/test-session-status.py --browser` after changing the page.
+if '--browser' in sys.argv:
+    with tempfile.TemporaryDirectory(prefix='status-page-') as folder:
+        for code, words in (('en', labels), ('ja', ja)):
+            page_file = Path(folder) / f'{code}.html'
+            page_file.write_text(build.make_html({**report, 'lang': code}, template, words), encoding='utf-8')
+            result = subprocess.run(['node', str(ROOT / 'dev' / 'test-session-status-page.mjs'), str(page_file), f'--expect-label={words["copySelection"]}'],
+                                    capture_output=True, text=True, timeout=300)
+            check(f'browser ({code}): selecting text shows a copy button that copies the selection', result.returncode == 0)
+            if result.returncode:
+                print(result.stderr)
+
 sys.exit(1 if failures else 0)

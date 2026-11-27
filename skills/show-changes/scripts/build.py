@@ -17,7 +17,8 @@ sys.dont_write_bytecode = True
 import labels as labels_module  # noqa: E402
 import utfpack_pack  # noqa: E402
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+INITIAL_SCOPES = ('diff', 'full', 'after')
 UTFPACK_VERSION = utfpack_pack.VERSION
 UTFPACK_DECODER_URL = f'https://cdn.jsdelivr.net/npm/utfpack@{UTFPACK_VERSION}/dist/cdn/utfpack.js'
 # Dates offer more words than a language needs, so these labels may leave some out.
@@ -309,6 +310,24 @@ def collect_plain(name, before, after, include_full):
                 base='', target='', commits=[], files=files)
 
 
+def collect_files(name, locations):
+    """Show whole files or folders without comparing: each file is an addition with its full text."""
+    given = [Path(location).expanduser().absolute() for location in locations]
+    files = {}
+    for root in given:
+        # Folders keep their relative paths (prefixed with the folder name when several are given); a file keeps its name.
+        for path, source in sorted(plain_paths(root).items()):
+            shown = path or root.name
+            if path and len(given) > 1:
+                shown = f'{root.name}/{path}'
+            if shown in files:
+                raise ValueError(f'The path appears twice in the files target: {shown}')
+            files[shown] = source
+    entries = [text_entry(path, b'', read_plain(source), True, None, 'A', None, (None, plain_mode(source)))
+               for path, source in files.items()]
+    return dict(name=name, kind='files', base_ref='', target_ref='', base='', target='', commits=[], files=entries)
+
+
 def collect_patch(name, location, include_full):
     # Hunk lengths disambiguate --- / +++ content from subsequent file headers.
     raw = Path(location).read_bytes().removeprefix(b'\xef\xbb\xbf')
@@ -459,6 +478,10 @@ def validate(data):
         raise ValueError('group_depth must be an integer of 0 or more')
     if type(data.get('full_text')) is not bool or not isinstance(data.get('sources'), list):
         raise ValueError('full_text must be true or false, and sources must be an array')
+    if data.get('initial_scope') not in INITIAL_SCOPES:
+        raise ValueError('initial_scope must be diff, full or after')
+    if data['initial_scope'] != 'diff' and not data['full_text']:
+        raise ValueError('initial_scope full or after needs full_text to be true')
     if data.get('lang') is not None and not isinstance(data['lang'], str):
         raise ValueError('lang must be a string')
     given = data.get('labels', {})
@@ -472,8 +495,8 @@ def validate(data):
     for repo in data['sources']:
         if not isinstance(repo, dict):
             raise ValueError('source must be an object')
-        if repo.get('kind', 'git') not in ('git', 'plain', 'patch'):
-            raise ValueError('source.kind must be git, plain or patch')
+        if repo.get('kind', 'git') not in ('git', 'plain', 'patch', 'files'):
+            raise ValueError('source.kind must be git, plain, patch or files')
         for key in ('name', 'base_ref', 'target_ref', 'base', 'target'):
             if not isinstance(repo.get(key), str):
                 raise ValueError(f'source.{key} must be a string')
@@ -600,6 +623,7 @@ def main(argv=None):
     parser.add_argument('--repo', nargs=4, action='append', default=[], metavar=('NAME', 'PATH', 'BASE', 'TARGET'), help='a target of two git commits: name, path, base and target (can be repeated)')
     parser.add_argument('--dirs', nargs=3, action='append', default=[], metavar=('NAME', 'BEFORE', 'AFTER'), help='a target of two ordinary folders or two files (can be repeated)')
     parser.add_argument('--diff', nargs=2, action='append', default=[], metavar=('NAME', 'FILE'), help='a target of an existing unified diff (can be repeated)')
+    parser.add_argument('--files', nargs='+', action='append', default=[], metavar=('NAME', 'PATH'), help='a target that shows whole files or folders without comparing: a name, then one or more paths (can be repeated); the page opens on the text after the change')
     parser.add_argument('--merge-base', action='append', default=[], metavar='NAME', help='compare the --repo target of this name from the divergence point of BASE and TARGET')
     parser.add_argument('--data', metavar='JSON', help='build from a JSON written earlier; - reads standard input')
     parser.add_argument('--title', metavar='TITLE', help='the page title (default: "Diff review", or the defaultTitle label)')
@@ -635,7 +659,7 @@ def main(argv=None):
         if args.output and args.json_out and args.output != '-' and args.json_out != '-' and Path(args.output).resolve() == Path(args.json_out).resolve():
             raise ValueError('give different paths for the HTML and the JSON')
         if args.data:
-            if args.repo or args.dirs or args.diff or args.merge_base or args.full_text:
+            if args.repo or args.dirs or args.diff or args.files or args.merge_base or args.full_text:
                 raise ValueError('--data cannot be combined with the options that collect diffs')
             data = validate(json.loads(sys.stdin.read() if args.data == '-' else Path(args.data).read_text(encoding='utf-8')))
             data['generated_at'] = datetime.datetime.now().astimezone().isoformat(timespec='seconds')
@@ -644,7 +668,9 @@ def main(argv=None):
                 if value is not None:
                     data[key] = value
         else:
-            names = [r[0] for r in [*args.repo, *args.dirs, *args.diff]]
+            if any(len(item) < 2 for item in args.files):
+                raise ValueError('--files needs a name and at least one path')
+            names = [r[0] for r in [*args.repo, *args.dirs, *args.diff, *args.files]]
             if args.data_version is None:
                 raise ValueError('give --data-version')
             if not names or len(set(names)) != len(names):
@@ -654,14 +680,19 @@ def main(argv=None):
             protected_paths = [path for _, location, _, _ in args.repo for path in repository_paths(location)]
             protected_paths += [Path(location).expanduser().resolve() for _, a, b in args.dirs for location in (a, b)]
             protected_paths += [Path(location).expanduser().resolve() for _, location in args.diff]
+            protected_paths += [Path(location).expanduser().resolve() for item in args.files for location in item[1:]]
+            # A page of whole files has no diff to show, so its text must be in the data and it opens on the text after the change.
+            full_text = args.full_text or bool(args.files)
+            only_files = bool(args.files) and not (args.repo or args.dirs or args.diff)
             now = datetime.datetime.now().astimezone().isoformat(timespec='seconds')
             data = dict(schema_version=SCHEMA_VERSION, title=args.title or words.get('defaultTitle') or DEFAULT_TITLE,
                         generated_at=now, data_version=args.data_version,
                         group_depth=2 if args.group_depth is None else args.group_depth,
-                        full_text=args.full_text, sources=[
-                            *[collect(*repo, repo[0] in args.merge_base, args.full_text) for repo in args.repo],
-                            *[collect_plain(*item, args.full_text) for item in args.dirs],
-                            *[collect_patch(*item, args.full_text) for item in args.diff]])
+                        full_text=full_text, initial_scope='after' if only_files else 'diff', sources=[
+                            *[collect(*repo, repo[0] in args.merge_base, full_text) for repo in args.repo],
+                            *[collect_plain(*item, full_text) for item in args.dirs],
+                            *[collect_patch(*item, full_text) for item in args.diff],
+                            *[collect_files(item[0], item[1:]) for item in args.files]])
             apply_language(data, args.lang, override)
         validate(data)
         for output in (args.output, args.json_out):

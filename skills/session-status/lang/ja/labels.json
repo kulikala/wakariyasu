@@ -37,5 +37,7 @@
   "copyAnswer": "回答",
   "copyNoAnswer": "（未回答）",
   "copyNote": "メッセージ",
-  "copyOverall": "報告全体へのメッセージ"
+  "copyOverall": "報告全体へのメッセージ",
+  "copySelection": "選んだ文字をコピー",
+  "copySelectionFailed": "ここではコピーを受け付けませんでした。選んだ文字をコピーのショートカットで写してください。"
 }

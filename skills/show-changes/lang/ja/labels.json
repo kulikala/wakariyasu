@@ -99,5 +99,17 @@
   "noticeUnreadable": "UTF-8 として読めないバイトは \\xNN の形で表示しています。",
   "noticeNoFull": "全文は差分ファイルから復元できないため含まれません。",
   "loadingData": "差分を読み込んでいます…",
-  "dataLoadError": "差分のデータを開けませんでした。デコーダを読み込めなかったか、整合性の確認に失敗したか、データを展開できませんでした。--embed-decoder を付けて作ったページは、CDN が要りません。"
+  "dataLoadError": "差分のデータを開けませんでした。デコーダを読み込めなかったか、整合性の確認に失敗したか、データを展開できませんでした。--embed-decoder を付けて作ったページは、CDN が要りません。",
+  "hitNone": "該当なし",
+  "hitTotal": "{n} 件",
+  "hitTotalOne": "1 件",
+  "hitPosition": "{i} / {n}",
+  "hitPrev": "前の該当箇所",
+  "hitPrevTitle": "前の該当箇所へ移る（Shift+Enter）",
+  "hitNext": "次の該当箇所",
+  "hitNextTitle": "次の該当箇所へ移る（Enter）",
+  "scopeAfter": "変更後",
+  "scopeAfterTitle": "削除した行を除き、変更後のファイルをそのまま表示して、変わった行に色を付ける",
+  "afterDeleted": "このファイルは削除されたため、変更後は空です。",
+  "afterEmpty": "変更後のファイルは空です。"
 }

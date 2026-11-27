@@ -24,6 +24,8 @@
     .ws-cr::after { content: 'CR' }
     .ws-zwsp::after { content: 'ZWSP' }
     .ws-bom::after { content: 'BOM' }
+    /* The line or file heading the search has moved to. */
+    .hit-current { outline: 2px solid #0d9488; outline-offset: -2px; background-image: linear-gradient(rgba(13, 148, 136, .22), rgba(13, 148, 136, .22)) }
   </style>
 </head>
 <body class="m-0">
@@ -37,17 +39,22 @@
     </header>
     <div ref="split" class="relative flex min-h-0 flex-1">
       <nav id="sidebar" :aria-label="T('sidebar')" class="h-full w-full shrink-0 overflow-y-auto border-r border-[var(--border)]" :class="!mobile && sidebarHidden ? 'md:hidden' : ''" :style="mobile ? null : { width: sidebarWidth + 'px' }" :inert="mobile && screen === 'diff'">
-        <div class="sticky top-0 z-10 flex items-center gap-2 border-b border-[var(--border)] bg-[var(--bg)] p-3">
+        <div class="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-[var(--border)] bg-[var(--bg)] p-3">
           <label v-if="data.sources.length > 1" for="source" class="flex shrink-0 items-center gap-1 text-xs">{{ T('source') }}
             <select id="source" v-model.number="source" :title="T('sourceTitle')" class="max-w-24 cursor-pointer rounded border border-[var(--border)] bg-[var(--panel)] p-2 text-[var(--fg)]" :aria-label="T('source')">
               <option :value="-1">{{ T('sourceAll') }}</option><option v-for="(item, i) in data.sources" :value="i">{{ item.name }}</option>
             </select>
           </label>
           <div class="relative min-w-0 flex-1">
-            <input id="filter" v-model="input" type="text" :placeholder="T('filterPlaceholder')" :aria-label="T('filterPlaceholder')" :title="T('filterTitle')" class="w-full rounded border border-[var(--border)] bg-[var(--panel)] py-2 pl-2 text-xs text-[var(--fg)] focus:outline-2 focus:outline-teal-500" :class="input ? 'pr-8' : 'pr-2'" @keydown.esc="clearFilter">
+            <input id="filter" v-model="input" type="text" :placeholder="T('filterPlaceholder')" :aria-label="T('filterPlaceholder')" :title="T('filterTitle')" class="w-full rounded border border-[var(--border)] bg-[var(--panel)] py-2 pl-2 text-xs text-[var(--fg)] focus:outline-2 focus:outline-teal-500" :class="input ? 'pr-8' : 'pr-2'" @keydown.esc="clearFilter" @keydown.enter="onEnter">
             <button v-if="input" id="clearFilter" type="button" :aria-label="T('clearFilter')" :title="T('clearFilterTitle')" class="absolute inset-y-0 right-0 flex cursor-pointer items-center rounded px-2 text-[var(--muted)] hover:text-[var(--fg)] focus-visible:outline-2 focus-visible:outline-teal-500" @click="clearFilter"><x :size="14"></x></button>
           </div>
           <button v-if="canFilter" id="contentOnly" type="button" :aria-label="T('contentOnly')" :title="T(contentOnly ? 'contentOnlyOn' : 'contentOnlyOff')" :aria-pressed="contentOnly" class="shrink-0 cursor-pointer rounded border border-[var(--border)] p-2 focus-visible:outline-2 focus-visible:outline-teal-500" :class="contentOnly ? 'bg-teal-700 text-white hover:bg-teal-800' : 'bg-[var(--panel)] hover:bg-[var(--hover)]'" @click="contentOnly = !contentOnly"><div><list-filter :size="16"></list-filter></div></button>
+          <div v-if="query" id="hits" class="flex basis-full items-center justify-end gap-2 text-xs text-[var(--muted)]">
+            <span id="hitCount" role="status" aria-live="polite">{{ hitLabel }}</span>
+            <button id="hitPrev" type="button" :aria-label="T('hitPrev')" :title="T('hitPrevTitle')" :disabled="!hits.length" class="cursor-pointer rounded border border-[var(--border)] bg-[var(--panel)] p-1 text-[var(--fg)] hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-default disabled:opacity-40" @click="step(-1)"><div><chevron-up :size="14"></chevron-up></div></button>
+            <button id="hitNext" type="button" :aria-label="T('hitNext')" :title="T('hitNextTitle')" :disabled="!hits.length" class="cursor-pointer rounded border border-[var(--border)] bg-[var(--panel)] p-1 text-[var(--fg)] hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-default disabled:opacity-40" @click="step(1)"><div><chevron-down :size="14"></chevron-down></div></button>
+          </div>
         </div>
         <ul id="filelist" class="space-y-1 p-2">
           <template v-for="group in groups" :key="group.name">
@@ -104,7 +111,7 @@
     import { compile } from 'https://cdn.jsdelivr.net/npm/@vue/compiler-dom@3.5.44/+esm'
     const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, nextTick } = Vue
     Vue.registerRuntimeCompiler((template, options) => new Function('Vue', compile(template, { hoistStatic: true, ...options }).code)(Vue))
-    import { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X } from 'https://cdn.jsdelivr.net/npm/@lucide/vue@1.61.0/+esm'
+    import { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck } from 'https://cdn.jsdelivr.net/npm/@lucide/vue@1.61.0/+esm'
     import hljs from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/core.js/+esm'
     import javascript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/javascript.js/+esm'
     import typescript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/typescript.js/+esm'
@@ -139,7 +146,7 @@
     Object.assign(L, DEFAULT_LABELS, DATA.labels || {})
     document.documentElement.lang = DATA.lang || 'en'
 
-    const icons = { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X }
+    const icons = { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck }
 
     /** Copy text from a click handler; fall back to a hidden textarea where the Clipboard API is missing or refused. */
     function copyText (text) {
@@ -354,26 +361,36 @@
       return result
     }
 
-    function renderDiff (file, layout, scope, query, whitespace) {
-      const parsed = parseDiff(scope === 'full' && typeof file.full_body === 'string' ? file.full_body : file.body)
-      const rows = whitespace === 'spaceIgnore' ? ignoreSpace(parsed, scope === 'full' && typeof file.full_body === 'string') : parsed
-      if (parsed.length && !rows.some(row => row.kind === 'del' || row.kind === 'add') && parsed.some(row => row.kind === 'del' || row.kind === 'add')) return '<p class="space-only p-3 text-[var(--muted)]">' + T('spaceOnly') + '</p>'
-      const digits = key => String(rows.reduce((max, row) => Math.max(max, row[key] || 0), 1)).length
-      const gutter = key => `<col class="w-[calc(${digits(key)}ch+10px)]">`
-      const ln = value => `<td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${value ?? ''}</td>`
-      const code = (row, range) => {
-        const color = row?.kind === 'add' ? 'bg-[var(--add)]' : row?.kind === 'del' ? 'bg-[var(--del)]' : ''
-        return `<td class="px-1 align-top whitespace-pre-wrap break-all ${color}">${row ? `<span class="inline-block w-3 text-[var(--muted)] select-none">${row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '}</span><span class="line-text">${textHTML(row.text, file.path, query, range && range[0] < range[1] ? range : null, row.kind, range?.[2])}</span>` : ''}</td>`
+    const hasChange = rows => rows.some(row => row.kind === 'del' || row.kind === 'add')
+    const rowCache = new WeakMap()
+    /**
+     * The rows a file shows for a range and whitespace setting. 'after' keeps the lines of the changed file only:
+     * unchanged and added lines, with the removed ones and the @@ lines left out.
+     */
+    function displayRows (file, scope, whitespace) {
+      let cache = rowCache.get(file)
+      if (!cache) rowCache.set(file, cache = {})
+      const key = scope + '|' + whitespace
+      if (!cache[key]) {
+        const full = typeof file.full_body === 'string'
+        const parsed = parseDiff((scope === 'full' || scope === 'after') && full ? file.full_body : file.body)
+        const rows = scope === 'after' ? parsed.filter(row => row.kind === 'add' || row.kind === 'context')
+          : whitespace === 'spaceIgnore' ? ignoreSpace(parsed, scope === 'full' && full) : parsed
+        cache[key] = { parsed, rows }
       }
-      const output = []
+      return cache[key]
+    }
+
+    /** One entry per table row of the diff, so that drawing and moving between search hits agree on the rows. */
+    function plan (rows, layout) {
+      const entries = []
       for (let i = 0; i < rows.length;) {
         const row = rows[i]
         if (row.kind === 'hunk' || row.kind === 'note') {
-          output.push(`<tr><td colspan="${layout === 'split' ? 4 : 3}" class="hunk sticky top-[var(--head,0px)] z-[5] bg-[var(--hunk)] px-2 py-1 text-[var(--muted)] whitespace-pre-wrap break-all">${esc(row.text)}</td></tr>`)
+          entries.push({ kind: 'hunk', row })
           i++
         } else if (row.kind === 'context') {
-          // Lines matched while ignoring whitespace keep each side's own text in the split layout.
-          output.push(layout === 'split' ? `<tr>${ln(row.old)}${code(row.before === undefined ? row : { ...row, text: row.before })}${ln(row.current)}${code(row)}</tr>` : `<tr>${ln(row.old)}${ln(row.current)}${code(row)}</tr>`)
+          entries.push({ kind: 'context', row })
           i++
         } else {
           const removed = []
@@ -381,14 +398,57 @@
           while (rows[i]?.kind === 'del') removed.push(rows[i++])
           while (rows[i]?.kind === 'add') added.push(rows[i++])
           const pairs = Array.from({ length: Math.max(removed.length, added.length) }, (_, j) => removed[j] && added[j] ? pairRanges(removed[j].text, added[j].text) : [null, null])
-          if (layout === 'split') {
-            pairs.forEach(([a, b], j) => output.push(`<tr>${ln(removed[j]?.old)}${code(removed[j], a)}${ln(added[j]?.current)}${code(added[j], b)}</tr>`))
-          } else {
-            removed.forEach((line, j) => output.push(`<tr class="bg-[var(--del)]">${ln(line.old)}${ln()}${code(line, pairs[j][0])}</tr>`))
-            added.forEach((line, j) => output.push(`<tr class="bg-[var(--add)]">${ln()}${ln(line.current)}${code(line, pairs[j][1])}</tr>`))
+          if (layout === 'split') pairs.forEach(([a, b], j) => entries.push({ kind: 'split', a: removed[j], b: added[j], ra: a, rb: b }))
+          else {
+            removed.forEach((line, j) => entries.push({ kind: 'line', row: line, range: pairs[j][0] }))
+            added.forEach((line, j) => entries.push({ kind: 'line', row: line, range: pairs[j][1] }))
           }
         }
       }
+      return entries
+    }
+
+    /** The table rows (by index) whose text holds the query, one per drawn row; a split row with both sides matching counts once. */
+    function hitRows (file, layout, scope, whitespace, query) {
+      const { parsed, rows } = displayRows(file, scope, whitespace)
+      const has = row => !!row && [row.text, row.before ?? ''].some(text => text.toLowerCase().includes(query))
+      if (scope === 'after') return typeof file.full_body === 'string' && file.status[0] !== 'D' ? rows.flatMap((row, i) => has(row) ? [i] : []) : []
+      if (parsed.length && !hasChange(rows) && hasChange(parsed)) return []
+      return plan(rows, layout).flatMap((entry, i) => (entry.kind === 'split' ? has(entry.a) || has(entry.b) : entry.kind !== 'hunk' && has(entry.row)) ? [i] : [])
+    }
+
+    /** The changed file as it reads afterwards: changed lines by background color only, numbered by the new file. */
+    function renderAfter (file, rows, query) {
+      if (typeof file.full_body !== 'string') return '<p class="p-3 text-xs text-[var(--muted)]">' + T('fullMissing') + '</p>'
+      if (file.status[0] === 'D') return '<p class="after-empty p-3 text-[var(--muted)]">' + T('afterDeleted') + '</p>'
+      if (!rows.length) return '<p class="after-empty p-3 text-[var(--muted)]">' + T('afterEmpty') + '</p>'
+      const digits = String(rows.reduce((max, row) => Math.max(max, row.current || 0), 1)).length
+      const body = rows.map(row => `<tr class="${row.kind === 'add' ? 'bg-[var(--add)]' : ''}"${row.kind === 'add' ? ' data-changed="true"' : ''}><td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${row.current}</td><td class="px-1 align-top whitespace-pre-wrap break-all"><span class="line-text">${textHTML(row.text, file.path, query, null, row.kind)}</span></td></tr>`)
+      return `<table data-layout="after" data-scope="after" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup><col class="w-[calc(${digits}ch+10px)]"><col></colgroup><tbody>${body.join('')}</tbody></table>`
+    }
+
+    function renderDiff (file, layout, scope, query, whitespace) {
+      const { parsed, rows } = displayRows(file, scope, whitespace)
+      if (scope === 'after') return renderAfter(file, rows, query)
+      if (parsed.length && !hasChange(rows) && hasChange(parsed)) return '<p class="space-only p-3 text-[var(--muted)]">' + T('spaceOnly') + '</p>'
+      const digits = key => String(rows.reduce((max, row) => Math.max(max, row[key] || 0), 1)).length
+      const gutter = key => `<col class="w-[calc(${digits(key)}ch+10px)]">`
+      const ln = value => `<td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${value ?? ''}</td>`
+      const code = (row, range) => {
+        const color = row?.kind === 'add' ? 'bg-[var(--add)]' : row?.kind === 'del' ? 'bg-[var(--del)]' : ''
+        return `<td class="px-1 align-top whitespace-pre-wrap break-all ${color}">${row ? `<span class="inline-block w-3 text-[var(--muted)] select-none">${row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '}</span><span class="line-text">${textHTML(row.text, file.path, query, range && range[0] < range[1] ? range : null, row.kind, range?.[2])}</span>` : ''}</td>`
+      }
+      const output = plan(rows, layout).map(entry => {
+        if (entry.kind === 'hunk') return `<tr><td colspan="${layout === 'split' ? 4 : 3}" class="hunk sticky top-[var(--head,0px)] z-[5] bg-[var(--hunk)] px-2 py-1 text-[var(--muted)] whitespace-pre-wrap break-all">${esc(entry.row.text)}</td></tr>`
+        if (entry.kind === 'context') {
+          const row = entry.row
+          // Lines matched while ignoring whitespace keep each side's own text in the split layout.
+          return layout === 'split' ? `<tr>${ln(row.old)}${code(row.before === undefined ? row : { ...row, text: row.before })}${ln(row.current)}${code(row)}</tr>` : `<tr>${ln(row.old)}${ln(row.current)}${code(row)}</tr>`
+        }
+        if (entry.kind === 'split') return `<tr>${ln(entry.a?.old)}${code(entry.a, entry.ra)}${ln(entry.b?.current)}${code(entry.b, entry.rb)}</tr>`
+        const row = entry.row
+        return row.kind === 'del' ? `<tr class="bg-[var(--del)]">${ln(row.old)}${ln()}${code(row, entry.range)}</tr>` : `<tr class="bg-[var(--add)]">${ln()}${ln(row.current)}${code(row, entry.range)}</tr>`
+      })
       const cols = layout === 'split' ? `${gutter('old')}<col>${gutter('current')}<col>` : `${gutter('old')}${gutter('current')}<col>`
       return output.length ? `<table data-layout="${layout}" data-scope="${scope}" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup>${cols}</colgroup><tbody>${output.join('')}</tbody></table>` : '<p class="p-3 text-[var(--muted)]">' + T('noTextRows') + '</p>'
     }
@@ -568,7 +628,7 @@
         const input = ref('')
         const query = ref('')
         const layout = ref('unified')
-        const scope = ref('diff')
+        const scope = ref(data.full_text && ['diff', 'full', 'after'].includes(data.initial_scope) ? data.initial_scope : 'diff')
         const whitespace = ref('spaceShow')
         // While whitespace is ignored, the counts come from the same matching as the page shows.
         const spaceCounts = new WeakMap()
@@ -664,7 +724,7 @@
             cache = {}
             searchCache.set(file, cache)
           }
-          if (!cache[scope.value]) cache[scope.value] = parseDiff(scope.value === 'full' && typeof file.full_body === 'string' ? file.full_body : file.body).filter(row => ['add', 'del', 'context'].includes(row.kind)).map(row => row.text.toLowerCase())
+          if (!cache[scope.value]) cache[scope.value] = displayRows(file, scope.value, 'spaceShow').parsed.filter(row => (scope.value === 'after' ? ['add', 'context'] : ['add', 'del', 'context']).includes(row.kind)).map(row => row.text.toLowerCase())
           return cache[scope.value]
         }
         const contentOnly = ref(false)
@@ -688,7 +748,7 @@
         const controls = [
           { label: T('ctlFold'), items: [{ id: 'openAll', label: T('openAll'), title: T('openAllTitle'), icon: 'chevrons-up-down' }, { id: 'closeAll', label: T('closeAll'), title: T('closeAllTitle'), icon: 'chevrons-down-up' }] },
           { label: T('ctlLayout'), items: [{ id: 'unified', label: T('layoutUnified'), title: T('layoutUnifiedTitle'), icon: 'rows-2', value: 'layout' }, { id: 'split', label: T('layoutSplit'), title: T('layoutSplitTitle'), icon: 'columns-2', value: 'layout' }] },
-          ...(hasFull ? [{ label: T('ctlScope'), items: [{ id: 'diff', label: T('scopeDiff'), title: T('scopeDiffTitle'), icon: 'file-diff', value: 'scope' }, { id: 'full', label: T('scopeFull'), title: T('scopeFullTitle'), icon: 'file-text', value: 'scope' }] }] : []),
+          ...(hasFull ? [{ label: T('ctlScope'), items: [{ id: 'diff', label: T('scopeDiff'), title: T('scopeDiffTitle'), icon: 'file-diff', value: 'scope' }, { id: 'full', label: T('scopeFull'), title: T('scopeFullTitle'), icon: 'file-text', value: 'scope' }, { id: 'after', label: T('scopeAfter'), title: T('scopeAfterTitle'), icon: 'file-check', value: 'scope' }] }] : []),
           { label: T('ctlSpace'), items: [{ id: 'spaceShow', label: T('spaceShow'), title: T('spaceShowTitle'), icon: 'pilcrow', value: 'whitespace' }, { id: 'spaceIgnore', label: T('spaceIgnore'), title: T('spaceIgnoreTitle'), icon: 'eye-off', value: 'whitespace' }] },
           { label: T('ctlTheme'), items: [{ id: 'light', label: T('themeLight'), title: T('themeLightTitle'), icon: 'sun', value: 'theme' }, { id: 'dark', label: T('themeDark'), title: T('themeDarkTitle'), icon: 'moon', value: 'theme' }, { id: 'hybrid', label: T('themeHybrid'), title: T('themeHybridTitle'), icon: 'eclipse', value: 'theme' }] }
         ]
@@ -726,7 +786,62 @@
           main.scrollTop += node.getBoundingClientRect().top - main.getBoundingClientRect().top - 12
           node.querySelector('button').focus({ preventScroll: true })
         }
-        return { split, sidebarWidth, sidebarHidden, dragging, minWidth, maxWidth, defaultWidth, setWidth, startDrag, data, ready, selection, copySelection, source, input, contentOnly, query, layout, scope, whitespace, shown, theme, screen, mobile, opened, commits, visible, groups, totals, hasFull, palette, controls, selected, activate, jump, canFilter, toggleFile, clearFilter }
+        // Enter and Shift+Enter move between the lines (or file headings) that match the search.
+        const current = ref(-1)
+        const hits = computed(() => {
+          const text = query.value
+          if (!text) return []
+          return visible.value.flatMap(item => {
+            const lines = hitRows(item.file, layout.value, scope.value, whitespace.value, text)
+            if (lines.length) return lines.map(line => ({ id: item.id, line }))
+            return [item.file.path, item.file.old || ''].some(path => path.toLowerCase().includes(text)) ? [{ id: item.id, line: -1 }] : []
+          })
+        })
+        watch(hits, () => { current.value = -1 })
+        const hitLabel = computed(() => !hits.value.length ? T('hitNone') : current.value < 0 ? T(hits.value.length === 1 ? 'hitTotalOne' : 'hitTotal', { n: hits.value.length }) : T('hitPosition', { i: current.value + 1, n: hits.value.length }))
+        const settle = () => new Promise(resolve => setTimeout(resolve, 25))
+        /** Bring a hit to the middle of the screen, opening its file and waiting for its lines to be drawn. */
+        async function reveal ({ id, line }) {
+          document.querySelectorAll('.hit-current').forEach(node => node.classList.remove('hit-current'))
+          if (line >= 0) opened[id] = true
+          screen.value = 'diff'
+          await nextTick()
+          const main = document.getElementById('main')
+          const node = document.getElementById(id)
+          const place = (target, middle) => { main.scrollTop += target.getBoundingClientRect().top - main.getBoundingClientRect().top - (middle ? (main.clientHeight - target.offsetHeight) / 2 : 12) }
+          place(node, false)
+          if (line < 0) {
+            node.querySelector('.file-header-row').classList.add('hit-current')
+            return
+          }
+          // A panel draws its lines once it is near the screen, so scroll to it first and wait.
+          let row
+          for (let tries = 0; tries < 120 && !row; tries++) {
+            row = node.querySelectorAll('.diff-body tbody tr')[line]
+            if (!row) await settle()
+          }
+          if (!row) return
+          place(row, true)
+          await settle()
+          place(row, true)
+          row.classList.add('hit-current')
+        }
+        async function step (delta) {
+          clearTimeout(timer)
+          query.value = input.value.toLowerCase()
+          await nextTick()
+          const list = hits.value
+          if (!list.length) return
+          current.value = current.value < 0 ? (delta > 0 ? 0 : list.length - 1) : (current.value + delta + list.length) % list.length
+          await reveal(list[current.value])
+        }
+        const onEnter = event => {
+          // The Enter that confirms a Japanese conversion does not move.
+          if (event.isComposing || event.keyCode === 229) return
+          event.preventDefault()
+          step(event.shiftKey ? -1 : 1)
+        }
+        return { split, sidebarWidth, sidebarHidden, dragging, minWidth, maxWidth, defaultWidth, setWidth, startDrag, data, ready, selection, copySelection, source, input, contentOnly, query, layout, scope, whitespace, shown, theme, screen, mobile, opened, commits, visible, groups, totals, hasFull, palette, controls, selected, activate, jump, canFilter, toggleFile, clearFilter, hits, hitLabel, step, onEnter }
       }
     })
     app.config.globalProperties.T = T

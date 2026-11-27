@@ -50,18 +50,38 @@ def command(args, stdin=None):
     return result.stdout
 
 
-def check_page_structure(page, artifact=False):
-    """Read the HTML text of a built page: the decoder tag, the data script, and a packed string that cannot break out of its script."""
-    decoder = f'<script src="{build.UTFPACK_DECODER_URL}" integrity="{build.utfpack_pack.decoder_sri("utfpack")}" crossorigin="anonymous"></script>'
-    assert page.count(decoder) == 1
-    start = page.index('globalThis.utfpackData=')
-    assert page.index(decoder) < start, 'the decoder must come before the data script'
-    end = page.index('</script>', start)
-    packed = page[start:end]
+def check_page_structure(page, artifact=False, embedded=False):
+    """Read the HTML text of a built page: how the libraries and the decoder are loaded, the data string, and a packed string that cannot break out of its script."""
+    match = re.search(r'<script type="application/json" id="packed">(.*?)</script>', page, re.S)
+    assert match and page.count('id="packed"') == 1
+    packed = json.loads(match.group(1))
     assert '</script' not in packed and '<!--' not in packed
-    assert page.count('<!--__PACKED__-->') == 0 and '/*__LABELS__*/' not in page
+    assert page.count('<!--__PACKED__-->') == 0 and page.count('<!--__IMPORTMAP__-->') == 0 and '/*__LABELS__*/' not in page and '/*__UNPACK__*/' not in page
     assert '"layoutInline"' in page and "id: 'inline'" in page and 'data-old' in page, 'the inline layout is in the page'
-    parts = ['<title>', 'type="importmap"', decoder, 'globalThis.utfpackData=', '@tailwindcss/browser', 'type="text/tailwindcss"', 'prefers-color-scheme', '<div id="app" lang="', '<script type="module">']
+    assert 'globalThis.utfpackData' not in page and '<script src=' not in page, 'no classic decoder script from the CDN and no global data'
+    module = re.findall(r'<script type="module">(.*?)</script>', page, re.S)[-1]
+    if embedded:
+        assert 'var utfpack=' in page and 'const { unpack } = globalThis.utfpack' in module
+        assert build.UTFPACK_MODULE_URL not in page and 'utfpack@' not in page, 'an embedded decoder loads nothing from the CDN'
+        decoder_part = 'var utfpack='
+    else:
+        decoder_part = None
+    if artifact:
+        assert 'type="importmap"' not in page, 'an import map cannot sit in a body'
+        assert "from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-bundler.js/+esm'" in module and "from 'https://cdn.jsdelivr.net/npm/@lucide/vue/+esm'" in module
+        assert "from 'vue'" not in module and "from '@lucide/vue'" not in module
+        if not embedded:
+            assert f"import {{ unpack }} from '{build.UTFPACK_MODULE_URL}'" in module
+    else:
+        import_map = json.loads(re.search(r'<script type="importmap">(.*?)</script>', page, re.S).group(1))
+        assert import_map['imports']['vue'].endswith('vue.esm-bundler.js/+esm') and '@lucide/vue' in import_map['imports']
+        assert "from 'vue'" in module
+        if embedded:
+            assert 'utfpack' not in import_map['imports']
+        else:
+            assert import_map['imports']['utfpack'] == build.UTFPACK_MODULE_URL and "import { unpack } from 'utfpack'" in module
+            assert 'integrity' not in import_map or import_map['integrity'][build.UTFPACK_MODULE_URL].startswith('sha384-')
+    parts = ['<title>', *([] if artifact else ['type="importmap"']), *([decoder_part] if decoder_part else []), 'id="packed"', '@tailwindcss/browser', 'type="text/tailwindcss"', 'prefers-color-scheme', '<div id="app" lang="', '<script type="module">']
     positions = [page.find(part) for part in parts]
     assert -1 not in positions and positions == sorted(positions), 'the page parts are out of order'
     skeleton = re.compile(r'(?i)<!doctype|<html[\s>]|<head>|</head>|<body[\s>]|</body>|</html>|charset|name="viewport"')
@@ -105,9 +125,6 @@ def main():
         assert 'id="generated"' not in page
         assert all('source' not in repo and 'protected_paths' not in repo for repo in data['sources'])
         assert all(str(root) not in page for root in protected_paths)
-        assert build.UTFPACK_DECODER_URL in page
-        assert f'integrity="{build.utfpack_pack.decoder_sri("utfpack")}"' in page
-        assert 'globalThis.utfpackData=' in page
         check_page_structure(page)
         report[kind] = {}
         report[kind]['repositories'] = [dict(name=r['name'], files=len(r['files']), base=r['base'], target=r['target']) for r in data['sources']]
@@ -214,10 +231,10 @@ def main():
         first_file['body'] += '\n+</script><script>throw Error("unsafe")</script>'
     template = (SCRIPTS / 'template.html').read_text()
     escaped = build.make_html(hostile, template)
-    assert escaped.count('</script>') == template.count('</script>') + 2
+    assert escaped.count('</script>') == template.count('</script>') + 2  # the import map and the data string
     assert '</script><script>throw Error("unsafe")</script>' not in escaped
     assert '<title>' + html.escape(hostile['title']) + '</title>' in escaped
-    assert 'globalThis.utfpackData=' in escaped
+    assert 'id="packed"' in escaped
     # A packed string that could close the script or open an HTML comment is refused.
     real_pack = build.utfpack_pack.pack
     for bad in ('</script', '<!--'):
@@ -247,8 +264,8 @@ def main():
     check_page_structure(artifact, artifact=True)
     report['artifact'] = {}
     embedded = command([*cli, '--data-version', 'for-check', '--embed-decoder', '-o', '-'])
-    assert build.UTFPACK_DECODER_URL not in embedded
-    assert 'globalThis.utfpackData=' in embedded and 'var utfpack=' in embedded
+    check_page_structure(embedded, embedded=True)
+    check_page_structure(command([*cli, '--data-version', 'for-check', '--embed-decoder', '--artifact', '-o', '-']), artifact=True, embedded=True)
     report['embeddedDecoder'] = True
     # A page of whole files: no comparison, every file an addition with its text, opening on the text after the change.
     with tempfile.TemporaryDirectory(prefix='files-') as folder:

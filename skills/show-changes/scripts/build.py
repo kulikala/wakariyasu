@@ -21,10 +21,20 @@ import labels as labels_module  # noqa: E402
 SCHEMA_VERSION = 2
 INITIAL_SCOPES = ('diff', 'full', 'after')
 UTFPACK_PACKER_URL = 'https://cdn.jsdelivr.net/npm/utfpack@0/python/utfpack_pack.py'
-# Set by load_packer(): the packer module, its version and the URL of the decoder that matches it.
+# Set by load_packer(): the packer module, its version and the URL of the decoder module that matches it.
 utfpack_pack = None
 UTFPACK_VERSION = None
-UTFPACK_DECODER_URL = None
+UTFPACK_MODULE_URL = None
+# The libraries the page imports: module specifier -> URL. A plain HTML file reaches them through an import map,
+# and an artifact through the full URL in each import statement, so both forms come from this one table.
+CDN = 'https://cdn.jsdelivr.net/npm/'
+LIBRARIES = {
+    'vue': CDN + 'vue@3/dist/vue.esm-bundler.js/+esm',
+    '@lucide/vue': CDN + '@lucide/vue/+esm',
+    'highlight.js/core': CDN + 'highlight.js@11/es/core.js/+esm',
+    **{f'highlight.js/languages/{name}': CDN + f'highlight.js@11/es/languages/{name}.js/+esm'
+       for name in ('javascript', 'typescript', 'python', 'bash', 'yaml', 'xml', 'css', 'json', 'sql')},
+}
 # Dates offer more words than a language needs, so these labels may leave some out.
 LOOSE_LABELS = {'dayFormat': {'{y}', '{m}', '{d}', '{mm}', '{dd}', '{w}'}, 'monthDay': {'{m}', '{d}', '{mm}', '{dd}'}}
 UNREADABLE = 'Bytes that are not valid UTF-8 are shown as \\xNN.'
@@ -56,7 +66,7 @@ def import_packer(path):
 
 def load_packer():
     """Load utfpack's Python packer: download the newest 0.x from jsDelivr into the user cache, or use the newest cached one."""
-    global utfpack_pack, UTFPACK_VERSION, UTFPACK_DECODER_URL
+    global utfpack_pack, UTFPACK_VERSION, UTFPACK_MODULE_URL
     if utfpack_pack is not None:
         return utfpack_pack
     root = cache_root()
@@ -85,7 +95,7 @@ def load_packer():
         path = cached[0]
     utfpack_pack = import_packer(path)
     UTFPACK_VERSION = utfpack_pack.VERSION
-    UTFPACK_DECODER_URL = f'https://cdn.jsdelivr.net/npm/utfpack@{UTFPACK_VERSION}/dist/cdn/utfpack.js'
+    UTFPACK_MODULE_URL = f'{CDN}utfpack@{UTFPACK_VERSION}/dist/cdn/utfpack.mjs'
     return utfpack_pack
 
 
@@ -593,6 +603,16 @@ def validate(data):
     return data
 
 
+def module_integrity():
+    """The integrity value of the decoder module from the same version's sri.json, or None when it cannot be fetched."""
+    try:
+        with urllib.request.urlopen(f'{CDN}utfpack@{UTFPACK_VERSION}/dist/cdn/sri.json', timeout=10) as response:
+            value = json.loads(response.read().decode('utf-8')).get('utfpack.mjs')
+        return value if isinstance(value, str) and re.fullmatch(r'sha384-[A-Za-z0-9+/=]+', value) else None
+    except (OSError, ValueError):
+        return None
+
+
 def make_html(data, template, artifact=False, embed_decoder=False):
     data = validate(data)
     load_packer()
@@ -604,40 +624,59 @@ def make_html(data, template, artifact=False, embed_decoder=False):
             break
     else:
         raise ValueError('The packed data contains "</script" or "<!--" in every format, so it cannot be put in an HTML page safely')
-    data_script = utfpack_pack.emit(packed, 'html', embed_decoder=embed_decoder)
-    for marker in ('<!--__PACKED__-->', '<!--__BODY__-->', '__LANG__', '/*__LABELS__*/{}/*__LABELS_END__*/', '/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/'):
+    markers = ('<!--__PACKED__-->', '<!--__IMPORTMAP__-->', '<!--__BODY__-->', '__LANG__', '/*__UNPACK__*/', '/*__LABELS__*/{}/*__LABELS_END__*/', '/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/')
+    for marker in markers:
         if template.count(marker) != 1:
             raise ValueError(f'The template must contain {marker} exactly once')
     safe = lambda value: json.dumps(value, ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
     english = labels_module.english()
     # The words for the loading and error messages stay outside the packed data, in the page's language, so they show when the data cannot be opened.
     words = {key: (data.get('labels') or {}).get(key, english[key]) for key in ('loadingData', 'dataLoadError')}
-    decoder = '' if embed_decoder else (
-        f'<script src="{UTFPACK_DECODER_URL}" integrity="{utfpack_pack.decoder_sri("utfpack")}" crossorigin="anonymous"></script>\n')
+    # The data is a JSON string that the page's module reads and unpacks. With --embed-decoder the decoder is a classic
+    # inline script that defines the global `utfpack`; otherwise the module imports the decoder module.
+    data_script = f'<script type="application/json" id="packed">{json.dumps(packed["string"], ensure_ascii=False)}</script>\n'
+    if embed_decoder:
+        data_script = f'<script>{utfpack_pack.decoder_script(packed["entry"])}</script>\n' + data_script
+    libraries = dict(LIBRARIES)
+    if embed_decoder:
+        unpack = 'const { unpack } = globalThis.utfpack'
+    elif artifact:
+        unpack = f"import {{ unpack }} from '{UTFPACK_MODULE_URL}'"
+    else:
+        libraries['utfpack'] = UTFPACK_MODULE_URL
+        unpack = "import { unpack } from 'utfpack'"
     # Replace in the template first and put the data in last, so no replacement can touch the data.
-    template = assemble(template, data.get('lang') or 'en', artifact)
-    page = (template.replace('/*__LABELS__*/{}/*__LABELS_END__*/', safe(english))
+    template = assemble(template, data.get('lang') or 'en', artifact, libraries, module_integrity() if 'utfpack' in libraries else None)
+    page = (template.replace('/*__UNPACK__*/', unpack)
+                    .replace('/*__LABELS__*/{}/*__LABELS_END__*/', safe(english))
                     .replace('/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/', safe(words))
                     .replace('__TITLE__', html.escape(data['title'])))
     before, after = page.split('<!--__PACKED__-->')
-    page = before + decoder + data_script + after
-    return page
+    return before + data_script + after
 
 
-def assemble(template, lang, artifact):
+def assemble(template, lang, artifact, libraries, integrity=None):
     """Put the template's parts into the shape of the destination.
 
-    The template holds the head parts (title, import map, packed data, styles), the marker <!--__BODY__-->,
-    and the body parts (#app, loading message, module script). A destination that wraps pages in its own
-    document skeleton gets the parts alone, starting with the title; a plain HTML file gets a complete document.
+    The template holds the head parts (title, import map marker, packed data marker, styles), the marker
+    <!--__BODY__-->, and the body parts (#app, loading message, module script). A destination that wraps pages in
+    its own document skeleton gets the parts alone, starting with the title, and no import map (an import map cannot
+    sit in a body), so each import statement of the module names its full URL. A plain HTML file gets a complete
+    document whose head carries the import map.
     """
     head, body = template.split('<!--__BODY__-->')
-    body = body.replace('__LANG__', html.escape(lang, quote=True))
+    body = body.replace('__LANG__', html.escape(lang, quote=True)).lstrip('\n')
     if artifact:
-        return head + body.lstrip('\n')
+        for name, url in libraries.items():
+            body = body.replace(f"from '{name}'", f"from '{url}'")
+        return head.replace('<!--__IMPORTMAP__-->\n', '') + body
+    imports = {'imports': libraries}
+    if integrity:
+        imports['integrity'] = {libraries['utfpack']: integrity}
+    import_map = '<script type="importmap">\n' + json.dumps(imports, indent=2) + '\n</script>\n'
     return ('<!DOCTYPE html>\n' + f'<html lang="{html.escape(lang, quote=True)}">\n<head>\n'
             '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-            + head + '</head>\n<body>\n' + body.lstrip('\n') + '</body>\n</html>\n')
+            + head.replace('<!--__IMPORTMAP__-->\n', import_map) + '</head>\n<body>\n' + body + '</body>\n</html>\n')
 
 
 def repository_paths(location):

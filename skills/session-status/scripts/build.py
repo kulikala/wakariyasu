@@ -12,6 +12,12 @@ import labels as labels_module  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 STATES = ('done', 'in_progress', 'waiting_process', 'waiting_decision', 'not_started', 'problem', 'cancelled')
+# The libraries the page imports: module specifier -> URL. A plain HTML file reaches them through an import map, and an
+# artifact through the full URL in each import statement, so both forms come from this one table.
+LIBRARIES = {
+    'vue': 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-bundler.js/+esm',
+    '@lucide/vue': 'https://cdn.jsdelivr.net/npm/@lucide/vue/+esm',
+}
 TEXT_FIELDS = ('goal', 'instruction', 'status')
 TOP_KEYS = {'title', 'lang', 'asOf', *TEXT_FIELDS, 'tasks', 'decisions'}
 LETTER = re.compile(r'^[A-Za-z0-9]{1,3}$')
@@ -126,8 +132,9 @@ def make_html(report, template, labels=None, artifact=False):
     payload = payload.replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
     if template.count('/*__DATA__*/null') != 1:
         raise ReportError('the template must contain /*__DATA__*/null exactly once')
-    if template.count('<!--__BODY__-->') != 1 or template.count('__LANG__') != 1:
-        raise ReportError('the template must contain <!--__BODY__--> and __LANG__ exactly once')
+    for marker in ('<!--__BODY__-->', '<!--__IMPORTMAP__-->', '__LANG__'):
+        if template.count(marker) != 1:
+            raise ReportError(f'the template must contain {marker} exactly once')
     before, after = assemble(template, report.get('lang') or 'en', artifact).split('/*__DATA__*/null')
     after, replaced = re.subn(r'/\*__LABELS__\*/\{\}/\*__LABELS_END__\*/', lambda _: json.dumps(english, ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e'), after, count=1)
     if replaced != 1:
@@ -140,18 +147,24 @@ def make_html(report, template, labels=None, artifact=False):
 def assemble(template, lang, artifact):
     """Put the template's parts into the shape of the destination.
 
-    The template holds the head parts (title, import map, styles), the marker <!--__BODY__-->, and the body
-    parts (#app and the module script). A destination that wraps pages in its own document skeleton gets the
-    parts alone, starting with the title and the viewport-fit meta; a plain HTML file gets a complete document.
+    The template holds the head parts (title, import map marker, styles), the marker <!--__BODY__-->, and the body
+    parts (#app and the module script). A destination that wraps pages in its own document skeleton gets the parts
+    alone, starting with the title and the viewport-fit meta, and no import map (an import map cannot sit in a body),
+    so each import statement of the module names its full URL. A plain HTML file gets a complete document whose head
+    carries the import map.
     """
     head, body = template.split('<!--__BODY__-->')
-    body = body.replace('__LANG__', html.escape(lang, quote=True))
+    body = body.replace('__LANG__', html.escape(lang, quote=True)).lstrip('\n')
     if artifact:
+        for name, url in LIBRARIES.items():
+            body = body.replace(f"from '{name}'", f"from '{url}'")
+        head = head.replace('<!--__IMPORTMAP__-->\n', '')
         title, rest = head.split('</title>\n', 1)
-        return title + '</title>\n  <meta name="claude:viewport-fit-sides" content="cover">\n' + rest + body.lstrip('\n')
+        return title + '</title>\n  <meta name="claude:viewport-fit-sides" content="cover">\n' + rest + body
+    import_map = '<script type="importmap">\n' + json.dumps({'imports': LIBRARIES}, indent=2) + '\n</script>\n'
     return ('<!DOCTYPE html>\n' + f'<html lang="{html.escape(lang, quote=True)}">\n<head>\n'
             '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">\n'
-            + head + '</head>\n<body>\n' + body.lstrip('\n') + '</body>\n</html>\n')
+            + head.replace('<!--__IMPORTMAP__-->\n', import_map) + '</head>\n<body>\n' + body + '</body>\n</html>\n')
 
 
 def main(argv=None):

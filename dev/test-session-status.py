@@ -51,9 +51,11 @@ check('plain page has charset, viewport, html lang and body', all(t in page for 
 def in_order(text, tokens):
     positions = [text.find(t) for t in tokens]
     return -1 not in positions and positions == sorted(positions)
-parts = ['<title>', 'type="importmap"', '@tailwindcss/browser', 'type="text/tailwindcss"', 'prefers-color-scheme', '<div id="app"', '<script type="module">']
+parts = ['<title>', '@tailwindcss/browser', 'type="text/tailwindcss"', 'prefers-color-scheme', '<div id="app"', '<script type="module">']
+check('artifact has no import map and imports by full URL', 'importmap' not in artifact and "from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-bundler.js/+esm'" in artifact and "from 'vue'" not in artifact)
+check('plain page has an import map in the head', page.index('<head>') < page.index('type="importmap"') < page.index('</head>') and "from 'vue'" in page and '"@lucide/vue"' in page)
 check('artifact parts are in order', in_order(artifact, parts))
-check('plain page parts are in order', in_order(page, ['<!DOCTYPE html>', '<head>', *parts, '</body>', '</html>']))
+check('plain page parts are in order', in_order(page, ['<!DOCTYPE html>', '<head>', '<title>', 'type="importmap"', *parts[1:], '</body>', '</html>']))
 check('the app element carries lang', '<div id="app" v-cloak lang="en">' in artifact)
 
 tricky = json.loads(json.dumps(report))
@@ -61,7 +63,7 @@ tricky['title'] = 'A & B <c>'
 tricky['goal'] = '</script><script>alert(1)</script>'
 page = build.make_html(tricky, template)
 check('title is escaped', '<title>A &amp; B &lt;c&gt;</title>' in page)
-check('data cannot close the script element', '</script><script>alert' not in page and page.count('</script>') == template.count('</script>'))
+check('data cannot close the script element', '</script><script>alert' not in page and page.count('</script>') == template.count('</script>') + 1)
 
 rejects('an unknown state', lambda r: r['tasks'][0].update(state='doing'))
 rejects('an unknown key', lambda r: r.update(summary='x'))

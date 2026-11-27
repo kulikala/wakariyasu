@@ -5,7 +5,7 @@ Read this when you build or rebuild a page.
 ## Requirements
 
 - Python 3.9 or later. Only the standard library is used. When building a page (`-o`), `build.py` downloads the packer of utfpack (a library that compresses data into a string a page can carry) from jsDelivr and keeps a copy. Building a page therefore needs network access, except that a copy from an earlier build is used when the download fails; with neither, `build.py` stops and says so. `--json-out` alone and `--init` need no network.
-- When the page opens, it loads its libraries (Vue, Tailwind CSS, Lucide, highlight.js) and utfpack's decoder, which turns that string back into the data, from the CDN jsDelivr. The viewer needs a network connection, and the place that shows the page (a browser, or a host such as Claude artifacts) must allow jsDelivr. `--embed-decoder` puts the decoder into the page; the libraries still load from jsDelivr.
+- When the page opens, it loads its libraries (Vue, Tailwind CSS, Lucide, highlight.js) and utfpack's decoder module, which turns that string back into the data, from the CDN jsDelivr. The viewer needs a network connection, and the place that shows the page (a browser, or a host such as Claude artifacts) must allow jsDelivr. `--embed-decoder` puts the decoder into the page as an inline script, so it is not loaded from jsDelivr; the libraries still load from jsDelivr.
 - git is required to collect a git two-commit target (`--repo`). Other targets and `--data` work without git. When git is available, the diff of a two-folder target is also built with git, which is fast even for large files.
 
 ## Build a page
@@ -32,8 +32,8 @@ python3 -B scripts/build.py --files <name> <file or folder>... --data-version '<
 | `--lang CODE` | The language of the page you are producing. It sets the `lang` of the page and takes the page's words from `lang/CODE/labels.json` (see "The page language"). |
 | `--labels FILE` | A JSON file of the page's words (buttons, headings, tooltips, notices and dates). For a language that has no `lang/CODE/labels.json`, it holds every word; for a language that has one, it holds only the words to change. An unknown key, a missing key and a dropped word in braces stop the build. |
 | `--init CODE` | With `-o FILE`: write the English words as a JSON file to translate for the language `CODE`, then stop. |
-| `--artifact` | Build the page for a destination that wraps what it publishes in its own document skeleton, as Claude artifacts do: the page then leaves out its own skeleton (DOCTYPE, html, head and body, and the charset and viewport meta), so the published page holds no document inside a document. Without it, the output is a complete HTML file that opens as is. |
-| `--embed-decoder` | Put the utfpack decoder into the page instead of loading it from jsDelivr (see "Requirements"). |
+| `--artifact` | Build the page for a destination that wraps what it publishes in its own document skeleton, as Claude artifacts do: the page then leaves out its own skeleton (DOCTYPE, html, head and body, and the charset and viewport meta), so the published page holds no document inside a document, and with no import map (an import map cannot sit in a body): each import in the page names its full jsDelivr URL. Without `--artifact`, the page's head carries an import map for the libraries and the decoder. Without it, the output is a complete HTML file that opens as is. |
+| `--embed-decoder` | Put the utfpack decoder into the page as an inline script instead of loading it from jsDelivr (see "Requirements"). |
 | `-o` / `--output` | The HTML output path. `-` writes to standard output. |
 | `--json-out` | Write the diff data as JSON. `-` writes to standard output. Can be used together with `-o`. |
 | `--data <JSON>` | Build the page from a previously written JSON without collecting again. `-` reads standard input. |

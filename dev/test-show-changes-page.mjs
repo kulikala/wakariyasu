@@ -7,6 +7,8 @@ import { spawn } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { createServer } from 'node:net'
 
+const decoderUrl = 'https://cdn.jsdelivr.net/npm/utfpack@0.1.0/dist/cdn/utfpack.js'
+const decoderFile = process.env.UTFPACK_DECODER
 const urls = [
   'https://cdn.jsdelivr.net/npm/vue@3.5.44/+esm',
   'https://cdn.jsdelivr.net/npm/@vue/compiler-dom@3.5.44/+esm',
@@ -24,19 +26,22 @@ const urls = [
   'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/sql.js/+esm',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap'
 ]
+const allowedUrls = new Set([...urls, decoderUrl])
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const staticOnly = process.argv.includes('--static-only')
 const pagePath = process.argv.slice(2).find(arg => !arg.startsWith('--'))
 let page = pagePath ? readFileSync(resolve(pagePath), 'utf8') : ''
-if (!page) for await (const chunk of process.stdin) page += chunk
-const marker = /^const DATA = (.*);?\n/m
-const dataMatch = page.match(marker)
-assert(dataMatch, 'The embedded JSON is missing')
-const data = JSON.parse(dataMatch[1].replace(/;$/, ''))
+if (!page) {
+  // Decode as a stream: a multibyte character can be split across chunks, and the packed data holds many.
+  process.stdin.setEncoding('utf8')
+  for await (const chunk of process.stdin) page += chunk
+}
+const dataScript = /<script>globalThis\.utfpackData=[\s\S]*?<\/script>\n?/
+assert(dataScript.test(page), 'The packed data script is missing')
 /** Check application resource declarations, excluding the embedded user data. */
 function checkExternalLoads (html) {
-  const shell = html.replace(marker, 'const DATA = null\n')
-  const allowed = new Set(urls)
+  const shell = html.replace(dataScript, '')
+  const allowed = allowedUrls
   // Firefox refuses an import map once the artifact host has loaded a module, so imports name full URLs.
   assert(!/type=["']importmap["']/i.test(shell), 'There is an import map')
   for (const [, url] of shell.matchAll(/\bimport\b[^'"]*?\bfrom\s*['"]([^'"]+)['"]/g)) assert(allowed.has(url), `Import of a URL that is not allowed: ${url}`)
@@ -47,6 +52,7 @@ function checkExternalLoads (html) {
   }
   assert(!/(?:\burl\s*\(|@import\b|\bfetch\s*\(|\bimport\s*\()/i.test(shell), 'There is an extra dynamic external load')
   for (const url of urls) assert(shell.includes(url), `The fixed URL is missing: ${url}`)
+  assert(shell.includes(decoderUrl) || shell.includes('var utfpack='), 'The page has neither the external decoder nor an inline one')
   assert(!/href=["']#/.test(shell), 'There is a hash link')
 }
 checkExternalLoads(page)
@@ -77,6 +83,8 @@ try {
 const errors = []
 const networkFailures = []
 const requests = new Map()
+let failDecoder = false
+let data
 let launchError
 const chromePath = process.env.CHROME || (process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : 'google-chrome')
 const chrome = spawn(chromePath, ['--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--disable-component-update', `--remote-debugging-port=${port}`, `--user-data-dir=${join(work, 'profile')}`, 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] })
@@ -150,14 +158,27 @@ async function pickSource (key) {
 }
 async function navigate (html, name) {
   const file = join(work, name + '.html')
-  // A page built with --artifact has no document skeleton; wrap it the way the artifact host does,
-  // with a host module script running before the page.
-  const wrapped = /^\s*<!DOCTYPE/i.test(html) ? html
-    : '<!doctype html><html><head><script type="module">window.__host = true</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + html + '</body></html>'
-  writeFileSync(file, wrapped)
+  writeFileSync(file, wrapPage(html))
   await send('Page.navigate', { url: pathToFileURL(file).href })
   await waitFor("document.querySelector('#app')?.dataset.ready === 'true'", 'Vue mount', 60000)
   await sleep(250)
+}
+// A page built with --artifact has no document skeleton; wrap it the way the artifact host does,
+// with a host module script running before the page.
+function wrapPage (html) {
+  return /^\s*<!DOCTYPE/i.test(html) ? html
+    : '<!doctype html><html><head><script type="module">window.__host = true</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + html + '</body></html>'
+}
+/** Replace the packed data with a Promise of the same shape, for fixtures built inside this test. */
+function withData (html, value) {
+  const payload = JSON.stringify(JSON.stringify(value)).replace(/</g, '\\u003c')
+  return html.replace(dataScript, () => `<script>globalThis.utfpackData=Promise.resolve({"data.json":${payload}});</script>\n`)
+}
+async function navigateBroken (html, name) {
+  const file = join(work, name + '.html')
+  writeFileSync(file, wrapPage(html))
+  await send('Page.navigate', { url: pathToFileURL(file).href })
+  await waitFor("document.getElementById('loading')?.textContent.includes('could not be opened')", 'the data error message', 60000)
 }
 const fileCount = "document.querySelectorAll('#files article[data-file-id]').length"
 const allOpen = "[...document.querySelectorAll('#files .file-header')].every(e => e.getAttribute('aria-expanded') === 'true')"
@@ -190,13 +211,34 @@ try {
     else if (message.method === 'Runtime.consoleAPICalled' && message.params.type === 'error') errors.push(message.params.args.map(a => a.value || a.description).join(' '))
     else if (message.method === 'Network.requestWillBeSent') requests.set(message.params.requestId, message.params.request.url)
     else if (message.method === 'Network.loadingFailed') networkFailures.push({ url: requests.get(message.params.requestId), error: message.params.errorText })
+    else if (message.method === 'Fetch.requestPaused') {
+      const { requestId, request } = message.params
+      if (request.url === decoderUrl && failDecoder) {
+        send('Fetch.failRequest', { requestId, errorReason: 'Failed' })
+      } else if (request.url === decoderUrl && decoderFile) {
+        send('Fetch.fulfillRequest', {
+          requestId,
+          responseCode: 200,
+          responseHeaders: [
+            { name: 'Content-Type', value: 'text/javascript; charset=utf-8' },
+            { name: 'Access-Control-Allow-Origin', value: '*' }
+          ],
+          body: readFileSync(decoderFile).toString('base64')
+        })
+      } else {
+        send('Fetch.continueRequest', { requestId })
+      }
+    }
   })
   await send('Runtime.enable')
   await send('Page.enable')
   await send('Network.enable')
+  // The decoder comes from jsDelivr unless a local file is given; the request is always intercepted so a test can fail it.
+  await send('Fetch.enable', { patterns: [{ urlPattern: decoderUrl, requestStage: 'Request' }] })
   await send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 900, deviceScaleFactor: 1, mobile: false })
   await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] })
   await navigate(page, 'sample')
+  data = JSON.parse((await evaluate('globalThis.utfpackData'))['data.json'])
   const total = data.sources.reduce((n, source) => n + source.files.length, 0)
   const availableFull = data.sources.some(source => source.files.some(file => typeof file.full_body === 'string'))
   check(await evaluate(fileCount) === total, 'sample: a heading for every file')
@@ -300,7 +342,7 @@ try {
       ] }
     ]
   }
-  const fixturePage = page.replace(marker, () => 'const DATA = ' + JSON.stringify(fixture).replace(/</g, '\\u003c') + ';\n')
+  const fixturePage = withData(page, fixture)
   await navigate(fixturePage, 'fixture')
   await click('#hybrid')
   await navigate(fixturePage, 'fixture')
@@ -360,7 +402,7 @@ try {
     { ...spaceFile('gone.py', ''), status: 'D', added: 0, deleted: 1 },
     { ...spaceFile('link', ''), added: 1, deleted: 1, old_mode: '120000', new_mode: '120000' }
   ] }] }
-  await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(spaceFixture).replace(/</g, '\\u003c') + ';\n'), 'space')
+  await navigate(withData(page, spaceFixture), 'space')
   await click('#openAll')
   await waitFor("document.querySelectorAll('#files table').length === 2", 'rendering for the whitespace check')
   check((await evaluate("document.querySelectorAll('#files article')[2].querySelector('.file-mode')?.textContent")) === 'Regular file (100644) → Executable file (100755)', 'shows the mode change')
@@ -384,14 +426,14 @@ try {
   check(await evaluate(fileCount) === 6, 'turning the filter off shows all files')
   // Without full text or files the filter would hide, neither control appears.
   const plainFixture = { ...fixture, sources: [{ ...fixture.sources[1], files: [{ ...fixture.sources[1].files[0], full_body: undefined }] }] }
-  await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(plainFixture).replace(/</g, '\u003c') + ';\n'), 'plain')
+  await navigate(withData(page, plainFixture), 'plain')
   check(await evaluate("!document.querySelector('#contentOnly') && !document.querySelector('#full') && !document.querySelector('#diff')"), 'without anything to filter or full text, neither the filter nor the range switch appears')
   // Japanese: the labels from the language pack replace the English words; the layout and the data stay the same.
   const jaArgument = process.argv.find(arg => arg.startsWith('--ja-labels='))
   if (jaArgument) {
     const jaLabels = JSON.parse(readFileSync(resolve(jaArgument.slice('--ja-labels='.length)), 'utf8'))
     const jaFixture = { ...spaceFixture, lang: 'ja', labels: jaLabels }
-    await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(jaFixture).replace(/</g, '\\u003c') + ';\n'), 'ja')
+    await navigate(withData(page, jaFixture), 'ja')
     check(await evaluate('document.documentElement.lang') === 'ja', 'ja: the page language is ja')
     check(await evaluate("[...document.querySelectorAll('[role=toolbar] span')].some(e => e.textContent === '空白') && document.querySelector('#openAll').getAttribute('aria-label') === 'すべて開く'"), 'ja: the toolbar words come from the pack')
     check(await evaluate("document.querySelector('#totals').textContent.includes('6 ファイル')"), 'ja: the totals use the pack')
@@ -404,7 +446,7 @@ try {
   // Closing a file from its header while scrolled into it keeps the next header in view.
   const longBody = '@@ -0,0 +1,200 @@\n' + Array.from({ length: 200 }, (_, i) => '+line ' + i).join('\n')
   const longFixture = { ...fixture, sources: [{ ...fixture.sources[1], files: [0, 1, 2, 3].map(i => ({ path: `long-${i}.txt`, old: null, status: 'A', added: 200, deleted: 0, binary: false, notice: '', body: longBody })) }] }
-  await navigate(page.replace(marker, () => 'const DATA = ' + JSON.stringify(longFixture).replace(/</g, '\u003c') + ';\n'), 'long')
+  await navigate(withData(page, longFixture), 'long')
   await click('#openAll')
   await sleep(300)
   const nextTop = "document.getElementById('f-0-2').getBoundingClientRect().top - document.getElementById('main').getBoundingClientRect().top"
@@ -428,7 +470,7 @@ try {
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
   const mobileFixture = structuredClone(fixture)
   mobileFixture.sources[0].files = Array.from({ length: 45 }, (_, i) => ({ ...fixture.sources[0].files[0], path: `docs/mobile-${i}.md` }))
-  const mobilePage = page.replace(marker, () => 'const DATA = ' + JSON.stringify(mobileFixture).replace(/</g, '\\u003c') + ';\n')
+  const mobilePage = withData(page, mobileFixture)
   await navigate(mobilePage, 'mobile')
   check(await evaluate("document.querySelector('#diff-screen').dataset.screen === 'list'"), 'mobile starts at the list')
   check(await evaluate("!document.querySelector('#resizer') && document.querySelector('#toggleSidebar').getBoundingClientRect().width === 0"), 'mobile has no width boundary and no hide-list button')
@@ -455,6 +497,14 @@ try {
   check(outside.length === 0, 'the only external addresses loaded while running are jsDelivr /npm/ and Google Fonts: ' + outside.join(' '))
   check(networkFailures.length === 0, 'no failed external loads: ' + JSON.stringify(networkFailures))
   check(errors.length === 0, 'no console errors: ' + errors.join('\n'))
+  // A page whose decoder request fails shows the error message and names --embed-decoder.
+  failDecoder = true
+  await navigateBroken(page, 'decoder-failure')
+  check(await evaluate("document.getElementById('loading').textContent.includes('could not be opened')"), 'a failed decoder request shows the data error message')
+  check(await evaluate("document.getElementById('loading').textContent.includes('--embed-decoder')"), 'the data error names --embed-decoder')
+  failDecoder = false
+  errors.length = 0
+  networkFailures.length = 0
   process.stdout.write(JSON.stringify({ ok: true, files: total, checks: checks.length, results: checks, staticExternalLoads: urls, consoleErrors: errors, networkFailures }) + '\n')
 } catch (error) {
   process.stderr.write(JSON.stringify({ ok: false, browser: 'failed', message: error.message, consoleErrors: errors, networkFailures }) + '\n')

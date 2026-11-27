@@ -74,13 +74,18 @@ def main():
         flags = cli + ['--title', 'Diff check <offline>', '--data-version', 'for-check', '--output', '-']
         if full:
             flags += ['--full-text']
-        page = command(flags)
-        data = json.loads(re.search(r'const DATA = (.*?);?\n', page).group(1))
+        with tempfile.TemporaryDirectory(prefix='page-') as folder:
+            data_path = Path(folder) / 'data.json'
+            page = command(flags + ['--json-out', str(data_path)])
+            data = json.loads(data_path.read_text(encoding='utf-8'))
         build.validate(data)
         assert data['data_version'] == 'for-check'
         assert 'id="generated"' not in page
         assert all('source' not in repo and 'protected_paths' not in repo for repo in data['sources'])
         assert all(str(root) not in page for root in protected_paths)
+        assert build.UTFPACK_DECODER_URL in page
+        assert f'integrity="{build.utfpack_pack.decoder_sri("utfpack")}"' in page
+        assert 'globalThis.utfpackData=' in page
         browser_flags = ['--static-only'] if args.skip_browser else []
         result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags], input=page,
                                 capture_output=True, text=True, timeout=600)
@@ -93,14 +98,14 @@ def main():
         exported_data = json.loads(exported)
         assert all(str(root) not in exported for root in protected_paths)
         assert exported_data['data_version'] == 'any value'
-        roundtrip = command(['--data', '-', '--output', '-'], exported)
-        restored = json.loads(re.search(r'const DATA = (.*?);?\n', roundtrip).group(1))
+        roundtrip = command(['--data', '-', '--json-out', '-'], exported)
+        restored = json.loads(roundtrip)
         assert restored['sources'] == data['sources']
         assert restored['full_text'] == full
         assert restored['data_version'] == exported_data['data_version']
         for version in ('custom version <2nd> & "check"', ''):
-            customized = command(['--data', '-', '--data-version', version, '--output', '-'], exported)
-            custom_data = json.loads(re.search(r'const DATA = (.*?);?\n', customized).group(1))
+            customized = command(['--data', '-', '--data-version', version, '--json-out', '-'], exported)
+            custom_data = json.loads(customized)
             assert custom_data['data_version'] == version
         report[kind]['jsonRoundtrip'] = True
         pages[kind] = (page, data)
@@ -127,16 +132,16 @@ def main():
         assert ja_data['lang'] == 'ja' and ja_data['labels'] == ja_labels and ja_data['title'] == '差分レビュー'
         kept = json.loads(command(['--data', '-', '--json-out', '-'], japanese))
         assert kept['lang'] == 'ja' and kept['labels'] == ja_labels
-        page_ja = command(['--data', '-', '-o', '-'], japanese)
-        assert json.loads(re.search(r'const DATA = (.*?);?\n', page_ja).group(1))['labels'] == ja_labels
+        page_ja = command(['--data', '-', '--json-out', '-'], japanese)
+        assert json.loads(page_ja)['labels'] == ja_labels
         result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags, f'--ja-labels={label_file}'], input=pages['full'][0],
                                 capture_output=True, text=True, timeout=600)
         if result.returncode:
             raise AssertionError(result.stderr)
         # The browser run takes the English page and swaps in the Japanese labels itself, so every English check keeps its meaning.
         report['japanese'] = json.loads(result.stdout)
-        override = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'build.py'), '--data', '-', '-o', '-', '--lang', 'ja', '--labels', str(label_file)], input=english, text=True, capture_output=True)
-        assert override.returncode == 0 and 'const DATA' in override.stdout and json.loads(re.search(r'const DATA = (.*?);?\n', override.stdout).group(1))['lang'] == 'ja'
+        override = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'build.py'), '--data', '-', '--json-out', '-', '--lang', 'ja', '--labels', str(label_file)], input=english, text=True, capture_output=True)
+        assert override.returncode == 0 and json.loads(override.stdout)['lang'] == 'ja'
         bad_file = Path(label_folder) / 'bad.json'
         build_py = [sys.executable, '-B', str(SCRIPTS / 'build.py')]
         for name, content, message in (('an unknown key', '{"copyButton": "x"}', 'unknown label keys'),
@@ -151,8 +156,8 @@ def main():
         init = subprocess.run([*build_py, '--init', 'fr', '-o', str(started)])
         assert init.returncode == 0 and json.loads(started.read_text(encoding='utf-8')) == template_labels
         started.write_text(json.dumps({**template_labels, 'sidebar': 'Fichiers modifiés'}, ensure_ascii=False), encoding='utf-8')
-        french = subprocess.run([*build_py, '--data', '-', '-o', '-', '--lang', 'fr', '--labels', str(started)], input=english, text=True, capture_output=True)
-        fr_data = json.loads(re.search(r'const DATA = (.*?);?\n', french.stdout).group(1))
+        french = subprocess.run([*build_py, '--data', '-', '--json-out', '-', '--lang', 'fr', '--labels', str(started)], input=english, text=True, capture_output=True)
+        fr_data = json.loads(french.stdout)
         assert french.returncode == 0 and fr_data['lang'] == 'fr' and fr_data['labels']['sidebar'] == 'Fichiers modifiés'
         started.write_text(json.dumps({k: v for k, v in template_labels.items() if k != 'sidebar'}), encoding='utf-8')
         partial = subprocess.run([*build_py, '--data', '-', '-o', '-', '--lang', 'fr', '--labels', str(started)], input=english, text=True, capture_output=True)
@@ -195,12 +200,24 @@ def main():
     first_file = next((f for r in hostile['sources'] for f in r['files']), None)
     if first_file:
         first_file['body'] += '\n+</script><script>throw Error("unsafe")</script>'
-    escaped = build.make_html(hostile, (SCRIPTS / 'template.html').read_text())
     template = (SCRIPTS / 'template.html').read_text()
-    assert len(re.findall(r'<script\b', escaped)) == len(re.findall(r'<script\b', template))
-    assert escaped.count('</script>') == template.count('</script>')
+    escaped = build.make_html(hostile, template)
+    assert escaped.count('</script>') == template.count('</script>') + 2
+    assert '</script><script>throw Error("unsafe")</script>' not in escaped
     assert '<title>' + html.escape(hostile['title']) + '</title>' in escaped
-    assert json.loads(re.search(r'const DATA = (.*?);?\n', escaped).group(1)) == hostile
+    assert 'globalThis.utfpackData=' in escaped
+    # A packed string that could close the script or open an HTML comment is refused.
+    real_pack = build.utfpack_pack.pack
+    for bad in ('</script', '<!--'):
+        build.utfpack_pack.pack = lambda files, emit='html', embed_decoder=False, bad=bad: {
+            'string': 'x' + bad, 'codec': 'deflate', 'format': 'base91', 'entry': 'utfpack/base91', 'module': ''}
+        try:
+            build.make_html(data, template)
+        except ValueError as error:
+            assert 'packed data' in str(error)
+        else:
+            raise AssertionError(f'The packed data check did not stop {bad}')
+    build.utfpack_pack.pack = real_pack
     artifact = command([*cli, '--data-version', 'for-check', '--artifact', '-o', '-'])
     assert not re.search(r'(?i)<!doctype|<html[\s>]|<head>|</head>|<body[\s>]|</body>|</html>', artifact)
     result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags], input=artifact,
@@ -208,7 +225,11 @@ def main():
     if result.returncode:
         raise AssertionError(result.stderr)
     report['artifact'] = json.loads(result.stdout)
-    report['regressions'] = ['file type change patches and stats', 'NUL-delimited rename stats', 'LF-only full-text lines', 'missing final newline', 'protected output paths', 'HTML/script escaping', 'required data version', 'arbitrary and empty versions', 'JSON version preservation', 'title data-marker separation', 'no repository path metadata', 'JSON-only output guards', 'malformed JSON files', 'non-UTF-8 bytes', 'artifact page', 'diff -ru binary lines', 'suppressed blank context', '-diff attribute text', 'symlink type change', 'renamed plain diff', 'CRLF diff file', 'file modes']
+    embedded = command([*cli, '--data-version', 'for-check', '--embed-decoder', '-o', '-'])
+    assert build.UTFPACK_DECODER_URL not in embedded
+    assert 'globalThis.utfpackData=' in embedded and 'var utfpack=' in embedded
+    report['embeddedDecoder'] = True
+    report['regressions'] = ['file type change patches and stats', 'NUL-delimited rename stats', 'LF-only full-text lines', 'missing final newline', 'protected output paths', 'HTML/script escaping', 'packed data script safety', 'required data version', 'arbitrary and empty versions', 'JSON version preservation', 'title data-marker separation', 'no repository path metadata', 'JSON-only output guards', 'malformed JSON files', 'non-UTF-8 bytes', 'artifact page', 'diff -ru binary lines', 'suppressed blank context', '-diff attribute text', 'symlink type change', 'renamed plain diff', 'CRLF diff file', 'file modes', 'embedded decoder']
     with tempfile.TemporaryDirectory(prefix='plain-', dir=args.sample_dir or None) as folder:
         folder = Path(folder); left = folder / 'before'; right = folder / 'after'
         left.mkdir(); right.mkdir()
@@ -224,10 +245,11 @@ def main():
         originals = {str(p): p.read_bytes() for root in (left,right) for p in root.iterdir()}
         plain_cli = ['--dirs', 'plain folder', str(left), str(right), '--data-version', 'folder check']
         for full in (False,True):
-            page = command([*plain_cli, *(['--full-text'] if full else []), '-o', '-'])
+            data_path = folder / 'page-data.json'
+            page = command([*plain_cli, *(['--full-text'] if full else []), '-o', '-', '--json-out', str(data_path)])
             result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags], input=page, text=True, capture_output=True, timeout=600)
             assert result.returncode == 0, result.stderr
-            plain_data = json.loads(re.search(r'const DATA = (.*?);?\n', page).group(1))
+            plain_data = json.loads(data_path.read_text(encoding='utf-8'))
             by_path = {f['path']: f for f in plain_data['sources'][0]['files']}
             assert len(by_path) == 8
             assert '-\\x82\\xa0' in by_path['sjis.txt']['body'] and by_path['sjis.txt']['notice'] == build.UNREADABLE

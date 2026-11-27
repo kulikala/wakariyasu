@@ -97,5 +97,7 @@
   "noticeNoDiff": "There is no difference in content.",
   "noticeSubmodule": "For a submodule, the diff of the referenced commit is shown.",
   "noticeUnreadable": "Bytes that are not valid UTF-8 are shown as \\xNN.",
-  "noticeNoFull": "The full text cannot be restored from a diff file, so it is not included."
+  "noticeNoFull": "The full text cannot be restored from a diff file, so it is not included.",
+  "loadingData": "Loading the diff…",
+  "dataLoadError": "The diff data could not be opened. The decoder may not have loaded, the integrity check may have failed, or the data could not be unpacked. A page built with --embed-decoder does not need the CDN."
 }

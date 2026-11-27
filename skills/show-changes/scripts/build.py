@@ -15,8 +15,11 @@ import sys
 
 sys.dont_write_bytecode = True
 import labels as labels_module  # noqa: E402
+import utfpack_pack  # noqa: E402
 
 SCHEMA_VERSION = 1
+UTFPACK_VERSION = utfpack_pack.VERSION
+UTFPACK_DECODER_URL = f'https://cdn.jsdelivr.net/npm/utfpack@{UTFPACK_VERSION}/dist/cdn/utfpack.js'
 # Dates offer more words than a language needs, so these labels may leave some out.
 LOOSE_LABELS = {'dayFormat': {'{y}', '{m}', '{d}', '{mm}', '{dd}', '{w}'}, 'monthDay': {'{m}', '{d}', '{mm}', '{dd}'}}
 UNREADABLE = 'Bytes that are not valid UTF-8 are shown as \\xNN.'
@@ -506,18 +509,23 @@ def validate(data):
     return data
 
 
-def make_html(data, template, artifact=False):
+def make_html(data, template, artifact=False, embed_decoder=False):
     data = validate(data)
-    payload = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
-    if template.count('/*__DATA__*/null') != 1:
-        raise ValueError('The template must contain the data placeholder exactly once')
-    before, after = template.split('/*__DATA__*/null')
+    payload = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+    packed = utfpack_pack.pack({'data.json': payload}, emit='html', embed_decoder=embed_decoder)
+    if '</script' in packed['string'] or '<!--' in packed['string']:
+        raise ValueError('The packed data contains "</script" or "<!--", so it cannot be put in an HTML page safely')
+    data_script = utfpack_pack.emit(packed, 'html', embed_decoder=embed_decoder)
+    if template.count('<!--__PACKED__-->') != 1:
+        raise ValueError('The template must contain <!--__PACKED__--> exactly once')
     english = json.dumps(labels_module.english(), ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
     if template.count('/*__LABELS__*/{}/*__LABELS_END__*/') != 1:
         raise ValueError('The template must contain /*__LABELS__*/{}/*__LABELS_END__*/ exactly once')
-    before, after = before.replace('/*__LABELS__*/{}/*__LABELS_END__*/', english), after.replace('/*__LABELS__*/{}/*__LABELS_END__*/', english)
-    page = (before.replace('__TITLE__', html.escape(data['title'])) + payload
-            + after.replace('__TITLE__', html.escape(data['title'])))
+    decoder = '' if embed_decoder else (
+        f'<script src="{UTFPACK_DECODER_URL}" integrity="{utfpack_pack.decoder_sri("utfpack")}" crossorigin="anonymous"></script>\n')
+    page = (template.replace('<!--__PACKED__-->', decoder + data_script)
+                    .replace('/*__LABELS__*/{}/*__LABELS_END__*/', english)
+                    .replace('__TITLE__', html.escape(data['title'])))
     return artifact_body(page) if artifact else page
 
 
@@ -604,6 +612,7 @@ def main(argv=None):
     parser.add_argument('--template', type=Path, default=Path(__file__).with_name('template.html'), metavar='PATH', help='the HTML template')
     parser.add_argument('--json-out', metavar='PATH', help='write the diff data as JSON; - writes to standard output')
     parser.add_argument('--artifact', action='store_true', help='write the HTML without the DOCTYPE, html, head and body tags (for destinations that add a document skeleton)')
+    parser.add_argument('--embed-decoder', action='store_true', help='put the decoder into the page instead of loading it from the CDN')
     parser.add_argument('-o', '--output', metavar='PATH', help='the HTML output path; - writes to standard output')
     args = parser.parse_args(argv)
     if args.init:
@@ -658,7 +667,7 @@ def main(argv=None):
         for output in (args.output, args.json_out):
             if output:
                 check_output(output, protected_paths, data_only=bool(args.data))
-        page = make_html(data, template, args.artifact) if args.output else None
+        page = make_html(data, template, args.artifact, args.embed_decoder) if args.output else None
         if args.json_out:
             write(args.json_out, json.dumps(data, ensure_ascii=False, indent=2) + '\n')
         if args.output:

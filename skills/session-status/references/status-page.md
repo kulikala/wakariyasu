@@ -59,7 +59,7 @@ python3 -B scripts/build.py <report>.json -o <page>.html              # to hand 
 ```
 
 - Add `--labels <file>` to either command for a language without a pack (see "Words on the page").
-- Use `--artifact` when you publish the page on a host that adds its own document skeleton (the DOCTYPE, html, head and body tags) to what it publishes, as Claude artifacts do. Leave it out when you hand over an HTML file, which then opens in a browser as is.
+- Use `--artifact` when you publish the page on a host that adds its own document skeleton (the DOCTYPE, html, head and body tags) to what it publishes, as Claude artifacts do. The page is then built as parts of a document: it starts with `<title>` and has no skeleton tags and no charset or viewport meta. Leave it out when you hand over an HTML file, which then opens in a browser as is.
 - Where you can publish the page, publish it and give the link. Otherwise save the HTML file and give its location.
 - The page loads its scripts and fonts from public CDNs when it opens, so the user needs a network connection, and a host must allow those CDNs.
 - Where the host refuses the clipboard, the page asks the user to select the text in the box under the decisions and copy it by hand.

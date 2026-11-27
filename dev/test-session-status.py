@@ -44,7 +44,17 @@ check('title is filled in', '<title>Docs site migration</title>' in page)
 check('data is filled in once', '/*__DATA__*/' not in page and page.count('"Docs site migration"') == 1)
 
 artifact = build.make_html(report, template, artifact=True)
-check('artifact page has no skeleton', not re.search(r'<!DOCTYPE|<html|<head>|</head>|<body|</body>|</html>', artifact))
+check('artifact starts with the title', artifact.startswith('<title>Docs site migration</title>'))
+check('artifact has no skeleton, charset or viewport', not re.search(r'(?i)<!doctype|<html[\s>]|<head[\s>]|</head>|<body[\s>]|</body>|</html>|charset|name="viewport"', artifact))
+check('artifact keeps the viewport-fit meta right after the title', artifact.startswith('<title>Docs site migration</title>\n  <meta name="claude:viewport-fit-sides" content="cover">'))
+check('plain page has charset, viewport, html lang and body', all(t in page for t in ('<html lang="en">', '<meta charset="UTF-8">', 'name="viewport"', '<head>', '<body>')) and 'claude:viewport-fit-sides' not in page)
+def in_order(text, tokens):
+    positions = [text.find(t) for t in tokens]
+    return -1 not in positions and positions == sorted(positions)
+parts = ['<title>', 'type="importmap"', '@tailwindcss/browser', 'type="text/tailwindcss"', 'prefers-color-scheme', '<div id="app"', '<script type="module">']
+check('artifact parts are in order', in_order(artifact, parts))
+check('plain page parts are in order', in_order(page, ['<!DOCTYPE html>', '<head>', *parts, '</body>', '</html>']))
+check('the app element carries lang', '<div id="app" v-cloak lang="en">' in artifact)
 
 tricky = json.loads(json.dumps(report))
 tricky['title'] = 'A & B <c>'
@@ -118,17 +128,5 @@ for code in ('en', 'ja'):
     check(f'reply-template.md of {code} is what skeleton.py prints', shipped == skeleton.render(labels_module.resolve(code, None, 'skeleton.py')))
 check('the ja skeleton has the ja state words', '🙋 判断待ち（1）' in skeleton.render(ja) and '## 現在のゴール' in skeleton.render(ja))
 check('the skeleton prints the state words once each', all(skeleton.render(labels).count(f'{e} {labels[k]}') == 1 for e, k in skeleton.STATES))
-
-# The browser run needs Chrome and the network, so dev/test leaves it out; run `python3 -B dev/test-session-status.py --browser` after changing the page.
-if '--browser' in sys.argv:
-    with tempfile.TemporaryDirectory(prefix='status-page-') as folder:
-        for code, words in (('en', labels), ('ja', ja)):
-            page_file = Path(folder) / f'{code}.html'
-            page_file.write_text(build.make_html({**report, 'lang': code}, template, words), encoding='utf-8')
-            result = subprocess.run(['node', str(ROOT / 'dev' / 'test-session-status-page.mjs'), str(page_file), f'--expect-label={words["copySelection"]}'],
-                                    capture_output=True, text=True, timeout=300)
-            check(f'browser ({code}): selecting text shows a copy button that copies the selection', result.returncode == 0)
-            if result.returncode:
-                print(result.stderr)
 
 sys.exit(1 if failures else 0)

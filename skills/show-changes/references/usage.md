@@ -4,7 +4,7 @@ Read this when you build or rebuild a page.
 
 ## Requirements
 
-- Python 3.9 or later. Only the standard library is used. When building, the bundled `scripts/utfpack_pack.py` (from utfpack, a library that compresses data into a string a page can carry) compresses the page's data.
+- Python 3.9 or later. Only the standard library is used. When building a page (`-o`), `build.py` downloads utfpack's packer (a library that compresses data into a string a page can carry) from jsDelivr, so building a page needs network access to jsDelivr. The packer is cached under `wakariyasu/utfpack/<version>/` in the user cache folder (`XDG_CACHE_HOME` or `~/.cache`; `LOCALAPPDATA` on Windows). When the download fails, the newest cached version is used; with no cache, `build.py` stops with exit code 2. `--json-out` alone and `--init` need no network.
 - When the page opens, it loads its scripts from the CDN jsDelivr, including utfpack's decoder, which turns that string back into the data. The viewer needs a network connection, and the place that shows the page (a browser, or a host such as Claude artifacts) must allow jsDelivr. `--embed-decoder` puts the decoder into the page instead.
 - git is required to collect a git two-commit target (`--repo`). Other targets and `--data` work without git. When git is available, the diff of a two-folder target is also built with git, which is fast even for large files.
 
@@ -32,7 +32,7 @@ python3 -B scripts/build.py --files <name> <file or folder>... --data-version '<
 | `--lang CODE` | The language of the page you are producing. It sets the `lang` of the page and takes the page's words from `lang/CODE/labels.json` (see "The page language"). |
 | `--labels FILE` | A JSON file of the page's words (buttons, headings, tooltips, notices and dates). For a language that has no `lang/CODE/labels.json`, it holds every word; for a language that has one, it holds only the words to change. An unknown key, a missing key and a dropped word in braces stop the build. |
 | `--init CODE` | With `-o FILE`: write the English words as a JSON file to translate for the language `CODE`, then stop. |
-| `--artifact` | Write the HTML without the DOCTYPE, html, head and body tags. Add it when handing the page to a destination that wraps pages in a document skeleton on publishing, as Claude artifacts do. Without it, the output is a complete HTML file that opens as is. |
+| `--artifact` | Build the page as parts of a document: it starts with `<title>`, has no DOCTYPE, html, head or body tags and no charset or viewport meta, and puts the `lang` on the element with the id `app`. Add it when handing the page to a destination that wraps pages in a document skeleton on publishing, as Claude artifacts do. Without it, the output is a complete HTML file that opens as is. |
 | `--embed-decoder` | Put the utfpack decoder into the page instead of loading it from jsDelivr. Add it when the page must open where jsDelivr cannot be reached. |
 | `-o` / `--output` | The HTML output path. `-` writes to standard output. |
 | `--json-out` | Write the diff data as JSON. `-` writes to standard output. Can be used together with `-o`. |

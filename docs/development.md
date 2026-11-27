@@ -25,10 +25,7 @@ AGENTS.snippet.md                The body of the rules to paste into agents othe
 dev/build                        Prints asking-template.md and reply-template.md from labels.json, and joins the rules and asking.md into AGENTS.snippet.md
 dev/test                         Checks the repository's rules
 dev/test-show-changes.py         Test to run after changing build.py and template.html of show-changes (docs/show-changes.md)
-dev/test-show-changes-page.mjs   Test that opens the show-changes page in a browser and tries operating it
-dev/test-session-status.py       Test to run after changing build.py, template.html or a labels.json of session-status (dev/test runs it; --browser also opens the page in Chrome)
-dev/test-session-status-page.mjs Test that opens the session-status page in a browser and copies selected text
-dev/browser-cdp.mjs              Shared code that drives Chrome through the DevTools protocol for the browser tests
+dev/test-session-status.py       Test to run after changing build.py, template.html or a labels.json of session-status (dev/test runs it)
 .github/workflows/test.yml       GitHub Actions configuration that runs dev/test on every push and pull request
 evals/                           Cases for claude plugin eval that measure whether skills are called
 docs/                            Development guides
@@ -38,9 +35,9 @@ CHANGELOG.md                     Changes for each version (CHANGELOG.ja.md is th
 
 The hooks, `check-terms` and `terms-table` run with only `sh` and standard commands. `dev/test` also uses `git`. `dev/build` and `dev/test` also run `python3`, because the templates are printed by Python scripts.
 
-`build.py`, which builds the page of the skill `show-changes`, runs on the Python 3 standard library. The test after changing `build.py` also uses node and Chrome. The steps for changing it are in [How to modify show-changes](show-changes.md).
+`build.py`, which builds the page of the skill `show-changes`, runs on the Python 3 standard library. When it builds a page, it downloads utfpack's packer from jsDelivr (see [How to modify show-changes](show-changes.md)). The steps for changing it are in [How to modify show-changes](show-changes.md).
 
-`build.py`, which builds the page of the skill `session-status`, and the scripts that print templates (`skeleton.py`, `asking-skeleton`) also run on the Python 3 standard library. After changing `build.py`, `template.html` or a `labels.json`, run `python3 dev/test-session-status.py` (`dev/test` runs it too). After changing `template.html`, also run it with `--browser`, which needs Chrome and a network connection (the page loads its scripts from jsDelivr).
+`build.py`, which builds the page of the skill `session-status`, and the scripts that print templates (`skeleton.py`, `asking-skeleton`) also run on the Python 3 standard library. After changing `build.py`, `template.html` or a `labels.json`, run `python3 dev/test-session-status.py` (`dev/test` runs it too). The behavior of a page in a browser is not tested by a script: after changing a `template.html`, build a page and open it by hand in any browser.
 
 ## Changing the body
 

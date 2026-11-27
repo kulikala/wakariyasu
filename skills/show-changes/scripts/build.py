@@ -5,6 +5,7 @@ import ast
 import datetime
 import difflib
 import html
+import importlib.util
 import json
 import os
 import re
@@ -12,15 +13,18 @@ import shutil
 from pathlib import Path
 import subprocess
 import sys
+import urllib.request
 
 sys.dont_write_bytecode = True
 import labels as labels_module  # noqa: E402
-import utfpack_pack  # noqa: E402
 
 SCHEMA_VERSION = 2
 INITIAL_SCOPES = ('diff', 'full', 'after')
-UTFPACK_VERSION = utfpack_pack.VERSION
-UTFPACK_DECODER_URL = f'https://cdn.jsdelivr.net/npm/utfpack@{UTFPACK_VERSION}/dist/cdn/utfpack.js'
+UTFPACK_PACKER_URL = 'https://cdn.jsdelivr.net/npm/utfpack@0/python/utfpack_pack.py'
+# Set by load_packer(): the packer module, its version and the URL of the decoder that matches it.
+utfpack_pack = None
+UTFPACK_VERSION = None
+UTFPACK_DECODER_URL = None
 # Dates offer more words than a language needs, so these labels may leave some out.
 LOOSE_LABELS = {'dayFormat': {'{y}', '{m}', '{d}', '{mm}', '{dd}', '{w}'}, 'monthDay': {'{m}', '{d}', '{mm}', '{dd}'}}
 UNREADABLE = 'Bytes that are not valid UTF-8 are shown as \\xNN.'
@@ -29,6 +33,60 @@ NOTICE_NO_DIFF = 'There is no difference in content.'
 NOTICE_SUBMODULE = 'For a submodule, the diff of the referenced commit is shown.'
 NOTICE_NO_FULL = 'The full text cannot be restored from a diff file, so it is not included.'
 DEFAULT_TITLE = 'Diff review'
+
+
+def cache_root():
+    if os.name == 'nt':
+        base = os.environ.get('LOCALAPPDATA') or str(Path.home() / 'AppData' / 'Local')
+    else:
+        base = os.environ.get('XDG_CACHE_HOME') or str(Path.home() / '.cache')
+    return Path(base) / 'wakariyasu' / 'utfpack'
+
+
+def version_key(name):
+    return tuple(int(part) if part.isdigit() else 0 for part in re.split(r'[.\-]', name))
+
+
+def import_packer(path):
+    spec = importlib.util.spec_from_file_location('utfpack_pack', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_packer():
+    """Load utfpack's Python packer: download the newest 0.x from jsDelivr into the user cache, or use the newest cached one."""
+    global utfpack_pack, UTFPACK_VERSION, UTFPACK_DECODER_URL
+    if utfpack_pack is not None:
+        return utfpack_pack
+    root = cache_root()
+    path = None
+    try:
+        with urllib.request.urlopen(UTFPACK_PACKER_URL, timeout=20) as response:
+            source = response.read()
+            version = response.headers.get('x-jsd-version')
+        if not version:
+            match = re.search(rb'^VERSION = "([^"]+)"', source, re.M)
+            version = match.group(1).decode() if match else None
+        if version and re.fullmatch(r'[0-9A-Za-z.\-]+', version):
+            path = root / version / 'utfpack_pack.py'
+            if not path.exists() or path.read_bytes() != source:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                temporary = path.with_name(f'.{os.getpid()}.tmp')
+                temporary.write_bytes(source)
+                os.replace(temporary, path)
+    except (OSError, ValueError):
+        path = None
+    if path is None:
+        cached = sorted((p for p in root.glob('*/utfpack_pack.py') if p.is_file()), key=lambda p: version_key(p.parent.name), reverse=True) if root.is_dir() else []
+        if not cached:
+            sys.stderr.write('error: the utfpack packer could not be downloaded from jsDelivr\n')
+            sys.exit(2)
+        path = cached[0]
+    utfpack_pack = import_packer(path)
+    UTFPACK_VERSION = utfpack_pack.VERSION
+    UTFPACK_DECODER_URL = f'https://cdn.jsdelivr.net/npm/utfpack@{UTFPACK_VERSION}/dist/cdn/utfpack.js'
+    return utfpack_pack
 
 
 def git(path, *args):
@@ -537,6 +595,7 @@ def validate(data):
 
 def make_html(data, template, artifact=False, embed_decoder=False):
     data = validate(data)
+    load_packer()
     payload = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     # The text that closes a script or opens a comment cannot go into the page; pack again in a plainer format.
     for options in ({}, {'ascii': True}, {'format': 'base64'}):
@@ -546,7 +605,7 @@ def make_html(data, template, artifact=False, embed_decoder=False):
     else:
         raise ValueError('The packed data contains "</script" or "<!--" in every format, so it cannot be put in an HTML page safely')
     data_script = utfpack_pack.emit(packed, 'html', embed_decoder=embed_decoder)
-    for marker in ('<!--__PACKED__-->', '/*__LABELS__*/{}/*__LABELS_END__*/', '/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/'):
+    for marker in ('<!--__PACKED__-->', '<!--__BODY__-->', '__LANG__', '/*__LABELS__*/{}/*__LABELS_END__*/', '/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/'):
         if template.count(marker) != 1:
             raise ValueError(f'The template must contain {marker} exactly once')
     safe = lambda value: json.dumps(value, ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
@@ -556,22 +615,29 @@ def make_html(data, template, artifact=False, embed_decoder=False):
     decoder = '' if embed_decoder else (
         f'<script src="{UTFPACK_DECODER_URL}" integrity="{utfpack_pack.decoder_sri("utfpack")}" crossorigin="anonymous"></script>\n')
     # Replace in the template first and put the data in last, so no replacement can touch the data.
+    template = assemble(template, data.get('lang') or 'en', artifact)
     page = (template.replace('/*__LABELS__*/{}/*__LABELS_END__*/', safe(english))
                     .replace('/*__LOAD_WORDS__*/{}/*__LOAD_WORDS_END__*/', safe(words))
                     .replace('__TITLE__', html.escape(data['title'])))
     before, after = page.split('<!--__PACKED__-->')
     page = before + decoder + data_script + after
-    return artifact_body(page) if artifact else page
-
-
-def artifact_body(page):
-    """Remove the DOCTYPE, html, head and body tags, because the publishing destination adds its own document skeleton."""
-    page, heads = re.subn(r'\A<!DOCTYPE html>\s*<html[^>]*>\s*<head>\s*', '', page)
-    page, middles = re.subn(r'\s*</head>\s*<body[^>]*>\s*', '\n', page, count=1)
-    page, tails = re.subn(r'\s*</body>\s*</html>\s*\Z', '\n', page)
-    if (heads, middles, tails) != (1, 1, 1):
-        raise ValueError('Cannot remove the html, head and body tags from the template')
     return page
+
+
+def assemble(template, lang, artifact):
+    """Put the template's parts into the shape of the destination.
+
+    The template holds the head parts (title, import map, packed data, styles), the marker <!--__BODY__-->,
+    and the body parts (#app, loading message, module script). A destination that wraps pages in its own
+    document skeleton gets the parts alone, starting with the title; a plain HTML file gets a complete document.
+    """
+    head, body = template.split('<!--__BODY__-->')
+    body = body.replace('__LANG__', html.escape(lang, quote=True))
+    if artifact:
+        return head + body.lstrip('\n')
+    return ('<!DOCTYPE html>\n' + f'<html lang="{html.escape(lang, quote=True)}">\n<head>\n'
+            '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+            + head + '</head>\n<body>\n' + body.lstrip('\n') + '</body>\n</html>\n')
 
 
 def repository_paths(location):

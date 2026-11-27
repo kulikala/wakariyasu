@@ -1,66 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>__TITLE__</title>
+<title>__TITLE__</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-bundler.js/+esm",
+        "@lucide/vue": "https://cdn.jsdelivr.net/npm/@lucide/vue/+esm",
+        "highlight.js/core": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/core.js/+esm",
+        "highlight.js/languages/javascript": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/javascript.js/+esm",
+        "highlight.js/languages/typescript": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/typescript.js/+esm",
+        "highlight.js/languages/python": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/python.js/+esm",
+        "highlight.js/languages/bash": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/bash.js/+esm",
+        "highlight.js/languages/yaml": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/yaml.js/+esm",
+        "highlight.js/languages/xml": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/xml.js/+esm",
+        "highlight.js/languages/css": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/css.js/+esm",
+        "highlight.js/languages/json": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/json.js/+esm",
+        "highlight.js/languages/sql": "https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/sql.js/+esm"
+      }
+    }
+  </script>
   <!--__PACKED__-->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
     @theme {
-      --font-sans: 'Noto Sans JP', sans-serif;
+      --color-page: #f6f7f6;
+      --color-panel: #ffffff;
+      --color-ink: #1d2422;
+      --color-muted: #5f6b67;
+      --color-line: #d9dfdc;
+      --color-hover: #e2f0ed;
+      --color-add: #e6f4ea;
+      --color-del: #fbeaea;
+      --color-add-word: #a6e7b6;
+      --color-del-word: #f7b9b9;
+      --color-hunk: #eef2f6;
+    }
+    @layer base {
+      body { @apply bg-page text-ink; }
+    }
+    @layer components {
+      /* Whitespace marks are drawn by CSS so copying and searching still see the real characters. */
+      .ws { color: var(--color-muted) }
+      .ws-space { background: radial-gradient(circle, var(--color-muted) 0 1px, transparent 1.5px) left center / 1ch 1em repeat-x }
+      .ws-tab, .ws-nbsp, .ws-other { position: relative }
+      .ws-tab::before { content: '→'; position: absolute; left: 0 }
+      .ws-nbsp::after, .ws-other::after { content: '⍽'; position: absolute; inset: 0; text-align: center }
+      .ws-ideo { outline: 1px dashed var(--color-muted); outline-offset: -2px }
+      .ws-cr::after, .ws-zwsp::after, .ws-bom::after { margin: 0 1px; border: 1px solid var(--color-muted); border-radius: 3px; padding: 0 2px; font-size: 9px; vertical-align: 1px }
+      .ws-cr::after { content: 'CR' }
+      .ws-zwsp::after { content: 'ZWSP' }
+      .ws-bom::after { content: 'BOM' }
+      /* The line or file heading the search has moved to. */
+      .hit-current { outline: 2px solid #0d9488; outline-offset: -2px; background-image: linear-gradient(rgba(13, 148, 136, .22), rgba(13, 148, 136, .22)) }
     }
   </style>
   <style>
-    /* Whitespace marks are drawn by CSS so copying and searching still see the real characters. */
-    .ws { color: var(--muted) }
-    .ws-space { background: radial-gradient(circle, var(--muted) 0 1px, transparent 1.5px) left center / 1ch 1em repeat-x }
-    .ws-tab, .ws-nbsp, .ws-other { position: relative }
-    .ws-tab::before { content: '→'; position: absolute; left: 0 }
-    .ws-nbsp::after, .ws-other::after { content: '⍽'; position: absolute; inset: 0; text-align: center }
-    .ws-ideo { outline: 1px dashed var(--muted); outline-offset: -2px }
-    .ws-cr::after, .ws-zwsp::after, .ws-bom::after { margin: 0 1px; border: 1px solid var(--muted); border-radius: 3px; padding: 0 2px; font-size: 9px; vertical-align: 1px }
-    .ws-cr::after { content: 'CR' }
-    .ws-zwsp::after { content: 'ZWSP' }
-    .ws-bom::after { content: 'BOM' }
-    /* The line or file heading the search has moved to. */
-    .hit-current { outline: 2px solid #0d9488; outline-offset: -2px; background-image: linear-gradient(rgba(13, 148, 136, .22), rgba(13, 148, 136, .22)) }
+    /* The light values stay in @theme */
+    :root { color-scheme: light; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --color-page: #101714;
+        --color-panel: #1b2420;
+        --color-ink: #e3e8e6;
+        --color-muted: #a3b5ac;
+        --color-line: #34453b;
+        --color-hover: #2a3d32;
+        --color-add: #14301e;
+        --color-del: #3a1d1d;
+        --color-add-word: #2f7d48;
+        --color-del-word: #a3403f;
+        --color-hunk: #253142;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --color-page: #101714;
+      --color-panel: #1b2420;
+      --color-ink: #e3e8e6;
+      --color-muted: #a3b5ac;
+      --color-line: #34453b;
+      --color-hover: #2a3d32;
+      --color-add: #14301e;
+      --color-del: #3a1d1d;
+      --color-add-word: #2f7d48;
+      --color-del-word: #a3403f;
+      --color-hunk: #253142;
+      color-scheme: dark;
+    }
   </style>
-</head>
-<body class="m-0">
-  <div id="loading" role="status" aria-live="polite" class="p-4 text-sm"></div>
-  <div id="app">
-  <div id="diff-app" class="flex h-dvh flex-col overflow-hidden bg-[var(--bg)] font-sans text-sm text-[var(--fg)]" :class="[palette, dragging ? 'cursor-col-resize select-none' : '']" :data-ready="ready">
-    <header class="flex min-h-16 shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b border-[var(--border)] bg-[var(--panel)] px-4 py-3">
+<!--__BODY__-->
+  <div id="app" lang="__LANG__">
+  <div id="diff-app" class="flex h-dvh flex-col overflow-hidden bg-page text-sm text-ink" :class="dragging ? 'cursor-col-resize select-none' : ''" :data-ready="ready">
+    <header class="flex min-h-16 shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b border-line bg-panel px-4 py-3">
       <h1 class="min-w-0 break-all text-base font-bold">{{ data.title }}</h1>
-      <span id="version" class="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs">{{ data.data_version }}</span>
-      <span id="totals" class="text-xs text-[var(--muted)]" aria-live="polite">{{ T(visible.length === 1 ? 'filesOne' : 'filesMany', { n: visible.length }) }}　<span class="text-emerald-600">+{{ totals.added }}</span> <span class="text-rose-500">−{{ totals.deleted }}</span></span>
+      <span id="version" class="rounded-full border border-line px-2 py-0.5 text-xs">{{ data.data_version }}</span>
+      <span id="totals" class="text-xs text-muted" aria-live="polite">{{ T(visible.length === 1 ? 'filesOne' : 'filesMany', { n: visible.length }) }}　<span class="text-emerald-600">+{{ totals.added }}</span> <span class="text-rose-500">−{{ totals.deleted }}</span></span>
     </header>
     <div ref="split" class="relative flex min-h-0 flex-1">
-      <nav id="sidebar" :aria-label="T('sidebar')" class="h-full w-full shrink-0 overflow-y-auto border-r border-[var(--border)]" :class="!mobile && sidebarHidden ? 'md:hidden' : ''" :style="mobile ? null : { width: sidebarWidth + 'px' }" :inert="mobile && screen === 'diff'">
-        <div class="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-[var(--border)] bg-[var(--bg)] p-3">
+      <nav id="sidebar" :aria-label="T('sidebar')" class="h-full w-full shrink-0 overflow-y-auto border-r border-line" :class="!mobile && sidebarHidden ? 'md:hidden' : ''" :style="mobile ? null : { width: sidebarWidth + 'px' }" :inert="mobile && screen === 'diff'">
+        <div class="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-line bg-page p-3">
           <label v-if="data.sources.length > 1" for="source" class="flex shrink-0 items-center gap-1 text-xs">{{ T('source') }}
-            <select id="source" v-model.number="source" :title="T('sourceTitle')" class="max-w-24 cursor-pointer rounded border border-[var(--border)] bg-[var(--panel)] p-2 text-[var(--fg)]" :aria-label="T('source')">
+            <select id="source" v-model.number="source" :title="T('sourceTitle')" class="max-w-24 cursor-pointer rounded border border-line bg-panel p-2 text-ink" :aria-label="T('source')">
               <option :value="-1">{{ T('sourceAll') }}</option><option v-for="(item, i) in data.sources" :value="i">{{ item.name }}</option>
             </select>
           </label>
           <div class="relative min-w-0 flex-1">
-            <input id="filter" v-model="input" type="text" :placeholder="T('filterPlaceholder')" :aria-label="T('filterPlaceholder')" :title="T('filterTitle')" class="w-full rounded border border-[var(--border)] bg-[var(--panel)] py-2 pl-2 text-xs text-[var(--fg)] focus:outline-2 focus:outline-teal-500" :class="input ? 'pr-8' : 'pr-2'" @keydown.esc="clearFilter" @keydown.enter="onEnter">
-            <button v-if="input" id="clearFilter" type="button" :aria-label="T('clearFilter')" :title="T('clearFilterTitle')" class="absolute inset-y-0 right-0 flex cursor-pointer items-center rounded px-2 text-[var(--muted)] hover:text-[var(--fg)] focus-visible:outline-2 focus-visible:outline-teal-500" @click="clearFilter"><x :size="14"></x></button>
+            <input id="filter" v-model="input" type="text" :placeholder="T('filterPlaceholder')" :aria-label="T('filterPlaceholder')" :title="T('filterTitle')" class="w-full rounded border border-line bg-panel py-2 pl-2 text-xs text-ink focus:outline-2 focus:outline-teal-500" :class="input ? 'pr-8' : 'pr-2'" @keydown.esc="clearFilter" @keydown.enter="onEnter">
+            <button v-if="input" id="clearFilter" type="button" :aria-label="T('clearFilter')" :title="T('clearFilterTitle')" class="absolute inset-y-0 right-0 flex cursor-pointer items-center rounded px-2 text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-500" @click="clearFilter"><div><x :size="14"></x></div></button>
           </div>
-          <button v-if="canFilter" id="contentOnly" type="button" :aria-label="T('contentOnly')" :title="T(contentOnly ? 'contentOnlyOn' : 'contentOnlyOff')" :aria-pressed="contentOnly" class="shrink-0 cursor-pointer rounded border border-[var(--border)] p-2 focus-visible:outline-2 focus-visible:outline-teal-500" :class="contentOnly ? 'bg-teal-700 text-white hover:bg-teal-800' : 'bg-[var(--panel)] hover:bg-[var(--hover)]'" @click="contentOnly = !contentOnly"><div><list-filter :size="16"></list-filter></div></button>
-          <div v-if="query" id="hits" class="flex basis-full items-center justify-end gap-2 text-xs text-[var(--muted)]">
+          <button v-if="canFilter" id="contentOnly" type="button" :aria-label="T('contentOnly')" :title="T(contentOnly ? 'contentOnlyOn' : 'contentOnlyOff')" :aria-pressed="contentOnly" class="shrink-0 cursor-pointer rounded border border-line p-2 focus-visible:outline-2 focus-visible:outline-teal-500" :class="contentOnly ? 'bg-teal-700 text-white hover:bg-teal-800' : 'bg-panel hover:bg-hover'" @click="contentOnly = !contentOnly"><div><list-filter :size="16"></list-filter></div></button>
+          <div v-if="query" id="hits" class="flex basis-full items-center justify-end gap-2 text-xs text-muted">
             <span id="hitCount" role="status" aria-live="polite">{{ hitLabel }}</span>
-            <button id="hitPrev" type="button" :aria-label="T('hitPrev')" :title="T('hitPrevTitle')" :disabled="!hits.length" class="cursor-pointer rounded border border-[var(--border)] bg-[var(--panel)] p-1 text-[var(--fg)] hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-default disabled:opacity-40" @click="step(-1)"><div><chevron-up :size="14"></chevron-up></div></button>
-            <button id="hitNext" type="button" :aria-label="T('hitNext')" :title="T('hitNextTitle')" :disabled="!hits.length" class="cursor-pointer rounded border border-[var(--border)] bg-[var(--panel)] p-1 text-[var(--fg)] hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-default disabled:opacity-40" @click="step(1)"><div><chevron-down :size="14"></chevron-down></div></button>
+            <button id="hitPrev" type="button" :aria-label="T('hitPrev')" :title="T('hitPrevTitle')" :disabled="!hits.length" class="cursor-pointer rounded border border-line bg-panel p-1 text-ink hover:bg-hover focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-default disabled:opacity-40" @click="step(-1)"><div><chevron-up :size="14"></chevron-up></div></button>
+            <button id="hitNext" type="button" :aria-label="T('hitNext')" :title="T('hitNextTitle')" :disabled="!hits.length" class="cursor-pointer rounded border border-line bg-panel p-1 text-ink hover:bg-hover focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-default disabled:opacity-40" @click="step(1)"><div><chevron-down :size="14"></chevron-down></div></button>
           </div>
         </div>
         <ul id="filelist" class="space-y-1 p-2">
           <template v-for="group in groups" :key="group.name">
-            <li class="break-all px-2 pt-4 pb-1 text-xs font-bold text-[var(--muted)]">{{ group.name }}</li>
+            <li class="break-all px-2 pt-4 pb-1 text-xs font-bold text-muted">{{ group.name }}</li>
             <li v-for="item in group.files" :key="item.id">
-              <button type="button" :data-file-id="item.id" :title="T('jumpTo', { path: item.file.path })" class="flex w-full cursor-pointer items-start gap-2 rounded px-2 py-1.5 text-left hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500" @click="jump(item.id)">
+              <button type="button" :data-file-id="item.id" :title="T('jumpTo', { path: item.file.path })" class="flex w-full cursor-pointer items-start gap-2 rounded px-2 py-1.5 text-left hover:bg-hover focus-visible:outline-2 focus-visible:outline-teal-500" @click="jump(item.id)">
                 <status-badge :status="item.file.status"></status-badge>
                 <span class="min-w-0 flex-1 break-all text-xs">{{ item.file.path }}</span>
                 <span class="shrink-0 font-mono text-[10px]"><span class="text-emerald-600">+{{ shown(item.file).added ?? '—' }}</span> <span class="text-rose-500">−{{ shown(item.file).deleted ?? '—' }}</span></span>
@@ -68,17 +125,17 @@
             </li>
           </template>
         </ul>
-        <p v-if="!visible.length" class="p-4 text-[var(--muted)]">{{ T('noFiles') }}</p>
+        <p v-if="!visible.length" class="p-4 text-muted">{{ T('noFiles') }}</p>
       </nav>
       <div v-if="!mobile && !sidebarHidden" id="resizer" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="sidebar" :aria-label="T('resizer')" :aria-valuenow="sidebarWidth" :aria-valuemin="minWidth" :aria-valuemax="maxWidth()" :title="T('resizerTitle')" class="group relative -ml-1 hidden w-2 shrink-0 cursor-col-resize touch-none focus-visible:outline-none md:block" @pointerdown="startDrag" @dblclick="setWidth(defaultWidth)" @keydown.left.prevent="setWidth(sidebarWidth - 16)" @keydown.right.prevent="setWidth(sidebarWidth + 16)"><div class="mx-auto h-full w-0.5 transition-colors group-hover:bg-teal-500 group-focus-visible:bg-teal-500" :class="dragging ? 'bg-teal-500' : ''"></div></div>
-      <section id="diff-screen" :data-screen="screen" class="absolute inset-0 z-30 md:z-auto flex min-w-0 flex-col bg-[var(--bg)] transition-transform duration-200 motion-reduce:transition-none md:static md:flex-1 md:translate-x-0" :class="screen === 'diff' ? 'translate-x-0' : 'translate-x-full'" :inert="mobile && screen === 'list'">
-        <div role="toolbar" :aria-label="T('toolbar')" class="bar sticky top-0 z-20 flex shrink-0 flex-wrap items-center gap-2 border-b border-[var(--border)] bg-[var(--panel)] p-2 md:gap-4 md:px-4">
-          <button id="toggleSidebar" type="button" :aria-label="T(sidebarHidden ? 'showList' : 'hideList')" :title="T(sidebarHidden ? 'showList' : 'hideList')" :aria-expanded="!sidebarHidden" aria-controls="sidebar" class="hidden cursor-pointer rounded-md border border-[var(--border)] p-2 hover:bg-[var(--hover)] md:block" @click="sidebarHidden = !sidebarHidden"><div><panel-left-open v-if="sidebarHidden" :size="16"></panel-left-open><panel-left-close v-else :size="16"></panel-left-close></div></button>
-          <button id="back" type="button" :aria-label="T('backToList')" :title="T('backToList')" class="cursor-pointer rounded p-2 hover:bg-[var(--hover)] md:hidden" @click="screen = 'list'"><div><arrow-left :size="18"></arrow-left></div></button>
+      <section id="diff-screen" :data-screen="screen" class="absolute inset-0 z-30 md:z-auto flex min-w-0 flex-col bg-page transition-transform duration-200 motion-reduce:transition-none md:static md:flex-1 md:translate-x-0" :class="screen === 'diff' ? 'translate-x-0' : 'translate-x-full'" :inert="mobile && screen === 'list'">
+        <div role="toolbar" :aria-label="T('toolbar')" class="bar sticky top-0 z-20 flex shrink-0 flex-wrap items-center gap-2 border-b border-line bg-panel p-2 md:gap-4 md:px-4">
+          <button id="toggleSidebar" type="button" :aria-label="T(sidebarHidden ? 'showList' : 'hideList')" :title="T(sidebarHidden ? 'showList' : 'hideList')" :aria-expanded="!sidebarHidden" aria-controls="sidebar" class="hidden cursor-pointer rounded-md border border-line p-2 hover:bg-hover md:block" @click="sidebarHidden = !sidebarHidden"><div><panel-left-open v-if="sidebarHidden" :size="16"></panel-left-open><panel-left-close v-else :size="16"></panel-left-close></div></button>
+          <button id="back" type="button" :aria-label="T('backToList')" :title="T('backToList')" class="cursor-pointer rounded p-2 hover:bg-hover md:hidden" @click="screen = 'list'"><div><arrow-left :size="18"></arrow-left></div></button>
           <div v-for="group in controls" :key="group.label" class="flex items-center gap-2">
-            <span class="hidden text-xs text-[var(--muted)] md:inline">{{ group.label }}</span>
-            <div class="flex overflow-hidden rounded-md border border-[var(--border)]">
-              <button v-for="control in group.items" :id="control.id" :key="control.id" type="button" :title="control.title || control.label" :aria-label="control.label" :aria-pressed="control.value ? selected(control) : undefined" class="flex cursor-pointer items-center gap-1 border-r border-[var(--border)] p-2 text-xs last:border-r-0 focus-visible:outline-2 focus-visible:outline-teal-500" :class="selected(control) ? 'bg-teal-700 text-white hover:bg-teal-800' : 'hover:bg-[var(--hover)]'" @click="activate(control)">
+            <span class="hidden text-xs text-muted md:inline">{{ group.label }}</span>
+            <div class="flex overflow-hidden rounded-md border border-line">
+              <button v-for="control in group.items" :id="control.id" :key="control.id" type="button" :title="control.title || control.label" :aria-label="control.label" :aria-pressed="control.value ? selected(control) : undefined" class="flex cursor-pointer items-center gap-1 border-r border-line p-2 text-xs last:border-r-0 focus-visible:outline-2 focus-visible:outline-teal-500" :class="selected(control) ? 'bg-teal-700 text-white hover:bg-teal-800' : 'hover:bg-hover'" @click="activate(control)">
                 <div><component :is="control.icon" :size="16"></component></div><span class="button-text hidden md:inline">{{ control.label }}</span>
               </button>
             </div>
@@ -93,35 +150,29 @@
           <div id="files" class="min-w-0">
             <file-panel v-for="item in visible" :key="item.id" :item="item" :open="!!opened[item.id]" :layout="layout" :scope="scope" :query="query" :theme="theme" :whitespace="whitespace" :counts="shown(item.file)" @toggle="toggleFile(item.id)"></file-panel>
           </div>
-          <p v-if="!visible.length" class="p-4 text-[var(--muted)]">{{ T('noFiles') }}</p>
+          <p v-if="!visible.length" class="p-4 text-muted">{{ T('noFiles') }}</p>
           </div>
         </main>
       </section>
     </div>
-    <button v-if="selection.show" id="copySelection" type="button" class="fixed z-50 cursor-pointer rounded-md border border-[var(--border)] bg-[var(--panel)] p-1 text-[var(--fg)] shadow hover:bg-[var(--hover)] focus-visible:outline-2 focus-visible:outline-teal-500" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="T(selection.copied ? 'copiedSelection' : 'copySelection')" :title="T(selection.copied ? 'copied' : 'copySelection')" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
+    <button v-if="selection.show" id="copySelection" type="button" class="fixed z-50 cursor-pointer rounded-md border border-line bg-panel p-1 text-ink shadow hover:bg-hover focus-visible:outline-2 focus-visible:outline-teal-500" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="T(selection.copied ? 'copiedSelection' : 'copySelection')" :title="T(selection.copied ? 'copied' : 'copySelection')" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
   </div>
   </div>
+  <div id="loading" role="status" aria-live="polite" class="p-4 text-sm"></div>
   <script type="module">
-    // Import from full URLs, not an import map: Firefox refuses an import map once the
-    // artifact host has started loading modules.
-    // Vue comes from the same URL that @lucide/vue imports, so both share one Vue: Lucide reads
-    // its defaults through provide/inject, which fails across two copies. That build has no
-    // template compiler, so the compiler is registered the way Vue's full build does it.
-    import * as Vue from 'https://cdn.jsdelivr.net/npm/vue@3.5.44/+esm'
-    import { compile } from 'https://cdn.jsdelivr.net/npm/@vue/compiler-dom@3.5.44/+esm'
-    const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, nextTick } = Vue
-    Vue.registerRuntimeCompiler((template, options) => new Function('Vue', compile(template, { hoistStatic: true, ...options }).code)(Vue))
-    import { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck } from 'https://cdn.jsdelivr.net/npm/@lucide/vue@1.61.0/+esm'
-    import hljs from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/core.js/+esm'
-    import javascript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/javascript.js/+esm'
-    import typescript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/typescript.js/+esm'
-    import python from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/python.js/+esm'
-    import bash from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/bash.js/+esm'
-    import yaml from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/yaml.js/+esm'
-    import xml from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/xml.js/+esm'
-    import css from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/css.js/+esm'
-    import json from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/json.js/+esm'
-    import sql from 'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/es/languages/sql.js/+esm'
+    import { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+    import { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck } from '@lucide/vue'
+    // highlight.js is not in the page template; it is loaded the same way, through the import map
+    import hljs from 'highlight.js/core'
+    import javascript from 'highlight.js/languages/javascript'
+    import typescript from 'highlight.js/languages/typescript'
+    import python from 'highlight.js/languages/python'
+    import bash from 'highlight.js/languages/bash'
+    import yaml from 'highlight.js/languages/yaml'
+    import xml from 'highlight.js/languages/xml'
+    import css from 'highlight.js/languages/css'
+    import json from 'highlight.js/languages/json'
+    import sql from 'highlight.js/languages/sql'
 
     // Register only the languages the extension map below can select.
     Object.entries({ javascript, typescript, python, bash, yaml, xml, css, json, sql }).forEach(([name, language]) => hljs.registerLanguage(name, language))
@@ -146,7 +197,6 @@
     }
     loading.remove()
     Object.assign(L, DEFAULT_LABELS, DATA.labels || {})
-    document.documentElement.lang = DATA.lang || 'en'
 
     const icons = { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck }
 
@@ -251,7 +301,7 @@
         }
         visit(fragment.content)
       }
-      if (change) add(change[0], change[1], kind === 'add' ? 'bg-[var(--add-word)]' : 'bg-[var(--del-word)]')
+      if (change) add(change[0], change[1], kind === 'add' ? 'bg-add-word' : 'bg-del-word')
       // Mark whitespace inside the changed interval and at the end of changed lines. A lone CR at
       // the end is marked only when it changed, so CRLF files do not flag every line.
       if (kind === 'add' || kind === 'del') {
@@ -421,27 +471,27 @@
 
     /** The changed file as it reads afterwards: changed lines by background color only, numbered by the new file. */
     function renderAfter (file, rows, query, plain) {
-      if (typeof file.full_body !== 'string') return '<p class="p-3 text-xs text-[var(--muted)]">' + T('fullMissing') + '</p>'
-      if (file.status[0] === 'D') return '<p class="after-empty p-3 text-[var(--muted)]">' + T('afterDeleted') + '</p>'
-      if (!rows.length) return '<p class="after-empty p-3 text-[var(--muted)]">' + T('afterEmpty') + '</p>'
+      if (typeof file.full_body !== 'string') return '<p class="p-3 text-xs text-muted">' + T('fullMissing') + '</p>'
+      if (file.status[0] === 'D') return '<p class="after-empty p-3 text-muted">' + T('afterDeleted') + '</p>'
+      if (!rows.length) return '<p class="after-empty p-3 text-muted">' + T('afterEmpty') + '</p>'
       const digits = String(rows.reduce((max, row) => Math.max(max, row.current || 0), 1)).length
-      const body = rows.map(row => `<tr class="${row.kind === 'add' && !plain ? 'bg-[var(--add)]' : ''}"${row.kind === 'add' && !plain ? ' data-changed="true"' : ''}><td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${row.current}</td><td class="px-1 align-top whitespace-pre-wrap break-all"><span class="line-text">${textHTML(row.text, file.path, query, null, row.kind)}</span></td></tr>`)
+      const body = rows.map(row => `<tr class="${row.kind === 'add' && !plain ? 'bg-add' : ''}"${row.kind === 'add' && !plain ? ' data-changed="true"' : ''}><td class="w-px whitespace-nowrap border-r border-line px-1 text-right align-top text-muted select-none">${row.current}</td><td class="px-1 align-top whitespace-pre-wrap break-all"><span class="line-text">${textHTML(row.text, file.path, query, null, row.kind)}</span></td></tr>`)
       return `<table data-layout="after" data-scope="after" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup><col class="w-[calc(${digits}ch+10px)]"><col></colgroup><tbody>${body.join('')}</tbody></table>`
     }
 
     function renderDiff (file, layout, scope, query, whitespace, plain = false) {
       const { parsed, rows } = displayRows(file, scope, whitespace)
       if (scope === 'after') return renderAfter(file, rows, query, plain)
-      if (parsed.length && !hasChange(rows) && hasChange(parsed)) return '<p class="space-only p-3 text-[var(--muted)]">' + T('spaceOnly') + '</p>'
+      if (parsed.length && !hasChange(rows) && hasChange(parsed)) return '<p class="space-only p-3 text-muted">' + T('spaceOnly') + '</p>'
       const digits = key => String(rows.reduce((max, row) => Math.max(max, row[key] || 0), 1)).length
       const gutter = key => `<col class="w-[calc(${digits(key)}ch+10px)]">`
-      const ln = value => `<td class="w-px whitespace-nowrap border-r border-[var(--border)] px-1 text-right align-top text-[var(--muted)] select-none">${value ?? ''}</td>`
+      const ln = value => `<td class="w-px whitespace-nowrap border-r border-line px-1 text-right align-top text-muted select-none">${value ?? ''}</td>`
       const code = (row, range) => {
-        const color = row?.kind === 'add' ? 'bg-[var(--add)]' : row?.kind === 'del' ? 'bg-[var(--del)]' : ''
-        return `<td class="px-1 align-top whitespace-pre-wrap break-all ${color}">${row ? `<span class="inline-block w-3 text-[var(--muted)] select-none">${row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '}</span><span class="line-text">${textHTML(row.text, file.path, query, range && range[0] < range[1] ? range : null, row.kind, range?.[2])}</span>` : ''}</td>`
+        const color = row?.kind === 'add' ? 'bg-add' : row?.kind === 'del' ? 'bg-del' : ''
+        return `<td class="px-1 align-top whitespace-pre-wrap break-all ${color}">${row ? `<span class="inline-block w-3 text-muted select-none">${row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '}</span><span class="line-text">${textHTML(row.text, file.path, query, range && range[0] < range[1] ? range : null, row.kind, range?.[2])}</span>` : ''}</td>`
       }
       const output = plan(rows, layout).map(entry => {
-        if (entry.kind === 'hunk') return `<tr><td colspan="${layout === 'split' ? 4 : 3}" class="hunk sticky top-[var(--head,0px)] z-[5] bg-[var(--hunk)] px-2 py-1 text-[var(--muted)] whitespace-pre-wrap break-all">${esc(entry.row.text)}</td></tr>`
+        if (entry.kind === 'hunk') return `<tr><td colspan="${layout === 'split' ? 4 : 3}" class="hunk sticky top-[var(--head,0px)] z-[5] bg-hunk px-2 py-1 text-muted whitespace-pre-wrap break-all">${esc(entry.row.text)}</td></tr>`
         if (entry.kind === 'context') {
           const row = entry.row
           // Lines matched while ignoring whitespace keep each side's own text in the split layout.
@@ -449,10 +499,10 @@
         }
         if (entry.kind === 'split') return `<tr>${ln(entry.a?.old)}${code(entry.a, entry.ra)}${ln(entry.b?.current)}${code(entry.b, entry.rb)}</tr>`
         const row = entry.row
-        return row.kind === 'del' ? `<tr class="bg-[var(--del)]">${ln(row.old)}${ln()}${code(row, entry.range)}</tr>` : `<tr class="bg-[var(--add)]">${ln()}${ln(row.current)}${code(row, entry.range)}</tr>`
+        return row.kind === 'del' ? `<tr class="bg-del">${ln(row.old)}${ln()}${code(row, entry.range)}</tr>` : `<tr class="bg-add">${ln()}${ln(row.current)}${code(row, entry.range)}</tr>`
       })
       const cols = layout === 'split' ? `${gutter('old')}<col>${gutter('current')}<col>` : `${gutter('old')}${gutter('current')}<col>`
-      return output.length ? `<table data-layout="${layout}" data-scope="${scope}" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup>${cols}</colgroup><tbody>${output.join('')}</tbody></table>` : '<p class="p-3 text-[var(--muted)]">' + T('noTextRows') + '</p>'
+      return output.length ? `<table data-layout="${layout}" data-scope="${scope}" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup>${cols}</colgroup><tbody>${output.join('')}</tbody></table>` : '<p class="p-3 text-muted">' + T('noTextRows') + '</p>'
     }
 
     const modeNames = { 100644: 'modeRegular', 100755: 'modeExecutable', 120000: 'modeSymlink', 160000: 'modeSubmodule' }
@@ -511,13 +561,13 @@
         }
         return { root, head, html, copied, copyPath, mode: computed(() => modeText(props.item.file)), lightDiff: computed(() => props.theme !== 'dark') }
       },
-      template: `<article ref="root" :id="item.id" :data-file-id="item.id" class="overflow-clip rounded-lg border border-[var(--border)] bg-[var(--panel)]" :class="open ? 'my-5' : 'my-1'">
-        <div ref="head" class="file-header-row sticky top-0 z-10 flex w-full cursor-pointer flex-wrap items-center gap-2 bg-[var(--panel)] p-3" :class="open ? 'border-b border-[var(--border)]' : ''" :title="T(open ? 'fileClose' : 'fileOpen')" @click="$emit('toggle')">
-          <button type="button" class="file-header flex min-w-0 cursor-pointer items-center gap-2 text-left focus-visible:outline-2 focus-visible:outline-teal-500" :aria-expanded="open" :aria-controls="item.id + '-body'"><div><chevron-down v-if="open" :size="16"></chevron-down><chevron-right v-else :size="16"></chevron-right></div><status-badge :status="item.file.status"></status-badge><span class="min-w-0 break-all font-mono text-xs font-bold">{{ item.source.name }} / {{ item.file.path }}</span></button><button type="button" class="copy-path shrink-0 cursor-pointer rounded p-0.5 text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--fg)] focus-visible:outline-2 focus-visible:outline-teal-500" :aria-label="T(copied ? 'copiedPath' : 'copyPath')" :title="T(copied ? 'copied' : 'copyPath')" @click.stop="copyPath"><check v-if="copied" :size="13"></check><copy v-else :size="13"></copy></button><span class="flex-1"></span><span v-if="item.file.old" class="break-all text-xs text-[var(--muted)]">← {{ item.file.old }}</span><span class="font-mono text-xs"><span class="text-emerald-600">+{{ counts.added ?? '—' }}</span> <span class="text-rose-500">−{{ counts.deleted ?? '—' }}</span></span>
+      template: `<article ref="root" :id="item.id" :data-file-id="item.id" class="overflow-clip rounded-lg border border-line bg-panel" :class="open ? 'my-5' : 'my-1'">
+        <div ref="head" class="file-header-row sticky top-0 z-10 flex w-full cursor-pointer flex-wrap items-center gap-2 bg-panel p-3" :class="open ? 'border-b border-line' : ''" :title="T(open ? 'fileClose' : 'fileOpen')" @click="$emit('toggle')">
+          <button type="button" class="file-header flex min-w-0 cursor-pointer items-center gap-2 text-left focus-visible:outline-2 focus-visible:outline-teal-500" :aria-expanded="open" :aria-controls="item.id + '-body'"><div><chevron-down v-if="open" :size="16"></chevron-down><chevron-right v-else :size="16"></chevron-right></div><status-badge :status="item.file.status"></status-badge><span class="min-w-0 break-all font-mono text-xs font-bold">{{ item.source.name }} / {{ item.file.path }}</span></button><button type="button" class="copy-path shrink-0 cursor-pointer rounded p-0.5 text-muted hover:bg-hover hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-500" :aria-label="T(copied ? 'copiedPath' : 'copyPath')" :title="T(copied ? 'copied' : 'copyPath')" @click.stop="copyPath"><check v-if="copied" :size="13"></check><copy v-else :size="13"></copy></button><span class="flex-1"></span><span v-if="item.file.old" class="break-all text-xs text-muted">← {{ item.file.old }}</span><span class="font-mono text-xs"><span class="text-emerald-600">+{{ counts.added ?? '—' }}</span> <span class="text-rose-500">−{{ counts.deleted ?? '—' }}</span></span>
         </div>
         <div v-if="open" :id="item.id + '-body'" :class="html ? '' : 'min-h-80'">
-          <div v-if="html" class="diff-body overflow-x-clip bg-[var(--panel)] text-[var(--fg)]" :class="lightDiff ? '[--panel:#fff] [--fg:#1d2422] [--border:#d9dfdc] [--muted:#64748b] [--add:#e6f4ea] [--del:#fbeaea] [--add-word:#a6e7b6] [--del-word:#f7b9b9] [--hunk:#eef2f6]' : '[--panel:#18201d] [--fg:#e3e8e6] [--add:#14301e] [--del:#3a1d1d] [--add-word:#2f7d48] [--del-word:#a3403f] [--hunk:#253142] [&_.text-purple-600]:text-purple-300 [&_.text-emerald-700]:text-emerald-300 [&_.text-blue-600]:text-blue-300 [&_.text-cyan-700]:text-cyan-300 [&_.text-orange-600]:text-orange-300 [&_.bg-slate-200]:bg-slate-700 [&_.text-slate-800]:text-slate-100'">
-            <p v-if="scope === 'full' && typeof item.file.full_body !== 'string'" class="p-3 text-xs text-[var(--muted)]">{{ T('fullMissing') }}</p><p v-if="mode" class="file-mode px-3 pt-3 text-xs text-[var(--muted)]">{{ mode }}</p><p v-if="item.file.notice" class="p-3 text-xs text-[var(--muted)]">{{ noticeText(item.file.notice) }}</p><div v-html="html"></div>
+          <div v-if="html" class="diff-body overflow-x-clip bg-panel text-ink" :class="lightDiff ? '[--color-panel:#fff] [--color-ink:#1d2422] [--color-line:#d9dfdc] [--color-muted:#64748b] [--color-add:#e6f4ea] [--color-del:#fbeaea] [--color-add-word:#a6e7b6] [--color-del-word:#f7b9b9] [--color-hunk:#eef2f6]' : '[--color-panel:#18201d] [--color-ink:#e3e8e6] [--color-add:#14301e] [--color-del:#3a1d1d] [--color-add-word:#2f7d48] [--color-del-word:#a3403f] [--color-hunk:#253142] [&_.text-purple-600]:text-purple-300 [&_.text-emerald-700]:text-emerald-300 [&_.text-blue-600]:text-blue-300 [&_.text-cyan-700]:text-cyan-300 [&_.text-orange-600]:text-orange-300 [&_.bg-slate-200]:bg-slate-700 [&_.text-slate-800]:text-slate-100'">
+            <p v-if="scope === 'full' && typeof item.file.full_body !== 'string'" class="p-3 text-xs text-muted">{{ T('fullMissing') }}</p><p v-if="mode" class="file-mode px-3 pt-3 text-xs text-muted">{{ mode }}</p><p v-if="item.file.notice" class="p-3 text-xs text-muted">{{ noticeText(item.file.notice) }}</p><div v-html="html"></div>
           </div>
         </div>
       </article>`
@@ -554,34 +604,34 @@
         const rest = computed(() => Math.max(0, props.item.commits.length - 10))
         return { all, expanded, short, days, span, rest }
       },
-      template: `<section class="mb-2 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+      template: `<section class="mb-2 overflow-hidden rounded-lg border border-line bg-panel">
         <button type="button" :title="T(open ? 'commitsClose' : 'commitsOpen')" class="commit-header flex w-full cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 p-3 text-left text-xs focus-visible:outline-2 focus-visible:outline-teal-500" :aria-expanded="open" @click="$emit('toggle')">
-          <div class="text-[var(--muted)]"><chevron-down v-if="open" :size="16"></chevron-down><chevron-right v-else :size="16"></chevron-right></div>
+          <div class="text-muted"><chevron-down v-if="open" :size="16"></chevron-down><chevron-right v-else :size="16"></chevron-right></div>
           <div class="text-teal-600"><git-commit-horizontal :size="16"></git-commit-horizontal></div>
           <span class="font-bold">{{ item.name }}</span>
           <span class="flex min-w-0 items-center gap-1 font-mono">
-            <span class="rounded bg-[var(--hunk)] px-1.5 py-0.5" :title="item.base">{{ item.base_ref }}</span>
-            <span v-if="item.merge_base" class="text-[var(--muted)]">{{ T('mergeBase') }}</span>
-            <div class="text-[var(--muted)]"><arrow-right :size="12"></arrow-right></div>
-            <span class="rounded bg-[var(--hunk)] px-1.5 py-0.5" :title="item.target">{{ item.target_ref }}</span>
+            <span class="rounded bg-hunk px-1.5 py-0.5" :title="item.base">{{ item.base_ref }}</span>
+            <span v-if="item.merge_base" class="text-muted">{{ T('mergeBase') }}</span>
+            <div class="text-muted"><arrow-right :size="12"></arrow-right></div>
+            <span class="rounded bg-hunk px-1.5 py-0.5" :title="item.target">{{ item.target_ref }}</span>
           </span>
-          <span class="ml-auto flex items-center gap-2 text-[var(--muted)]"><span v-if="span">{{ span }}</span><span class="rounded-full bg-teal-600 px-2 py-0.5 font-bold text-white">{{ T(item.commits.length === 1 ? 'commitsOne' : 'commitsMany', { n: item.commits.length }) }}</span></span>
+          <span class="ml-auto flex items-center gap-2 text-muted"><span v-if="span">{{ span }}</span><span class="rounded-full bg-teal-600 px-2 py-0.5 font-bold text-white">{{ T(item.commits.length === 1 ? 'commitsOne' : 'commitsMany', { n: item.commits.length }) }}</span></span>
         </button>
-        <div v-if="open" class="commit-body border-t border-[var(--border)] px-3 pb-3 text-xs">
-          <p class="py-2 font-mono text-[var(--muted)]">{{ short(item.base) }} → {{ short(item.target) }}<span class="ml-2 font-sans">{{ T('newestFirst') }}</span></p>
+        <div v-if="open" class="commit-body border-t border-line px-3 pb-3 text-xs">
+          <p class="py-2 font-mono text-muted">{{ short(item.base) }} → {{ short(item.target) }}<span class="ml-2 font-sans">{{ T('newestFirst') }}</span></p>
           <div v-for="group in days" :key="group.day" class="mb-2">
-            <p class="sticky top-0 bg-[var(--panel)] py-1 font-bold text-[var(--muted)]">{{ group.label }}</p>
-            <ol class="ml-1.5 border-l-2 border-[var(--border)]">
+            <p class="sticky top-0 bg-panel py-1 font-bold text-muted">{{ group.label }}</p>
+            <ol class="ml-1.5 border-l-2 border-line">
               <li v-for="commit in group.commits" :key="commit.hash" class="commit relative -ml-px py-1.5 pl-4">
-                <span class="absolute top-3 -left-[5px] size-2 rounded-full bg-teal-600 ring-2 ring-[var(--panel)]"></span>
-                <button type="button" class="block w-full cursor-pointer rounded px-1 text-left hover:bg-[var(--hunk)]" :aria-expanded="!!expanded[commit.hash]" :title="T(expanded[commit.hash] ? 'subjectShrink' : 'subjectExpand')" @click="expanded[commit.hash] = !expanded[commit.hash]">
+                <span class="absolute top-3 -left-[5px] size-2 rounded-full bg-teal-600 ring-2 ring-panel"></span>
+                <button type="button" class="block w-full cursor-pointer rounded px-1 text-left hover:bg-hunk" :aria-expanded="!!expanded[commit.hash]" :title="T(expanded[commit.hash] ? 'subjectShrink' : 'subjectExpand')" @click="expanded[commit.hash] = !expanded[commit.hash]">
                   <span class="block leading-relaxed" :class="expanded[commit.hash] ? 'whitespace-pre-wrap break-all' : 'line-clamp-2'"><span v-if="commit.tag" class="mr-1.5 rounded bg-teal-600/15 px-1.5 py-0.5 font-mono text-[11px] text-teal-600">{{ commit.tag }}</span>{{ commit.text }}</span>
-                  <span class="mt-0.5 flex gap-2 font-mono text-[11px] text-[var(--muted)]"><span>{{ short(commit.hash) }}</span><span v-if="commit.time">{{ commit.time }}</span></span>
+                  <span class="mt-0.5 flex gap-2 font-mono text-[11px] text-muted"><span>{{ short(commit.hash) }}</span><span v-if="commit.time">{{ commit.time }}</span></span>
                 </button>
               </li>
             </ol>
           </div>
-          <button v-if="rest" type="button" :title="T(all ? 'newestOnlyTitle' : 'restTitle')" class="mt-1 cursor-pointer rounded border border-[var(--border)] px-3 py-1 hover:bg-[var(--hunk)]" @click="all = !all">{{ all ? T('newestOnly') : T('rest', { n: rest }) }}</button>
+          <button v-if="rest" type="button" :title="T(all ? 'newestOnlyTitle' : 'restTitle')" class="mt-1 cursor-pointer rounded border border-line px-3 py-1 hover:bg-hunk" @click="all = !all">{{ all ? T('newestOnly') : T('rest', { n: rest }) }}</button>
         </div>
       </section>`
     }
@@ -609,7 +659,7 @@
           const range = getSelection()
           const text = range && !range.isCollapsed ? range.toString() : ''
           const anchor = range?.anchorNode?.parentElement
-          if (!text.trim() || !anchor?.closest('#diff-app') || anchor.closest('input, textarea')) {
+          if (!text.trim() || !anchor?.closest('#app') || anchor.closest('input, textarea')) {
             if (!selection.copied) selection.show = false
             return
           }
@@ -648,13 +698,16 @@
         const opened = reactive({})
         /** @type {Record<number, boolean>} Commit list disclosure state per source. */
         const commits = reactive({})
-        const theme = ref(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        // The viewer's data-theme on the root, when set, decides the first value; otherwise the device does
+        const forced = document.documentElement.dataset.theme
+        const theme = ref(['light', 'dark'].includes(forced) ? forced : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
         try {
           const saved = localStorage.getItem('show-changes-theme')
           if (['light', 'dark', 'hybrid'].includes(saved)) theme.value = saved
         } catch {}
         watch(theme, value => {
-          document.documentElement.dataset.theme = value
+          // The page's color roles switch on light or dark; hybrid keeps the dark roles and lights only the diffs
+          document.documentElement.dataset.theme = value === 'light' ? 'light' : 'dark'
           try { localStorage.setItem('show-changes-theme', value) } catch {}
         }, { immediate: true })
         // Side-by-side widths only; the mobile layout switches screens instead.
@@ -746,7 +799,6 @@
         })
         const totals = computed(() => visible.value.reduce((sum, item) => ({ added: sum.added + (shown(item.file).added || 0), deleted: sum.deleted + (shown(item.file).deleted || 0) }), { added: 0, deleted: 0 }))
         const hasFull = records.some(item => typeof item.file.full_body === 'string')
-        const palette = computed(() => theme.value === 'light' ? '[--bg:#f6f7f6] [--panel:#ffffff] [--fg:#1d2422] [--muted:#5f6b67] [--border:#d9dfdc] [--hover:#e2f0ed]' : '[--bg:#101714] [--panel:#1b2420] [--fg:#e3e8e6] [--muted:#a3b5ac] [--border:#34453b] [--hover:#2a3d32]')
         const controls = [
           { label: T('ctlFold'), items: [{ id: 'openAll', label: T('openAll'), title: T('openAllTitle'), icon: 'chevrons-up-down' }, { id: 'closeAll', label: T('closeAll'), title: T('closeAllTitle'), icon: 'chevrons-down-up' }] },
           { label: T('ctlLayout'), items: [{ id: 'unified', label: T('layoutUnified'), title: T('layoutUnifiedTitle'), icon: 'rows-2', value: 'layout' }, { id: 'split', label: T('layoutSplit'), title: T('layoutSplitTitle'), icon: 'columns-2', value: 'layout' }] },
@@ -848,12 +900,10 @@
           event.preventDefault()
           step(event.shiftKey ? -1 : 1)
         }
-        return { split, sidebarWidth, sidebarHidden, dragging, minWidth, maxWidth, defaultWidth, setWidth, startDrag, data, ready, selection, copySelection, source, input, contentOnly, query, layout, scope, whitespace, shown, theme, screen, mobile, opened, commits, visible, groups, totals, hasFull, palette, controls, selected, activate, jump, canFilter, toggleFile, clearFilter, hits, hitLabel, step, onEnter }
+        return { split, sidebarWidth, sidebarHidden, dragging, minWidth, maxWidth, defaultWidth, setWidth, startDrag, data, ready, selection, copySelection, source, input, contentOnly, query, layout, scope, whitespace, shown, theme, screen, mobile, opened, commits, visible, groups, totals, hasFull, controls, selected, activate, jump, canFilter, toggleFile, clearFilter, hits, hitLabel, step, onEnter }
       }
     })
     app.config.globalProperties.T = T
     app.config.globalProperties.noticeText = noticeText
     app.mount('#app')
   </script>
-</body>
-</html>

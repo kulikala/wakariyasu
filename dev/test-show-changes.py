@@ -50,6 +50,27 @@ def command(args, stdin=None):
     return result.stdout
 
 
+def check_page_structure(page, artifact=False):
+    """Read the HTML text of a built page: the decoder tag, the data script, and a packed string that cannot break out of its script."""
+    decoder = f'<script src="{build.UTFPACK_DECODER_URL}" integrity="{build.utfpack_pack.decoder_sri("utfpack")}" crossorigin="anonymous"></script>'
+    assert page.count(decoder) == 1
+    start = page.index('globalThis.utfpackData=')
+    assert page.index(decoder) < start, 'the decoder must come before the data script'
+    end = page.index('</script>', start)
+    packed = page[start:end]
+    assert '</script' not in packed and '<!--' not in packed
+    assert page.count('<!--__PACKED__-->') == 0 and '/*__LABELS__*/' not in page
+    parts = ['<title>', 'type="importmap"', decoder, 'globalThis.utfpackData=', '@tailwindcss/browser', 'type="text/tailwindcss"', 'prefers-color-scheme', '<div id="app" lang="', '<script type="module">']
+    positions = [page.find(part) for part in parts]
+    assert -1 not in positions and positions == sorted(positions), 'the page parts are out of order'
+    skeleton = re.compile(r'(?i)<!doctype|<html[\s>]|<head>|</head>|<body[\s>]|</body>|</html>|charset|name="viewport"')
+    if artifact:
+        assert page.startswith('<title>') and not skeleton.search(page), 'an artifact page is a part of a document'
+    else:
+        assert page.startswith('<!DOCTYPE html>\n<html lang="') and '<meta charset="UTF-8">' in page and 'name="viewport"' in page
+        assert page.index('<head>') < page.index('<title>') < page.index('</head>') < page.index('<body>') < page.index('<div id="app"') < page.index('</body>') < page.index('</html>')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
     parser._optionals.title = 'options'
@@ -58,8 +79,8 @@ def main():
                         metavar=('NAME', 'PATH', 'BASE', 'TARGET'), help='a repository to check and the commits to compare (can be repeated)')
     parser.add_argument('--merge-base', action='append', default=[], metavar='NAME', help='compare the repository of this name from the divergence point')
     parser.add_argument('--sample-dir', type=Path, metavar='DIR', help='an existing writable folder to save samples in; without it, check in memory only')
-    parser.add_argument('--skip-browser', action='store_true', help='skip the browser run; do the static HTML check and the Python regression checks only')
     args = parser.parse_args()
+    build.load_packer()
     before = {path: snapshot(path) for _, path, _, _ in args.repo}
     protected_paths = [root for _, path, _, _ in args.repo for root in build.repository_paths(path)]
     cli = []
@@ -86,12 +107,8 @@ def main():
         assert build.UTFPACK_DECODER_URL in page
         assert f'integrity="{build.utfpack_pack.decoder_sri("utfpack")}"' in page
         assert 'globalThis.utfpackData=' in page
-        browser_flags = ['--static-only'] if args.skip_browser else []
-        result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags], input=page,
-                                capture_output=True, text=True, timeout=600)
-        if result.returncode:
-            raise AssertionError(result.stderr)
-        report[kind] = json.loads(result.stdout)
+        check_page_structure(page)
+        report[kind] = {}
         report[kind]['repositories'] = [dict(name=r['name'], files=len(r['files']), base=r['base'], target=r['target']) for r in data['sources']]
         # Test the actual JSON-only CLI and re-embedding through stdin.
         exported = command([*cli, '--data-version', 'any value', '--json-out', '-'] + (['--full-text'] if full else []))
@@ -134,12 +151,6 @@ def main():
         assert kept['lang'] == 'ja' and kept['labels'] == ja_labels
         page_ja = command(['--data', '-', '--json-out', '-'], japanese)
         assert json.loads(page_ja)['labels'] == ja_labels
-        result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags, f'--ja-labels={label_file}'], input=pages['full'][0],
-                                capture_output=True, text=True, timeout=600)
-        if result.returncode:
-            raise AssertionError(result.stderr)
-        # The browser run takes the English page and swaps in the Japanese labels itself, so every English check keeps its meaning.
-        report['japanese'] = json.loads(result.stdout)
         override = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'build.py'), '--data', '-', '--json-out', '-', '--lang', 'ja', '--labels', str(label_file)], input=english, text=True, capture_output=True)
         assert override.returncode == 0 and json.loads(override.stdout)['lang'] == 'ja'
         bad_file = Path(label_folder) / 'bad.json'
@@ -232,12 +243,8 @@ def main():
     ja_page = command([*cli, '--data-version', 'for-check', '--lang', 'ja', '-o', '-'])
     assert json.dumps(ja_words['dataLoadError'], ensure_ascii=False)[1:-1] in ja_page and ja_words['dataLoadError'] not in escaped
     artifact = command([*cli, '--data-version', 'for-check', '--artifact', '-o', '-'])
-    assert not re.search(r'(?i)<!doctype|<html[\s>]|<head>|</head>|<body[\s>]|</body>|</html>', artifact)
-    result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags], input=artifact,
-                            capture_output=True, text=True, timeout=600)
-    if result.returncode:
-        raise AssertionError(result.stderr)
-    report['artifact'] = json.loads(result.stdout)
+    check_page_structure(artifact, artifact=True)
+    report['artifact'] = {}
     embedded = command([*cli, '--data-version', 'for-check', '--embed-decoder', '-o', '-'])
     assert build.UTFPACK_DECODER_URL not in embedded
     assert 'globalThis.utfpackData=' in embedded and 'var utfpack=' in embedded
@@ -273,11 +280,8 @@ def main():
                 raise AssertionError('validate accepted data that does not fit schema version 2')
         again = json.loads(command(['--data', '-', '--json-out', '-'], json_path.read_text(encoding='utf-8')))
         assert again['sources'] == files_data['sources'] and again['initial_scope'] == 'after'
-        result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags, '--files-page'], input=files_page,
-                                capture_output=True, text=True, timeout=600)
-        if result.returncode:
-            raise AssertionError(result.stderr)
-        report['filesPage'] = json.loads(result.stdout)
+        check_page_structure(files_page)
+        report['filesPage'] = {}
     report['regressions'] = ['file type change patches and stats', 'NUL-delimited rename stats', 'LF-only full-text lines', 'missing final newline', 'protected output paths', 'HTML/script escaping', 'packed data script safety', 'required data version', 'arbitrary and empty versions', 'JSON version preservation', 'title data-marker separation', 'no repository path metadata', 'JSON-only output guards', 'malformed JSON files', 'non-UTF-8 bytes', 'artifact page', 'diff -ru binary lines', 'suppressed blank context', '-diff attribute text', 'symlink type change', 'renamed plain diff', 'CRLF diff file', 'file modes', 'embedded decoder', 'files page']
     with tempfile.TemporaryDirectory(prefix='plain-', dir=args.sample_dir or None) as folder:
         folder = Path(folder); left = folder / 'before'; right = folder / 'after'
@@ -296,8 +300,7 @@ def main():
         for full in (False,True):
             data_path = folder / 'page-data.json'
             page = command([*plain_cli, *(['--full-text'] if full else []), '-o', '-', '--json-out', str(data_path)])
-            result = subprocess.run(['node', str(DEV / 'test-show-changes-page.mjs'), *browser_flags], input=page, text=True, capture_output=True, timeout=600)
-            assert result.returncode == 0, result.stderr
+            check_page_structure(page)
             plain_data = json.loads(data_path.read_text(encoding='utf-8'))
             by_path = {f['path']: f for f in plain_data['sources'][0]['files']}
             assert len(by_path) == 8

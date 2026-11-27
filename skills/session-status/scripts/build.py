@@ -126,23 +126,32 @@ def make_html(report, template, labels=None, artifact=False):
     payload = payload.replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
     if template.count('/*__DATA__*/null') != 1:
         raise ReportError('the template must contain /*__DATA__*/null exactly once')
-    before, after = template.split('/*__DATA__*/null')
+    if template.count('<!--__BODY__-->') != 1 or template.count('__LANG__') != 1:
+        raise ReportError('the template must contain <!--__BODY__--> and __LANG__ exactly once')
+    before, after = assemble(template, report.get('lang') or 'en', artifact).split('/*__DATA__*/null')
     after, replaced = re.subn(r'/\*__LABELS__\*/\{\}/\*__LABELS_END__\*/', lambda _: json.dumps(english, ensure_ascii=False).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e'), after, count=1)
     if replaced != 1:
         raise ReportError('the template must contain /*__LABELS__*/{}/*__LABELS_END__*/ once')
     title = html.escape(report['title'])
     page = before.replace('__TITLE__', title, 1) + payload + after
-    return artifact_body(page) if artifact else page
-
-
-def artifact_body(page):
-    """Remove the DOCTYPE, html, head and body tags for a host that adds its own document skeleton."""
-    page, heads = re.subn(r'\A<!DOCTYPE html>\s*<html[^>]*>\s*<head>\s*', '', page)
-    page, middles = re.subn(r'\s*</head>\s*<body[^>]*>\s*', '\n', page, count=1)
-    page, tails = re.subn(r'\s*</body>\s*</html>\s*\Z', '\n', page)
-    if (heads, middles, tails) != (1, 1, 1):
-        raise ReportError('the template does not have the expected document skeleton')
     return page
+
+
+def assemble(template, lang, artifact):
+    """Put the template's parts into the shape of the destination.
+
+    The template holds the head parts (title, import map, styles), the marker <!--__BODY__-->, and the body
+    parts (#app and the module script). A destination that wraps pages in its own document skeleton gets the
+    parts alone, starting with the title and the viewport-fit meta; a plain HTML file gets a complete document.
+    """
+    head, body = template.split('<!--__BODY__-->')
+    body = body.replace('__LANG__', html.escape(lang, quote=True))
+    if artifact:
+        title, rest = head.split('</title>\n', 1)
+        return title + '</title>\n  <meta name="claude:viewport-fit-sides" content="cover">\n' + rest + body.lstrip('\n')
+    return ('<!DOCTYPE html>\n' + f'<html lang="{html.escape(lang, quote=True)}">\n<head>\n'
+            '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">\n'
+            + head + '</head>\n<body>\n' + body.lstrip('\n') + '</body>\n</html>\n')
 
 
 def main(argv=None):

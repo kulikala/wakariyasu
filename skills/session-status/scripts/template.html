@@ -1,187 +1,251 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>__TITLE__</title>
-  <meta name="claude:viewport-fit-sides" content="cover">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+<title>__TITLE__</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-bundler.js/+esm",
+        "@lucide/vue": "https://cdn.jsdelivr.net/npm/@lucide/vue/+esm"
+      }
+    }
+  </script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
     @theme {
-      --font-sans: 'Noto Sans JP', system-ui, -apple-system, 'Segoe UI', sans-serif;
-      --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      --color-page: #f4f2ee;
+      --color-panel: #fffdfa;
+      --color-sunk: #ebe7e0;
+      --color-ink: #1f1d1a;
+      --color-muted: #6b655c;
+      --color-line: #ddd7cd;
+      --color-accent: #3d5a80;
+      --color-accent-soft: #e3e9f2;
+      --color-accent-ink: #ffffff;
+      --color-done: #2f7d4f;
+      --color-progress: #2f62a8;
+      --color-process: #a86a12;
+      --color-decision: #7a3fa0;
+      --color-todo: #77706a;
+      --color-problem: #b3372b;
+      --color-cancel: #8d877f;
+      --color-done-soft: #e2f1e7;
+      --color-progress-soft: #e2ebf7;
+      --color-process-soft: #f6ecda;
+      --color-decision-soft: #efe5f5;
+      --color-todo-soft: #ece9e4;
+      --color-problem-soft: #f7e3e0;
+      --color-cancel-soft: #ebe8e3;
+    }
+    @layer base {
+      body { @apply bg-page text-ink; overflow-wrap: anywhere }
+      [v-cloak] { display: none }
+    }
+    @layer components {
+      .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+      .tray { padding-bottom: env(safe-area-inset-bottom, 0px) }
     }
   </style>
   <style>
-    /* Colors are tokens so the page follows the viewer's theme: system setting, or an explicit data-theme. */
-    :root {
-      --bg: #f4f2ee; --panel: #fffdfa; --sunk: #ebe7e0; --fg: #1f1d1a; --muted: #6b655c; --line: #ddd7cd;
-      --accent: #3d5a80; --accent-soft: #e3e9f2; --accent-fg: #ffffff;
-      --done: #2f7d4f; --progress: #2f62a8; --process: #a86a12; --decision: #7a3fa0; --todo: #77706a; --problem: #b3372b; --cancel: #8d877f;
-      --done-soft: #e2f1e7; --progress-soft: #e2ebf7; --process-soft: #f6ecda; --decision-soft: #efe5f5; --todo-soft: #ece9e4; --problem-soft: #f7e3e0; --cancel-soft: #ebe8e3;
-    }
+    /* The light values stay in @theme */
+    :root { color-scheme: light; }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --bg: #161513; --panel: #1f1d1a; --sunk: #2a2723; --fg: #ece8e1; --muted: #a59e93; --line: #38342e;
-        --accent: #8fb0d9; --accent-soft: #24303f; --accent-fg: #10161e;
-        --done: #6cc28e; --progress: #7ea8e6; --process: #e0a84f; --decision: #c79be3; --todo: #aaa39a; --problem: #ec8576; --cancel: #8f897f;
-        --done-soft: #1d3125; --progress-soft: #1d2a3d; --process-soft: #352a17; --decision-soft: #2f2238; --todo-soft: #2b2824; --problem-soft: #3a211d; --cancel-soft: #282522;
+        --color-page: #161513;
+        --color-panel: #1f1d1a;
+        --color-sunk: #2a2723;
+        --color-ink: #ece8e1;
+        --color-muted: #a59e93;
+        --color-line: #38342e;
+        --color-accent: #8fb0d9;
+        --color-accent-soft: #24303f;
+        --color-accent-ink: #10161e;
+        --color-done: #6cc28e;
+        --color-progress: #7ea8e6;
+        --color-process: #e0a84f;
+        --color-decision: #c79be3;
+        --color-todo: #aaa39a;
+        --color-problem: #ec8576;
+        --color-cancel: #8f897f;
+        --color-done-soft: #1d3125;
+        --color-progress-soft: #1d2a3d;
+        --color-process-soft: #352a17;
+        --color-decision-soft: #2f2238;
+        --color-todo-soft: #2b2824;
+        --color-problem-soft: #3a211d;
+        --color-cancel-soft: #282522;
         color-scheme: dark;
       }
     }
     :root[data-theme="dark"] {
-      --bg: #161513; --panel: #1f1d1a; --sunk: #2a2723; --fg: #ece8e1; --muted: #a59e93; --line: #38342e;
-      --accent: #8fb0d9; --accent-soft: #24303f; --accent-fg: #10161e;
-      --done: #6cc28e; --progress: #7ea8e6; --process: #e0a84f; --decision: #c79be3; --todo: #aaa39a; --problem: #ec8576; --cancel: #8f897f;
-      --done-soft: #1d3125; --progress-soft: #1d2a3d; --process-soft: #352a17; --decision-soft: #2f2238; --todo-soft: #2b2824; --problem-soft: #3a211d; --cancel-soft: #282522;
+      --color-page: #161513;
+      --color-panel: #1f1d1a;
+      --color-sunk: #2a2723;
+      --color-ink: #ece8e1;
+      --color-muted: #a59e93;
+      --color-line: #38342e;
+      --color-accent: #8fb0d9;
+      --color-accent-soft: #24303f;
+      --color-accent-ink: #10161e;
+      --color-done: #6cc28e;
+      --color-progress: #7ea8e6;
+      --color-process: #e0a84f;
+      --color-decision: #c79be3;
+      --color-todo: #aaa39a;
+      --color-problem: #ec8576;
+      --color-cancel: #8f897f;
+      --color-done-soft: #1d3125;
+      --color-progress-soft: #1d2a3d;
+      --color-process-soft: #352a17;
+      --color-decision-soft: #2f2238;
+      --color-todo-soft: #2b2824;
+      --color-problem-soft: #3a211d;
+      --color-cancel-soft: #282522;
       color-scheme: dark;
     }
-    body { background: var(--bg); color: var(--fg); overflow-wrap: anywhere }
-    [v-cloak] { display: none }
-    .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
-    .tray { padding-bottom: env(safe-area-inset-bottom, 0px) }
   </style>
-</head>
-<body>
-  <div id="app" v-cloak>
-  <div id="status-page" :lang="data.lang || 'en'" class="min-h-dvh bg-[var(--bg)] font-sans text-[15px] leading-relaxed text-[var(--fg)]" :data-ready="ready">
+<!--__BODY__-->
+  <div id="app" v-cloak lang="__LANG__">
+  <div id="status-page" class="min-h-dvh bg-page text-[15px] leading-relaxed text-ink" :data-ready="ready">
     <div class="gutter mx-auto flex max-w-5xl flex-col gap-10 py-8 md:py-14" :class="decisions.length ? 'pb-28' : ''">
 
       <header class="flex flex-col gap-5">
-        <p class="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+        <p class="font-mono text-xs uppercase tracking-[0.14em] text-muted">
           <span>{{ L.pageKind }}</span><template v-if="data.asOf"><span aria-hidden="true"> · </span><span>{{ fill(L.asOf, { asOf: data.asOf }) }}</span></template>
         </p>
         <h1 class="text-3xl font-bold leading-tight tracking-tight [text-wrap:balance] md:text-4xl">{{ data.title }}</h1>
         <div v-if="tasks.length" class="flex flex-col gap-3">
-          <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-[var(--sunk)]" role="img" :aria-label="summaryLabel">
-            <div v-for="s in summary" :key="s.key" class="h-full" :style="{ flexGrow: s.count, background: 'var(--' + s.tone + ')' }"></div>
+          <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-sunk" role="img" :aria-label="summaryLabel">
+            <div v-for="s in summary" :key="s.key" class="h-full" :class="TONES[s.tone].bar" :style="{ flexGrow: s.count }"></div>
           </div>
-          <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--muted)]">
-            <li v-for="s in summary" :key="s.key" class="flex items-center gap-1.5"><span>{{ s.emoji }}</span><span>{{ s.label }}</span><span class="font-mono font-medium text-[var(--fg)]">{{ s.count }}</span></li>
+          <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+            <li v-for="s in summary" :key="s.key" class="flex items-center gap-1.5"><span>{{ s.emoji }}</span><span>{{ s.label }}</span><span class="font-mono font-medium text-ink">{{ s.count }}</span></li>
           </ul>
         </div>
       </header>
 
       <section v-if="data.goal" class="flex flex-col gap-3" aria-labelledby="h-goal">
-        <h2 id="h-goal" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]"><div><target :size="16"></target></div><span>{{ L.goal }}</span></h2>
+        <h2 id="h-goal" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted"><div><target :size="16"></target></div><span>{{ L.goal }}</span></h2>
         <div class="max-w-[65ch] text-lg leading-relaxed"><rich-text :text="data.goal"></rich-text></div>
       </section>
 
       <section v-if="data.instruction" class="flex flex-col gap-3" aria-labelledby="h-instruction">
-        <h2 id="h-instruction" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]"><div><corner-down-right :size="16"></corner-down-right></div><span>{{ L.instruction }}</span></h2>
-        <div class="max-w-[65ch] border-l-4 border-[var(--accent)] pl-4"><rich-text :text="data.instruction"></rich-text></div>
+        <h2 id="h-instruction" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted"><div><corner-down-right :size="16"></corner-down-right></div><span>{{ L.instruction }}</span></h2>
+        <div class="max-w-[65ch] border-l-4 border-accent pl-4"><rich-text :text="data.instruction"></rich-text></div>
       </section>
 
       <section v-if="tasks.length" class="flex flex-col gap-3" aria-labelledby="h-tasks">
-        <h2 id="h-tasks" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]"><div><list-checks :size="16"></list-checks></div><span>{{ L.tasks }}</span></h2>
-        <div class="hidden overflow-x-auto rounded-xl border border-[var(--line)] bg-[var(--panel)] md:block">
+        <h2 id="h-tasks" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted"><div><list-checks :size="16"></list-checks></div><span>{{ L.tasks }}</span></h2>
+        <div class="hidden overflow-x-auto rounded-xl border border-line bg-panel md:block">
           <table class="w-full border-collapse text-left text-sm">
-            <thead class="bg-[var(--sunk)] text-xs text-[var(--muted)]">
+            <thead class="bg-sunk text-xs text-muted">
               <tr><th class="w-10 px-4 py-2.5 font-medium">{{ L.colNumber }}</th><th class="px-4 py-2.5 font-medium">{{ L.colTask }}</th><th class="w-64 px-4 py-2.5 font-medium">{{ L.colState }}</th><th class="px-4 py-2.5 font-medium">{{ L.colNotes }}</th></tr>
             </thead>
             <tbody>
-              <tr v-for="(t, i) in tasks" :key="i" class="border-t border-[var(--line)] align-top" :class="t.tone === 'cancel' ? 'text-[var(--muted)]' : ''">
-                <td class="px-4 py-3 font-mono text-[var(--muted)]">{{ i + 1 }}</td>
+              <tr v-for="(t, i) in tasks" :key="i" class="border-t border-line align-top" :class="t.tone === 'cancel' ? 'text-muted' : ''">
+                <td class="px-4 py-3 font-mono text-muted">{{ i + 1 }}</td>
                 <td class="px-4 py-3 font-medium" :class="t.tone === 'cancel' ? 'line-through' : ''"><rich-text :text="t.task"></rich-text></td>
                 <td class="px-4 py-3"><state-chip :task="t" @jump="jump"></state-chip></td>
-                <td class="min-w-0 px-4 py-3 text-[var(--muted)]"><rich-text :text="t.notes"></rich-text></td>
+                <td class="min-w-0 px-4 py-3 text-muted"><rich-text :text="t.notes"></rich-text></td>
               </tr>
             </tbody>
           </table>
         </div>
         <ol class="flex flex-col gap-2 md:hidden">
-          <li v-for="(t, i) in tasks" :key="i" class="flex flex-col gap-2 rounded-xl border border-[var(--line)] bg-[var(--panel)] p-4">
+          <li v-for="(t, i) in tasks" :key="i" class="flex flex-col gap-2 rounded-xl border border-line bg-panel p-4">
             <div class="flex items-start gap-3">
-              <span class="font-mono text-sm text-[var(--muted)]">{{ i + 1 }}</span>
-              <div class="min-w-0 flex-1 font-medium" :class="t.tone === 'cancel' ? 'text-[var(--muted)] line-through' : ''"><rich-text :text="t.task"></rich-text></div>
+              <span class="font-mono text-sm text-muted">{{ i + 1 }}</span>
+              <div class="min-w-0 flex-1 font-medium" :class="t.tone === 'cancel' ? 'text-muted line-through' : ''"><rich-text :text="t.task"></rich-text></div>
             </div>
             <div><state-chip :task="t" @jump="jump"></state-chip></div>
-            <div v-if="t.notes" class="text-sm text-[var(--muted)]"><rich-text :text="t.notes"></rich-text></div>
+            <div v-if="t.notes" class="text-sm text-muted"><rich-text :text="t.notes"></rich-text></div>
           </li>
         </ol>
       </section>
 
       <section v-if="data.status" class="flex flex-col gap-3" aria-labelledby="h-status">
-        <h2 id="h-status" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]"><div><activity :size="16"></activity></div><span>{{ L.status }}</span></h2>
+        <h2 id="h-status" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted"><div><activity :size="16"></activity></div><span>{{ L.status }}</span></h2>
         <div class="max-w-[65ch]"><rich-text :text="data.status"></rich-text></div>
       </section>
 
       <section v-if="decisions.length" class="flex flex-col gap-5" aria-labelledby="h-decisions">
-        <h2 id="h-decisions" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--decision)]"><div><flag :size="16"></flag></div><span>{{ L.decisions }}</span></h2>
+        <h2 id="h-decisions" class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-decision"><div><flag :size="16"></flag></div><span>{{ L.decisions }}</span></h2>
 
-        <article v-for="d in decisions" :key="d.number" :id="'decision-' + d.number" class="flex scroll-mt-6 flex-col gap-4 rounded-2xl border bg-[var(--panel)] p-5 transition-colors md:p-7" :class="isAnswered(d) ? 'border-[var(--accent)]' : 'border-[var(--line)]'">
+        <article v-for="d in decisions" :key="d.number" :id="'decision-' + d.number" class="flex scroll-mt-6 flex-col gap-4 rounded-2xl border bg-panel p-5 transition-colors md:p-7" :class="isAnswered(d) ? 'border-accent' : 'border-line'">
           <div class="flex items-start gap-4">
-            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--decision-soft)] font-mono text-base font-medium text-[var(--decision)]">{{ d.number }}</span>
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-decision-soft font-mono text-base font-medium text-decision">{{ d.number }}</span>
             <h3 class="min-w-0 pt-1 text-lg font-bold leading-snug [text-wrap:balance]">{{ d.question }}</h3>
           </div>
-          <div v-if="d.context" class="max-w-[65ch] text-[var(--muted)] md:pl-13"><rich-text :text="d.context"></rich-text></div>
+          <div v-if="d.context" class="max-w-[65ch] text-muted md:pl-13"><rich-text :text="d.context"></rich-text></div>
 
           <fieldset v-if="d.options.length" class="flex min-w-0 flex-col gap-2 md:pl-13">
             <legend class="sr-only">{{ d.question }}</legend>
-            <div class="hidden grid-cols-[11rem_1fr] gap-3 px-4 text-xs text-[var(--muted)] md:grid"><span>{{ L.colOption }}</span><span>{{ L.colOptionDetail }}</span></div>
-            <label v-for="o in d.options" :key="o.letter" class="grid cursor-pointer grid-cols-1 gap-2 rounded-xl border p-4 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--accent)] md:grid-cols-[11rem_1fr] md:gap-3" :class="answers[d.number].choice === o.letter ? 'border-[var(--accent)] bg-[var(--accent-soft)]' : 'border-[var(--line)] hover:bg-[var(--sunk)]'">
+            <div class="hidden grid-cols-[11rem_1fr] gap-3 px-4 text-xs text-muted md:grid"><span>{{ L.colOption }}</span><span>{{ L.colOptionDetail }}</span></div>
+            <label v-for="o in d.options" :key="o.letter" class="grid cursor-pointer grid-cols-1 gap-2 rounded-xl border p-4 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent md:grid-cols-[11rem_1fr] md:gap-3" :class="answers[d.number].choice === o.letter ? 'border-accent bg-accent-soft' : 'border-line hover:bg-sunk'">
               <input type="radio" class="sr-only" :name="'decision-' + d.number" :value="o.letter" v-model="answers[d.number].choice">
               <span class="flex flex-wrap items-center gap-2">
-                <span class="flex size-7 items-center justify-center rounded-md border font-mono text-sm font-medium" :class="answers[d.number].choice === o.letter ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-fg)]' : 'border-[var(--line)] bg-[var(--panel)]'">{{ o.letter }}</span>
+                <span class="flex size-7 items-center justify-center rounded-md border font-mono text-sm font-medium" :class="answers[d.number].choice === o.letter ? 'border-accent bg-accent text-accent-ink' : 'border-line bg-panel'">{{ o.letter }}</span>
                 <span v-if="o.label" class="text-sm font-medium">{{ o.label }}</span>
-                <span v-if="o.recommended" class="rounded-full bg-[var(--done-soft)] px-2 py-0.5 text-xs font-medium text-[var(--done)]">{{ L.recommended }}</span>
+                <span v-if="o.recommended" class="rounded-full bg-done-soft px-2 py-0.5 text-xs font-medium text-done">{{ L.recommended }}</span>
               </span>
               <span class="min-w-0 text-sm"><rich-text :text="o.text"></rich-text></span>
             </label>
           </fieldset>
 
           <div class="flex flex-col gap-2 md:pl-13">
-            <label :for="'note-' + d.number" class="text-sm font-medium" :class="d.options.length ? 'text-[var(--muted)]' : ''">{{ d.options.length ? L.noteLabel : L.freeAnswerLabel }}</label>
-            <textarea :id="'note-' + d.number" v-model="answers[d.number].note" rows="2" class="w-full resize-y rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-[var(--accent)]" :placeholder="d.options.length ? L.notePlaceholder : L.freeAnswerPlaceholder"></textarea>
+            <label :for="'note-' + d.number" class="text-sm font-medium" :class="d.options.length ? 'text-muted' : ''">{{ d.options.length ? L.noteLabel : L.freeAnswerLabel }}</label>
+            <textarea :id="'note-' + d.number" v-model="answers[d.number].note" rows="2" class="w-full resize-y rounded-xl border border-line bg-page px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-accent" :placeholder="d.options.length ? L.notePlaceholder : L.freeAnswerPlaceholder"></textarea>
             <div v-if="isAnswered(d)" class="flex justify-end">
-              <button type="button" class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-[var(--muted)] hover:bg-[var(--sunk)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]" @click="clearAnswer(d)"><div><rotate-ccw :size="13"></rotate-ccw></div><span>{{ L.clearAnswer }}</span></button>
+              <button type="button" class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted hover:bg-sunk focus-visible:outline-2 focus-visible:outline-accent" @click="clearAnswer(d)"><div><rotate-ccw :size="13"></rotate-ccw></div><span>{{ L.clearAnswer }}</span></button>
             </div>
           </div>
         </article>
 
-        <div id="answer-sheet" class="flex scroll-mt-6 flex-col gap-4 rounded-2xl border border-dashed border-[var(--line)] bg-[var(--sunk)] p-5 md:p-7">
+        <div id="answer-sheet" class="flex scroll-mt-6 flex-col gap-4 rounded-2xl border border-dashed border-line bg-sunk p-5 md:p-7">
           <div class="flex flex-col gap-2">
             <label for="overall" class="text-sm font-medium">{{ L.overallLabel }}</label>
-            <textarea id="overall" v-model="overall" rows="2" class="w-full resize-y rounded-xl border border-[var(--line)] bg-[var(--panel)] px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-[var(--accent)]" :placeholder="L.overallPlaceholder"></textarea>
+            <textarea id="overall" v-model="overall" rows="2" class="w-full resize-y rounded-xl border border-line bg-panel px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-accent" :placeholder="L.overallPlaceholder"></textarea>
           </div>
           <div class="flex flex-col gap-2">
             <label for="answer-text" class="text-sm font-medium">{{ L.previewLabel }}</label>
-            <textarea id="answer-text" ref="answerBox" readonly :value="answerText" :rows="Math.min(18, answerText.split('\n').length + 1)" class="w-full resize-y rounded-xl border border-[var(--line)] bg-[var(--panel)] px-3 py-2 font-mono text-[13px] leading-relaxed focus-visible:outline-2 focus-visible:outline-[var(--accent)]" @focus="$event.target.select()"></textarea>
-            <p v-if="copyState === 'failed'" class="text-sm text-[var(--problem)]" role="status">{{ L.copyFailed }}</p>
+            <textarea id="answer-text" ref="answerBox" readonly :value="answerText" :rows="Math.min(18, answerText.split('\n').length + 1)" class="w-full resize-y rounded-xl border border-line bg-panel px-3 py-2 font-mono text-[13px] leading-relaxed focus-visible:outline-2 focus-visible:outline-accent" @focus="$event.target.select()"></textarea>
+            <p v-if="copyState === 'failed'" class="text-sm text-problem" role="status">{{ L.copyFailed }}</p>
           </div>
         </div>
       </section>
     </div>
 
-    <div v-if="decisions.length" class="tray fixed inset-x-0 bottom-0 z-20 border-t border-[var(--line)] bg-[var(--panel)]/95 backdrop-blur">
+    <div v-if="decisions.length" class="tray fixed inset-x-0 bottom-0 z-20 border-t border-line bg-panel/95 backdrop-blur">
       <div class="gutter mx-auto flex max-w-5xl items-center gap-3 py-3">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <div class="flex gap-1" aria-hidden="true">
-            <button v-for="d in decisions" :key="d.number" type="button" tabindex="-1" class="size-2.5 cursor-pointer rounded-full" :class="isAnswered(d) ? 'bg-[var(--accent)]' : 'bg-[var(--line)]'" @click="jump(d.number)"></button>
+            <button v-for="d in decisions" :key="d.number" type="button" tabindex="-1" class="size-2.5 cursor-pointer rounded-full" :class="isAnswered(d) ? 'bg-accent' : 'bg-line'" @click="jump(d.number)"></button>
           </div>
-          <span class="truncate text-sm text-[var(--muted)]">{{ progressText }}</span>
+          <span class="truncate text-sm text-muted">{{ progressText }}</span>
         </div>
-        <button type="button" class="flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-fg)] hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]" @click="copyAnswers">
+        <button type="button" class="flex cursor-pointer items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" @click="copyAnswers">
           <div><check v-if="copyState === 'copied'" :size="16"></check><copy v-else :size="16"></copy></div>
           <span>{{ copyState === 'copied' ? L.copied : L.copy }}</span>
         </button>
       </div>
     </div>
   </div>
+  <button v-if="selection.show" id="copySelection" type="button" class="fixed z-50 cursor-pointer rounded-md border border-line bg-panel p-1 text-ink shadow focus-visible:outline-2 focus-visible:outline-accent" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="selection.copied ? L.copied : L.copySelection" :title="selection.copied ? L.copied : L.copySelection" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
+  <p v-if="selection.failed" id="copySelectionNotice" role="status" class="fixed z-50 m-0 max-w-[min(20rem,calc(100vw-16px))] rounded-md border border-line bg-panel px-2 py-1.5 text-xs text-problem shadow" :style="{ left: selection.x + 'px', top: (selection.y + 32) + 'px' }">{{ L.copySelectionFailed }}</p>
   </div>
 
   <script type="module">
-    // Import from full URLs, not an import map: Firefox refuses an import map once the
-    // artifact host has started loading modules.
-    // Vue comes from the same URL that @lucide/vue imports, so both share one Vue. That build has
-    // no template compiler, so the compiler is registered the way Vue's full build does it.
-    import * as Vue from 'https://cdn.jsdelivr.net/npm/vue@3.5.44/+esm'
-    import { compile } from 'https://cdn.jsdelivr.net/npm/@vue/compiler-dom@3.5.44/+esm'
-    import { Activity, Check, Copy, CornerDownRight, Flag, ListChecks, RotateCcw, Target } from 'https://cdn.jsdelivr.net/npm/@lucide/vue@1.61.0/+esm'
-    const { createApp, ref, computed, reactive, watch, onMounted } = Vue
-    Vue.registerRuntimeCompiler((template, options) => new Function('Vue', compile(template, { hoistStatic: true, ...options }).code)(Vue))
+    import { createApp, ref, computed, reactive, watch, onMounted } from 'vue'
+    import { Activity, Check, Copy, CornerDownRight, Flag, ListChecks, RotateCcw, Target } from '@lucide/vue'
+
+    // Copy text: the clipboard API where the host allows it, otherwise a hidden textarea
+    async function copyText (text) {
+      try { await navigator.clipboard.writeText(text); return true } catch {}
+      const area = Object.assign(document.createElement('textarea'), { value: text })
+      area.style.cssText = 'position:fixed;opacity:0'
+      document.body.append(area)
+      area.select()
+      const ok = document.execCommand('copy')
+      area.remove()
+      return ok
+    }
 
     const DATA = /*__DATA__*/null
 
@@ -196,6 +260,17 @@
       not_started: { emoji: '📝', label: 'stateNotStarted', tone: 'todo' },
       problem: { emoji: '❗', label: 'stateProblem', tone: 'problem' },
       cancelled: { emoji: '⛔', label: 'stateCancelled', tone: 'cancel' }
+    }
+
+    // Class names are written out in full so Tailwind finds them
+    const TONES = {
+      done: { chip: 'bg-done-soft text-done', bar: 'bg-done' },
+      progress: { chip: 'bg-progress-soft text-progress', bar: 'bg-progress' },
+      process: { chip: 'bg-process-soft text-process', bar: 'bg-process' },
+      decision: { chip: 'bg-decision-soft text-decision', bar: 'bg-decision' },
+      todo: { chip: 'bg-todo-soft text-todo', bar: 'bg-todo' },
+      problem: { chip: 'bg-problem-soft text-problem', bar: 'bg-problem' },
+      cancel: { chip: 'bg-cancel-soft text-cancel', bar: 'bg-cancel' }
     }
 
     const fill = (text, values) => text.replace(/\{(\w+)\}/g, (all, key) => key in values ? values[key] : all)
@@ -233,9 +308,9 @@
       template: `<div class="flex flex-col gap-2">
         <template v-for="(b, i) in blocks" :key="i">
           <ul v-if="b.kind === 'ul'" class="flex list-disc flex-col gap-1 pl-5">
-            <li v-for="(line, j) in b.lines" :key="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-[var(--sunk)] px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><a v-else-if="p.url" :href="p.url" target="_blank" rel="noopener noreferrer" class="text-[var(--accent)] underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-[var(--accent)]">{{ p.text }}</a><template v-else>{{ p.text }}</template></template></li>
+            <li v-for="(line, j) in b.lines" :key="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-sunk px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><a v-else-if="p.url" :href="p.url" target="_blank" rel="noopener noreferrer" class="text-accent underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-accent">{{ p.text }}</a><template v-else>{{ p.text }}</template></template></li>
           </ul>
-          <p v-else><template v-for="(line, j) in b.lines" :key="j"><br v-if="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-[var(--sunk)] px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><a v-else-if="p.url" :href="p.url" target="_blank" rel="noopener noreferrer" class="text-[var(--accent)] underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-[var(--accent)]">{{ p.text }}</a><template v-else>{{ p.text }}</template></template></template></p>
+          <p v-else><template v-for="(line, j) in b.lines" :key="j"><br v-if="j"><template v-for="(p, k) in line" :key="k"><code v-if="p.code" class="rounded bg-sunk px-1 py-0.5 font-mono text-[0.9em]">{{ p.text }}</code><a v-else-if="p.url" :href="p.url" target="_blank" rel="noopener noreferrer" class="text-accent underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-accent">{{ p.text }}</a><template v-else>{{ p.text }}</template></template></template></p>
         </template>
       </div>`
     }
@@ -243,11 +318,12 @@
     const StateChip = {
       props: { task: Object },
       emits: ['jump'],
-      template: `<button v-if="task.decision" type="button" class="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium hover:underline focus-visible:outline-2 focus-visible:outline-[var(--accent)]" :style="{ background: 'var(--' + task.tone + '-soft)', color: 'var(--' + task.tone + ')' }" @click="$emit('jump', task.decision)"><span>{{ task.emoji }}</span><span>{{ task.stateLabel }}</span></button>
-        <span v-else class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium" :style="{ background: 'var(--' + task.tone + '-soft)', color: 'var(--' + task.tone + ')' }"><span>{{ task.emoji }}</span><span>{{ task.stateLabel }}</span></span>`
+      setup (props) { return { tone: computed(() => TONES[props.task.tone]) } },
+      template: `<button v-if="task.decision" type="button" class="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium hover:underline focus-visible:outline-2 focus-visible:outline-accent" :class="tone.chip" @click="$emit('jump', task.decision)"><span>{{ task.emoji }}</span><span>{{ task.stateLabel }}</span></button>
+        <span v-else class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium" :class="tone.chip"><span>{{ task.emoji }}</span><span>{{ task.stateLabel }}</span></span>`
     }
 
-    createApp({
+    const app = createApp({
       components: { RichText, StateChip, Activity, Check, Copy, CornerDownRight, Flag, ListChecks, RotateCcw, Target },
       setup () {
         const data = DATA || { title: '', tasks: [], decisions: [] }
@@ -326,27 +402,13 @@
         const copyState = ref('')
         const answerBox = ref(null)
         let resetTimer = 0
-        /** Copy from the click handler; fall back to selecting the text when the clipboard is refused. */
-        function copyAnswers () {
-          const text = answerText.value
-          const fallback = () => {
-            const box = answerBox.value
-            let done = false
-            if (box) {
-              box.focus()
-              box.select()
-              try { done = document.execCommand('copy') } catch {}
-            }
-            return done
-          }
-          const finish = ok => {
-            copyState.value = ok ? 'copied' : 'failed'
-            if (!ok && answerBox.value) answerBox.value.select()
-            clearTimeout(resetTimer)
-            if (ok) resetTimer = setTimeout(() => { copyState.value = '' }, 2000)
-          }
-          if (!navigator.clipboard || !navigator.clipboard.writeText) return finish(fallback())
-          navigator.clipboard.writeText(text).then(() => finish(true), () => finish(fallback()))
+        /** Copy the answers; when the host refuses the clipboard, select the text in the box so the viewer can copy it by hand. */
+        async function copyAnswers () {
+          const ok = await copyText(answerText.value)
+          copyState.value = ok ? 'copied' : 'failed'
+          if (!ok && answerBox.value) answerBox.value.select()
+          clearTimeout(resetTimer)
+          if (ok) resetTimer = setTimeout(() => { copyState.value = '' }, 2000)
         }
 
         const jump = number => {
@@ -354,90 +416,33 @@
           if (target) target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
         }
 
-        onMounted(() => { ready.value = true })
-        return { data, L, fill, ready, tasks, summary, summaryLabel, decisions, answers, overall, isAnswered, clearAnswer, progressText, answerText, copyState, answerBox, copyAnswers, jump }
-      }
-    }).mount('#app')
+        // A small copy button floats at the end of any text the reader selects
+        const selection = reactive({ show: false, x: 0, y: 0, text: '', copied: false, failed: false })
+        function placeSelection () {
+          const range = getSelection()
+          const text = range && !range.isCollapsed ? range.toString() : ''
+          const anchor = range?.anchorNode?.parentElement
+          if (!text.trim() || !anchor?.closest('#app') || anchor.closest('input, textarea')) {
+            if (!selection.copied) Object.assign(selection, { show: false, failed: false })
+            return
+          }
+          const rects = range.getRangeAt(range.rangeCount - 1).getClientRects()
+          const box = rects[rects.length - 1] || range.getRangeAt(0).getBoundingClientRect()
+          Object.assign(selection, { show: true, copied: false, failed: false, text, x: Math.min(Math.max(box.right + 4, 4), innerWidth - 32), y: Math.max(box.top - 30, 4) })
+        }
+        async function copySelection () {
+          if (!await copyText(selection.text)) { selection.failed = true; return }
+          selection.copied = true
+          setTimeout(() => { selection.copied = false; placeSelection() }, 1200)
+        }
+        let selectionTimer
+        const onSelection = () => { clearTimeout(selectionTimer); selectionTimer = setTimeout(placeSelection, 120) }
+        document.addEventListener('selectionchange', onSelection)
+        document.addEventListener('scroll', onSelection, true)
 
-    // A small copy button floats above the end of any text the viewer selects. Plain DOM code: it needs no framework.
-    {
-      const words = { ...DEFAULT_LABELS, ...((DATA && DATA.labels) || {}) }
-      const svg = paths => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`
-      const copyIcon = svg('<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>')
-      const checkIcon = svg('<path d="M20 6 9 17l-5-5"/>')
-      const button = document.createElement('button')
-      button.type = 'button'
-      button.id = 'copySelection'
-      button.hidden = true
-      button.style.cssText = 'position:fixed;z-index:50;display:flex;align-items:center;cursor:pointer;padding:4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.2)'
-      const notice = document.createElement('p')
-      notice.id = 'copySelectionNotice'
-      notice.hidden = true
-      notice.setAttribute('role', 'status')
-      notice.style.cssText = 'position:fixed;z-index:50;max-width:min(20rem,calc(100vw - 16px));margin:0;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--problem);font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.2)'
-      document.body.append(button, notice)
-      let text = ''
-      let timer = 0
-      const label = (state) => {
-        const name = state === 'copied' ? words.copied : words.copySelection
-        button.setAttribute('aria-label', name)
-        button.title = name
-        button.innerHTML = state === 'copied' ? checkIcon : copyIcon
+        onMounted(() => { ready.value = true })
+        return { selection, copySelection, TONES, data, L, fill, ready, tasks, summary, summaryLabel, decisions, answers, overall, isAnswered, clearAnswer, progressText, answerText, copyState, answerBox, copyAnswers, jump }
       }
-      label('')
-      const hide = () => { button.hidden = true; notice.hidden = true }
-      const place = () => {
-        const selection = getSelection()
-        const anchor = selection && selection.anchorNode && selection.anchorNode.parentElement
-        const picked = selection && !selection.isCollapsed ? selection.toString() : ''
-        if (!picked.trim() || !anchor || !anchor.closest('#status-page') || anchor.closest('input, textarea')) {
-          if (button.title !== words.copied) hide()
-          return
-        }
-        const rects = selection.getRangeAt(selection.rangeCount - 1).getClientRects()
-        const box = rects[rects.length - 1] || selection.getRangeAt(0).getBoundingClientRect()
-        text = picked
-        notice.hidden = true
-        label('')
-        button.style.left = Math.min(Math.max(box.right + 4, 4), innerWidth - 32) + 'px'
-        button.style.top = Math.max(box.top - 30, 4) + 'px'
-        button.hidden = false
-      }
-      const later = () => { clearTimeout(timer); timer = setTimeout(place, 120) }
-      document.addEventListener('selectionchange', later)
-      document.addEventListener('scroll', later, true)
-      /** Copy from the click; fall back to a hidden textarea where the Clipboard API is missing or refused. */
-      const copy = () => {
-        const fallback = () => {
-          const selection = getSelection()
-          const ranges = Array.from({ length: selection.rangeCount }, (_, i) => selection.getRangeAt(i))
-          const area = document.createElement('textarea')
-          area.value = text
-          area.style.cssText = 'position:fixed;top:0;left:0;opacity:0'
-          document.body.append(area)
-          area.select()
-          let done = false
-          try { done = document.execCommand('copy') } catch {}
-          area.remove()
-          selection.removeAllRanges()
-          ranges.forEach(range => selection.addRange(range))
-          return done
-        }
-        return !navigator.clipboard || !navigator.clipboard.writeText ? Promise.resolve(fallback()) : navigator.clipboard.writeText(text).then(() => true, fallback)
-      }
-      button.addEventListener('mousedown', event => event.preventDefault())
-      button.addEventListener('click', async () => {
-        if (await copy()) {
-          label('copied')
-          setTimeout(() => { label(''); place() }, 1200)
-          return
-        }
-        notice.textContent = words.copySelectionFailed
-        notice.style.left = button.style.left
-        notice.style.top = (parseFloat(button.style.top) + 32) + 'px'
-        notice.hidden = false
-      })
-    }
+    })
+    app.mount('#app')
   </script>
-</body>
-</html>

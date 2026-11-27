@@ -206,7 +206,7 @@ Cowork では Claude Code と同じく、規則とスキルの両方が働きま
 
 チャットでは、規則は自動では読み込まれません。「使う場面」の章の表にある「いつもの返答」と「文書を記述させる」の場面にも規則を使いたいときは、次のように貼ります。
 
-- [`AGENTS.snippet.md`](AGENTS.snippet.md) の全文を、Web かデスクトップアプリの設定（左下の名前 > Settings）にある「Your Claude」>「Instructions」か、claude.ai のプロジェクトの指示に貼ります。言語パックのある言語で書かせるなら、その言語のファイルの全文も続けて貼ります。日本語なら [`AGENTS.snippet.ja.md`](AGENTS.snippet.ja.md) です。書かせる言語ごとにそれぞれのファイルを貼ります。1つとは限りません。エージェントは、記述するものの言語で選ぶからです（日本語の返答と英語の README なら、2つのファイルが要ります）。ファイルのない言語では、`AGENTS.snippet.md` にある英語の判断の問いかけの雛形から、列名と「(recommended)」をエージェントが訳します。
+- [`AGENTS.snippet.md`](AGENTS.snippet.md) の全文を、Web かデスクトップアプリの設定（左下の名前 > Settings）にある「Your Claude」>「Instructions」か、claude.ai のプロジェクトの指示に貼ります。言語パックは貼りません。エージェントは、プラグインと一緒にインストールされたスキル `writing-rules` のフォルダから読みます。
 - 指示の欄に収まらなければ、`AGENTS.snippet.md` の見出し「Write replies that someone who has not followed the session can understand」の節（返答の書き方の規則）だけを貼ります。返答の書き方の規則だけでも、「いつもの返答」の場面には働きます。
 - 節だけを貼るときも、`AGENTS.snippet.md` の最初の行と最後の行（貼った範囲を示すコメント）を、節の前後に付けます。アップデートのときに、入れ替える範囲が分かります。
 
@@ -216,9 +216,9 @@ Cowork では Claude Code と同じく、規則とスキルの両方が働きま
 
 wakariyasu の規則をまとめたファイル [`AGENTS.snippet.md`](AGENTS.snippet.md)（GitHub にある wakariyasu のリポジトリの最上位にあります）の全文を、エージェントが毎回読む指示のファイル（Codex なら AGENTS.md、ほかのエージェントならカスタム指示）に貼ります。全文の最初の行 `<!-- wakariyasu:AGENTS.snippet.md -->` と最後の行 `<!-- /wakariyasu:AGENTS.snippet.md -->` は、貼った範囲を示すコメントです。
 
-言語パックは、言語ごとに別のファイルにしてあります。日本語は [`AGENTS.snippet.ja.md`](AGENTS.snippet.ja.md)、英語は [`AGENTS.snippet.en.md`](AGENTS.snippet.en.md) です。エージェントに書かせる言語のファイルを、いくつあっても、`AGENTS.snippet.md` の後ろに貼ります。どのファイルも、最初と最後の行が貼った範囲を示すコメントです。
+言語パックは貼りません。エージェントは、1〜3 の方法でインストールしたスキル `writing-rules` のフォルダの `lang/<コード>/` から読みます。
 
-1〜3 のアップデートのコマンドは貼った規則をアップデートしません。wakariyasu をアップデートしたら、貼った範囲（2行のコメントとそのあいだ）を、GitHub にある最新の `AGENTS.snippet.md` の全文に入れ替えます。貼った言語のファイルも、同じように入れ替えます。
+1〜3 のアップデートのコマンドは貼った規則をアップデートしません。wakariyasu をアップデートしたら、貼った範囲（2行のコメントとそのあいだ）を、GitHub にある最新の `AGENTS.snippet.md` の全文に入れ替えます。
 
 ## wakariyasu を改修する人へ
 

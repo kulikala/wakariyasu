@@ -22,8 +22,7 @@ tests/lang/<code>/caution-cases.txt Examples that check-terms prints marked "(ch
 tests/session-status-report.json A fictional report used by the test that builds the session-status page
 hooks/                           Hooks that load the rules at the start of a session and give the index of language packs and filled templates (load-rules.sh, lang-index.sh)
 AGENTS.snippet.md                The body of the rules to paste into agents other than Claude Code (made by dev/build)
-AGENTS.snippet.<code>.md         The language pack of one language (reply.md, documents.md, skills.md, the decision question template, the phrase lists), to paste after AGENTS.snippet.md (made by dev/build)
-dev/build                        Prints asking-template.md and reply-template.md from labels.json, joins the rules and asking.md into AGENTS.snippet.md, and each language pack with its template and phrase lists into AGENTS.snippet.<code>.md
+dev/build                        Prints asking-template.md and reply-template.md from labels.json, and joins the rules and asking.md into AGENTS.snippet.md
 dev/test                         Checks the repository's rules
 dev/test-show-changes.py         Test to run after changing build.py and template.html of show-changes (docs/show-changes.md)
 dev/test-show-changes-page.mjs   Test that opens the show-changes page in a browser and tries operating it
@@ -87,7 +86,7 @@ dev/test
 
 `dev/test` checks the following without calling a model.
 
-- `AGENTS.snippet.md` and every `AGENTS.snippet.<code>.md` match the body, and no other skill has a file with the same name as a rule, a reference or a phrase list.
+- `AGENTS.snippet.md` matches the body, and no other skill has a file with the same name as a rule, a reference or a phrase list.
 - The version is the same in `plugin.json`, `marketplace.json` and `CHANGELOG.md`.
 - The marketplace (`marketplace.json`) lists only one plugin.
 - For each skill, `SKILL.md` starts with frontmatter and has a `name` equal to the folder name and a `description`.

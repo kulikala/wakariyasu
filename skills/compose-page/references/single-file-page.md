@@ -45,7 +45,7 @@ Vue is loaded from jsDelivr's `+esm` build of the bundler file, which includes t
 <body>
   <div id="app">
     <!-- Page content -->
-    <button v-if="selection.show" type="button" class="fixed z-50 rounded-md border border-{{borderRole}} bg-{{backgroundRole}} p-1 text-{{textRole}} shadow" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="selection.copied ? '{{copiedWord}}' : '{{copyWord}}'" :title="selection.copied ? '{{copiedWord}}' : '{{copyWord}}'" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
+    <button v-if="selection.show" type="button" class="fixed z-50 rounded-md border border-{{border role}} bg-{{background role}} p-1 text-{{text role}} shadow" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="selection.copied ? '{{copied word}}' : '{{copy word}}'" :title="selection.copied ? '{{copied word}}' : '{{copy word}}'" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
   </div>
 
   <script type="module">
@@ -104,7 +104,7 @@ Vue is loaded from jsDelivr's `+esm` build of the bundler file, which includes t
 
 - Set `lang` to the language the page is written in. Browsers choose the default font from it, so a page with the wrong `lang` can show text in a typeface meant for another language.
 - The page specifies no font and uses the browser's default.
-- Keep the copy button, the `copyText` function and the selection code in `setup`. Replace `{{copyWord}}` and `{{copiedWord}}` with the words for copy and copied in the page's language, and replace `{{borderRole}}`, `{{backgroundRole}}` and `{{textRole}}` with the names of the page's color roles for borders, panels and body text. Its icons, position and timing may be adjusted to the page; its behavior stays: it appears next to selected text outside input fields and copies that text.
+- Keep the copy button, the `copyText` function and the selection code in `setup`. Replace `{{copy word}}` and `{{copied word}}` with the words for copy and copied in the page's language, and `{{border role}}`, `{{background role}}` and `{{text role}}` with the names of the page's color roles, as in the `body` rule. Its icons, position and timing may be adjusted to the page; its behavior stays: it appears next to selected text outside input fields and copies that text.
 - Decide the color roles and their values from what the page shows and what its cues must tell apart. The roles include one for the page background and one for the body text. A role's name becomes part of Tailwind class names, so use a name that is valid there. Define each role once in `@theme` with its light value, and redefine it with its dark value under `prefers-color-scheme: dark`. Utilities built from a token (`bg-{{role}}`, `text-{{role}}`) then follow the device's setting without a `dark:` variant on every element. Give `body` its background and text color from the tokens.
 
 ## Writing Lucide icons in the template

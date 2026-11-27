@@ -15,6 +15,7 @@
       --color-add-word: #a6e7b6;
       --color-del-word: #f7b9b9;
       --color-hunk: #eef2f6;
+      --color-chg: #f6e08a;
       --color-del-mark: #d6453d;
     }
     @layer base {
@@ -35,7 +36,7 @@
       /* The inline layout: a changed span or a deletion mark shows the earlier text when hovered or focused. The text sits in
          data-old and is drawn by ::after, so selecting and copying never take it along. */
       .inline-change[data-old], .inline-del, .inline-band-mark { position: relative; cursor: help }
-      .inline-change[data-old] { text-decoration: underline dotted var(--color-del-mark); text-underline-offset: 2px }
+      .inline-change { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px }
       .inline-del { display: inline-block; width: 3px; height: 1.15em; margin: 0 1px; vertical-align: text-bottom; border-radius: 1px; background: var(--color-del-mark) }
       .inline-band-mark { display: block; height: 4px; margin: 2px 0; border-radius: 2px; background: var(--color-del-mark) }
       :is(.inline-change[data-old], .inline-del, .inline-band-mark):is(:hover, :focus)::after { content: attr(data-old); position: absolute; left: 0; top: 100%; z-index: 20; width: max-content; max-width: min(48ch, 80vw); margin-top: 2px; padding: 2px 6px; border: 1px solid var(--color-del-mark); border-radius: 4px; background: var(--color-panel); color: var(--color-ink); box-shadow: 0 2px 8px rgb(0 0 0 / .25); font-weight: normal; line-height: 1.5; text-decoration: none; white-space: pre-wrap; overflow-wrap: anywhere; user-select: none; pointer-events: none }
@@ -60,6 +61,7 @@
         --color-add-word: #2f7d48;
         --color-del-word: #a3403f;
         --color-hunk: #253142;
+        --color-chg: #6b5a14;
         --color-del-mark: #f07a72;
         color-scheme: dark;
       }
@@ -76,6 +78,7 @@
       --color-add-word: #2f7d48;
       --color-del-word: #a3403f;
       --color-hunk: #253142;
+      --color-chg: #6b5a14;
       --color-del-mark: #f07a72;
       color-scheme: dark;
     }
@@ -133,6 +136,11 @@
                 <div><component :is="control.icon" :size="16"></component></div><span class="button-text hidden md:inline">{{ control.label }}</span>
               </button>
             </div>
+          </div>
+          <div v-if="layout === 'inline'" id="legend" role="note" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted" :title="T('legendTitle')">
+            <span class="flex items-center gap-1"><span class="inline-block h-3 w-4 rounded-sm bg-add-word"></span>{{ T('legendAdd') }}</span>
+            <span class="flex items-center gap-1"><span class="inline-block h-3 w-4 rounded-sm bg-chg underline decoration-2"></span>{{ T('legendChange') }}</span>
+            <span class="flex items-center gap-1"><span class="inline-block h-3.5 w-[3px] rounded-sm bg-del-mark"></span>{{ T('legendDelete') }}</span>
           </div>
         </div>
         <main id="main" class="min-h-0 min-w-0 flex-1 overflow-y-auto [overflow-anchor:none]">
@@ -287,7 +295,8 @@
       } else if (Object.hasOwn(languages, ext) && hljs.getLanguage(languages[ext])) {
         const fragment = document.createElement('template')
         fragment.innerHTML = hljs.highlight(text, { language: languages[ext], ignoreIllegals: true }).value
-          const visit = (node, styles = '') => {
+          let offset = 0
+        const visit = (node, styles = '') => {
           if (node.nodeType === 3) {
             add(offset, offset + node.textContent.length, styles)
             offset += node.textContent.length
@@ -299,8 +308,9 @@
         visit(fragment.content)
       }
       for (const [start, end, old] of inline?.changes || []) {
-        add(start, end, 'inline-change bg-add-word', oldAttrs(old))
-        add(start, end, 'ws-zone')
+        add(start, end, old ? 'inline-change bg-chg' : 'inline-add bg-add-word', oldAttrs(old))
+        // Whitespace gets its marks only where the whitespace itself changed, as in the other layouts
+        if (old && squash(old) === squash(text.slice(start, end))) add(start, end, 'ws-zone')
       }
       if (change) add(change[0], change[1], kind === 'add' ? 'bg-add-word' : 'bg-del-word')
       // Mark whitespace inside the changed interval and at the end of changed lines. A lone CR at
@@ -350,10 +360,15 @@
     const words = text => segmenter ? Array.from(segmenter.segment(text), part => part.segment) : text.match(/\s+|[A-Za-z0-9_]+|[^\sA-Za-z0-9_]/gu) || []
 
     /**
-     * Compare two lines word by word. The result is in the new line's offsets: the intervals that were added or replaced
-     * (with the earlier text of a replacement) and the points where text was only removed.
+     * Compare two lines word by word, then join changes that are close to each other (the unchanged text between them is
+     * three characters or fewer) into one region, so a region is as long as it can be. The result is in the new line's offsets:
+     * regions that were added (earlier text ''), regions that replaced text (with the exact earlier text of the whole region),
+     * the points where text was only removed (with the removed text), and the share of the longer line that stayed the same.
      */
+    const diffCache = new Map()
     function wordDiff (before, after) {
+      const key = before + '\u0000' + after
+      if (diffCache.has(key)) return diffCache.get(key)
       const a = words(before)
       const b = words(after)
       let start = 0
@@ -362,7 +377,7 @@
       while (end < a.length - start && end < b.length - start && a[a.length - 1 - end] === b[b.length - 1 - end]) end++
       const n = a.length - start - end
       const m = b.length - start - end
-      // Longest common subsequence of the words between the common ends; very long lines fall back to one interval.
+      // Longest common subsequence of the words between the common ends; very long lines fall back to one region.
       const keep = []
       if (n && m && n * m <= 250000) {
         const table = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1))
@@ -376,23 +391,35 @@
       keep.unshift(...Array.from({ length: start }, (_, k) => [k, k]))
       for (let k = 0; k < end; k++) keep.push([a.length - end + k, b.length - end + k])
       keep.push([a.length, b.length])
-      const changes = []
-      const dels = []
+      // Token ranges that differ, in old [ai0, ai1) and new [bi0, bi1) words.
+      const spans = []
       let ai = 0
       let bi = 0
-      let offset = 0
-      const offsets = [0]
-      for (const word of b) offsets.push(offsets[offsets.length - 1] + word.length)
       for (const [x, y] of keep) {
-        const old = a.slice(ai, x).join('')
-        if (x > ai || y > bi) {
-          if (y > bi) changes.push([offsets[bi], offsets[y], old])
-          else dels.push([offsets[bi], old])
-        }
+        if (x > ai || y > bi) spans.push({ ai0: ai, ai1: x, bi0: bi, bi1: y })
         ai = x + 1
         bi = y + 1
       }
-      return { changes, dels }
+      const regions = []
+      for (const span of spans) {
+        const last = regions[regions.length - 1]
+        if (last && a.slice(last.ai1, span.ai0).join('').length <= 3) Object.assign(last, { ai1: span.ai1, bi1: span.bi1 })
+        else regions.push({ ...span })
+      }
+      const offsets = [0]
+      for (const word of b) offsets.push(offsets[offsets.length - 1] + word.length)
+      const changes = []
+      const dels = []
+      let changed = 0
+      for (const { ai0, ai1, bi0, bi1 } of regions) {
+        const old = a.slice(ai0, ai1).join('')
+        if (bi1 > bi0) changes.push([offsets[bi0], offsets[bi1], old])
+        else dels.push([offsets[bi0], old])
+        changed += Math.max(old.length, offsets[bi1] - offsets[bi0])
+      }
+      const result = { changes, dels, same: 1 - changed / Math.max(before.length, after.length, 1) }
+      diffCache.set(key, result)
+      return result
     }
 
     const squash = text => text.replace(/[\s\u200b]+/g, '')
@@ -502,9 +529,22 @@
           while (rows[i]?.kind === 'add') added.push(rows[i++])
           const pairs = Array.from({ length: Math.max(removed.length, added.length) }, (_, j) => removed[j] && added[j] ? pairRanges(removed[j].text, added[j].text) : [null, null])
           if (layout === 'inline') {
-            // Each removed line is compared with the added line at the same place; removed lines left over become one band.
-            added.forEach((line, j) => entries.push(removed[j] ? { kind: 'inline', row: line, old: removed[j].text } : { kind: 'line', row: line }))
-            if (removed.length > added.length) entries.push({ kind: 'band', old: removed.slice(added.length).map(row => row.text).join('\n') })
+            // Each added line is compared with the next removed line that is similar enough to be its earlier form; removed
+            // lines passed over or left over are deletions between the lines, and an added line without an earlier form is new.
+            let next = 0
+            added.forEach(line => {
+              let found = -1
+              let diff = null
+              for (let k = next; k < Math.min(removed.length, next + 8); k++) {
+                const candidate = wordDiff(removed[k].text, line.text)
+                if (candidate.same >= 0.5 || removed[k].text.trim() === line.text.trim()) { found = k; diff = candidate; break }
+              }
+              if (found < 0) return entries.push({ kind: 'line', row: line })
+              if (found > next) entries.push({ kind: 'band', old: removed.slice(next, found).map(row => row.text).join('\n') })
+              next = found + 1
+              entries.push({ kind: 'inline', row: line, old: removed[found].text, diff })
+            })
+            if (next < removed.length) entries.push({ kind: 'band', old: removed.slice(next).map(row => row.text).join('\n') })
           } else if (layout === 'split') pairs.forEach(([a, b], j) => entries.push({ kind: 'split', a: removed[j], b: added[j], ra: a, rb: b }))
           else {
             removed.forEach((line, j) => entries.push({ kind: 'line', row: line, range: pairs[j][0] }))
@@ -546,13 +586,14 @@
         return `<td class="px-1 align-top whitespace-pre-wrap break-all ${color}">${row ? `<span class="inline-block w-3 text-muted select-none">${row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '}</span><span class="line-text">${textHTML(row.text, file.path, query, range && range[0] < range[1] ? range : null, row.kind, range?.[2])}</span>` : ''}</td>`
       }
       if (layout === 'inline') {
-        const inlineCell = (row, inline, whole) => `<td class="px-1 align-top whitespace-pre-wrap break-all ${whole ? 'bg-add' : ''}"><span class="line-text">${textHTML(row.text, file.path, query, null, whole ? 'add' : row.kind, undefined, inline)}</span></td>`
+        const inlineCell = (row, inline, whole) => `<td class="px-1 align-top whitespace-pre-wrap break-all ${whole ? 'bg-add' : ''}"><span class="line-text">${textHTML(row.text, file.path, query, null, row.kind === 'context' ? 'context' : 'inline', undefined, inline)}</span></td>`
         const lines = plan(rows, layout).map(entry => {
           if (entry.kind === 'hunk') return `<tr><td colspan="2" class="hunk sticky top-[var(--head,0px)] z-[5] bg-hunk px-2 py-1 text-muted whitespace-pre-wrap break-all">${esc(entry.row.text)}</td></tr>`
           if (entry.kind === 'band') return `<tr><td colspan="2" class="px-1 py-0"><div class="inline-band-mark" tabindex="0" data-old="${esc(entry.old || '↵')}"></div></td></tr>`
           const row = entry.row
-          if (entry.kind === 'inline') return `<tr>${ln(row.current)}${inlineCell(row, wordDiff(entry.old, row.text), false)}</tr>`
-          return `<tr>${ln(row.current)}${inlineCell(row, null, entry.kind === 'line')}</tr>`
+          if (entry.kind === 'inline') return `<tr>${ln(row.current)}${inlineCell(row, entry.diff, false)}</tr>`
+          if (entry.kind === 'line') return `<tr>${ln(row.current)}${inlineCell(row, { changes: row.text ? [[0, row.text.length, '']] : [], dels: [] }, true)}</tr>`
+          return `<tr>${ln(row.current)}${inlineCell(row, null, false)}</tr>`
         })
         return lines.length ? `<table data-layout="inline" data-scope="${scope}" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup>${gutter('current')}<col></colgroup><tbody>${lines.join('')}</tbody></table>` : '<p class="p-3 text-muted">' + T('noTextRows') + '</p>'
       }
@@ -632,7 +673,7 @@
           <button type="button" class="file-header flex min-w-0 cursor-pointer items-center gap-2 text-left focus-visible:outline-2 focus-visible:outline-teal-500" :aria-expanded="open" :aria-controls="item.id + '-body'"><div><chevron-down v-if="open" :size="16"></chevron-down><chevron-right v-else :size="16"></chevron-right></div><status-badge :status="item.file.status"></status-badge><span class="min-w-0 break-all font-mono text-xs font-bold">{{ item.source.name }} / {{ item.file.path }}</span></button><button type="button" class="copy-path shrink-0 cursor-pointer rounded p-0.5 text-muted hover:bg-hover hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-500" :aria-label="T(copied ? 'copiedPath' : 'copyPath')" :title="T(copied ? 'copied' : 'copyPath')" @click.stop="copyPath"><check v-if="copied" :size="13"></check><copy v-else :size="13"></copy></button><span class="flex-1"></span><span v-if="item.file.old" class="break-all text-xs text-muted">← {{ item.file.old }}</span><span class="font-mono text-xs"><span class="text-emerald-600">+{{ counts.added ?? '—' }}</span> <span class="text-rose-500">−{{ counts.deleted ?? '—' }}</span></span>
         </div>
         <div v-if="open" :id="item.id + '-body'" :class="html ? '' : 'min-h-80'">
-          <div v-if="html" class="diff-body overflow-x-clip bg-panel text-ink" :class="lightDiff ? '[--color-panel:#fff] [--color-ink:#1d2422] [--color-line:#d9dfdc] [--color-muted:#64748b] [--color-add:#e6f4ea] [--color-del:#fbeaea] [--color-add-word:#a6e7b6] [--color-del-word:#f7b9b9] [--color-hunk:#eef2f6]' : '[--color-panel:#18201d] [--color-ink:#e3e8e6] [--color-add:#14301e] [--color-del:#3a1d1d] [--color-add-word:#2f7d48] [--color-del-word:#a3403f] [--color-hunk:#253142] [&_.text-purple-600]:text-purple-300 [&_.text-emerald-700]:text-emerald-300 [&_.text-blue-600]:text-blue-300 [&_.text-cyan-700]:text-cyan-300 [&_.text-orange-600]:text-orange-300 [&_.bg-slate-200]:bg-slate-700 [&_.text-slate-800]:text-slate-100'">
+          <div v-if="html" class="diff-body overflow-x-clip bg-panel text-ink" :class="lightDiff ? '[--color-panel:#fff] [--color-ink:#1d2422] [--color-line:#d9dfdc] [--color-muted:#64748b] [--color-add:#e6f4ea] [--color-del:#fbeaea] [--color-add-word:#a6e7b6] [--color-del-word:#f7b9b9] [--color-hunk:#eef2f6] [--color-chg:#f6e08a] [--color-del-mark:#d6453d]' : '[--color-panel:#18201d] [--color-ink:#e3e8e6] [--color-add:#14301e] [--color-del:#3a1d1d] [--color-add-word:#2f7d48] [--color-del-word:#a3403f] [--color-hunk:#253142] [--color-chg:#6b5a14] [--color-del-mark:#f07a72] [&_.text-purple-600]:text-purple-300 [&_.text-emerald-700]:text-emerald-300 [&_.text-blue-600]:text-blue-300 [&_.text-cyan-700]:text-cyan-300 [&_.text-orange-600]:text-orange-300 [&_.bg-slate-200]:bg-slate-700 [&_.text-slate-800]:text-slate-100'">
             <p v-if="scope === 'full' && typeof item.file.full_body !== 'string'" class="p-3 text-xs text-muted">{{ T('fullMissing') }}</p><p v-if="mode" class="file-mode px-3 pt-3 text-xs text-muted">{{ mode }}</p><p v-if="item.file.notice" class="p-3 text-xs text-muted">{{ noticeText(item.file.notice) }}</p><div v-html="html"></div>
           </div>
         </div>
@@ -903,8 +944,9 @@
           await nextTick()
           const node = document.getElementById(id)
           const main = document.getElementById('main')
+          if (!node || !main) return
           main.scrollTop += node.getBoundingClientRect().top - main.getBoundingClientRect().top - 12
-          node.querySelector('button').focus({ preventScroll: true })
+          node.querySelector('button')?.focus({ preventScroll: true })
         }
         // Enter and Shift+Enter move between the lines (or file headings) that match the search.
         const current = ref(-1)

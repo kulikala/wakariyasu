@@ -35,7 +35,7 @@ CHANGELOG.md                     Changes for each version (CHANGELOG.ja.md is th
 
 The hooks, `check-terms` and `terms-table` run with only `sh` and standard commands. `dev/test` also uses `git`. `dev/build` and `dev/test` also run `python3`, because the templates are printed by Python scripts.
 
-`build.py`, which builds the page of the skill `show-changes`, runs on the Python 3 standard library. When it builds a page, it downloads utfpack's packer from jsDelivr (see [How to modify show-changes](show-changes.md)). The steps for changing it are in [How to modify show-changes](show-changes.md).
+`build.py`, which builds the page of the skill `show-changes`, runs on the Python 3 standard library. When it builds a page, it downloads utfpack's packer from jsDelivr, so `dev/test-show-changes.py` needs a network connection. How the page is built and the steps for changing it are in [How to modify show-changes](show-changes.md).
 
 `build.py`, which builds the page of the skill `session-status`, and the scripts that print templates (`skeleton.py`, `asking-skeleton`) also run on the Python 3 standard library. After changing `build.py`, `template.html` or a `labels.json`, run `python3 dev/test-session-status.py` (`dev/test` runs it too). The behavior of a page in a browser is not tested by a script: after changing a `template.html`, build a page and open it by hand in any browser.
 

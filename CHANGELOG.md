@@ -9,9 +9,9 @@ A change to how the rules or skills are written that changes the agent's behavio
 
 ### Changed
 
-- `show-changes` and `session-status` pages are built on the same template as `compose-page`.
-- With `--artifact`, both pages are written as the part of a page that Claude artifacts expect, starting with the title and without a document skeleton of their own.
-- `show-changes` downloads the utfpack packer from jsDelivr when it builds a page and keeps a copy in the user's cache, so building a page needs a network connection the first time and picks up utfpack updates.
+- `show-changes` and `session-status` pages are built from the same single-file page template as the pages of `compose-page`, with the same light and dark themes.
+- With `--artifact`, both pages leave out the document skeleton that Claude artifacts add when publishing, so a published page no longer holds a document inside a document.
+- `show-changes` downloads utfpack, the library that compresses the page data, from jsDelivr when it builds a page, and reuses the downloaded copy when the download fails. Building a page therefore needs a network connection the first time, and utfpack updates arrive without a wakariyasu update.
 
 ## [1.0.0] - 2026-11-27
 
@@ -28,7 +28,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 ### Changed
 
 - The agent asks for a decision only when the work cannot continue without it, and reports other findings as facts. It asks for the final conclusion, such as whether to publish or send, only when the work is finished and the request covers it.
-- `show-changes` pages are about a third of their former size, because their data is compressed. A page loads the decoder that unpacks its data from jsDelivr when it opens, so opening it needs a network connection; `build.py --embed-decoder` puts the decoder into the page instead.
+- `show-changes` pages are about a third of their size in 0.11.0, because their data is compressed with utfpack. A page loads the decoder that unpacks its data from jsDelivr when it opens, so opening it needs a network connection; `build.py --embed-decoder` puts the decoder into the page instead.
 - Replies that explain a mechanism or a change state the whole first.
 - Instructions the agent writes, and the checks of `clarify-skill`, avoid sample data, sample output and quoted tool messages that the agent would copy.
 - READMEs the agent writes fold details into collapsible blocks, use the Markdown GitHub renders, and write each language version for its own readers rather than translating it.

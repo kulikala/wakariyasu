@@ -11,7 +11,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 
 - `show-changes` and `session-status` pages are built from the same single-file page template as the pages of `compose-page`, with the same light and dark themes.
 - With `--artifact`, both pages leave out the document skeleton that Claude artifacts add when publishing, so a published page no longer holds a document inside a document.
-- `show-changes` downloads utfpack, the library that compresses the page data, from jsDelivr when it builds a page, and reuses the downloaded copy when the download fails. Building a page therefore needs a network connection the first time, and utfpack updates arrive without a wakariyasu update.
+- `show-changes` builds pages with the utfpack packer (the part of utfpack that compresses the page data) downloaded from jsDelivr instead of a copy bundled with wakariyasu, and reuses the downloaded copy when the download fails. Building a page therefore needs a network connection the first time, and utfpack updates arrive without a wakariyasu update.
 
 ## [1.0.0] - 2026-11-27
 

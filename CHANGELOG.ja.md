@@ -5,6 +5,12 @@
 バージョンの番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従います。
 規則やスキルの書き方が変わり、エージェントの振る舞いが変わる変更は、マイナーバージョンを上げます。
 
+## [1.0.2] - 2026-11-28
+
+### 修正
+
+- `compose-page` と `summarize-session` の説明文を、claude.ai が保存する 1024 字に収めた。Claude のアプリで警告が出なくなる。
+
 ## [1.0.1] - 2026-11-28
 
 ### 追加
@@ -186,6 +192,7 @@
 - スキル `session-status`・`explain-clearly`・`remove-meta-narrative`・`review-for-readers`。
 - セッションの始めに規則を読み込むフックと、ほかのエージェントに貼る `AGENTS.snippet.md`。
 
+[1.0.2]: https://github.com/kulikala/wakariyasu/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/kulikala/wakariyasu/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/kulikala/wakariyasu/compare/v0.11.0...v1.0.0
 [0.11.0]: https://github.com/kulikala/wakariyasu/compare/v0.10.0...v0.11.0

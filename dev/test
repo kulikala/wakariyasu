@@ -23,12 +23,15 @@ grep -q "^## \[$v_plugin\]" CHANGELOG.md || ng "CHANGELOG.md has no section for 
 n="$(grep -c '"source":' .claude-plugin/marketplace.json)"
 [ "$n" = 1 ] || ng "marketplace.json lists a plugin other than wakariyasu"
 
-# 4. Each skill has a name equal to its folder name, and a description
+# 4. Each skill has a name equal to its folder name, and a description of at most 1024 characters
 for d in skills/*/; do
     s="${d%/}"; name="${s#skills/}"
     head -1 "$s/SKILL.md" | grep -qx -- '---' || ng "$s/SKILL.md does not start with frontmatter"
     grep -qx "name: $name" "$s/SKILL.md" || ng "the name in $s/SKILL.md differs from the folder name $name"
     grep -q '^description: .' "$s/SKILL.md" || ng "$s/SKILL.md has no description"
+    # claude.ai stores at most 1024 characters of a description and warns about a longer one
+    n="$(sed -n 's/^description: //p' "$s/SKILL.md" | tr -d '\n' | LC_ALL=en_US.UTF-8 wc -m | tr -d ' ')"
+    [ "$n" -le 1024 ] || ng "the description in $s/SKILL.md has $n characters, over 1024"
 done
 
 # 5. The hook prints the rules and asking.md, and gives only the location of each language pack and how to choose one, not the content of the packs

@@ -5,6 +5,12 @@ English | [日本語](CHANGELOG.ja.md)
 Version numbers follow [Semantic Versioning](https://semver.org/).
 A change to how the rules or skills are written that changes the agent's behavior raises the minor version.
 
+## [1.0.2] - 2026-11-28
+
+### Fixed
+
+- The descriptions of `compose-page` and `summarize-session` fit within the 1,024 characters that claude.ai stores, so the Claude apps no longer warn about them.
+
 ## [1.0.1] - 2026-11-28
 
 ### Added
@@ -186,6 +192,7 @@ A change to how the rules or skills are written that changes the agent's behavio
 - The skills `session-status`, `explain-clearly`, `remove-meta-narrative` and `review-for-readers`.
 - A hook that loads the rules at the start of a session, and `AGENTS.snippet.md` for other agents.
 
+[1.0.2]: https://github.com/kulikala/wakariyasu/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/kulikala/wakariyasu/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/kulikala/wakariyasu/compare/v0.11.0...v1.0.0
 [0.11.0]: https://github.com/kulikala/wakariyasu/compare/v0.10.0...v0.11.0

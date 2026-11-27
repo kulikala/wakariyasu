@@ -5,6 +5,14 @@ English | [日本語](CHANGELOG.ja.md)
 Version numbers follow [Semantic Versioning](https://semver.org/).
 A change to how the rules or skills are written that changes the agent's behavior raises the minor version.
 
+## [Unreleased]
+
+### Changed
+
+- `show-changes` and `session-status` pages are built on the same template as `compose-page`.
+- With `--artifact`, both pages are written as the part of a page that Claude artifacts expect, starting with the title and without a document skeleton of their own.
+- `show-changes` downloads the utfpack packer from jsDelivr when it builds a page and keeps a copy in the user's cache, so building a page needs a network connection the first time and picks up utfpack updates.
+
 ## [1.0.0] - 2026-11-27
 
 ### Added

@@ -21,7 +21,7 @@ Build the page with the bundled `scripts/build.py`. If Python 3.9 or later (`pyt
 
 ## Decide whether to include full text
 
-Full text lets the viewer read a change in the flow of the whole file, not only the lines around the changed lines. With full text, the page grows by the size of the changed files. With full text, the viewer can also switch to the text after the change alone, without the removed lines and the diff marks. Include full text when the request suggests the viewer needs the surrounding flow (a rewritten document, a partial change to a configuration file). Use the diff alone when the viewer only needs the amount or location of changes. If the request suggests neither, use the diff alone. When you hand over the page, say that a page with full text can also be built.
+Full text lets the viewer read a change in the flow of the whole file, not only the lines around the changed lines. With full text, the page grows by the size of the changed files. With full text, the viewer can also switch to the text after the change alone, without the removed lines and the diff marks. Include full text when the request suggests the viewer needs the surrounding flow (a rewritten document, a partial change to a configuration file). Use the diff alone when the viewer only needs the amount or location of changes. If the request suggests neither, use the diff alone. When you hand over a diff-only page, say that a page with full text can also be built. A page of files to show (`--files`) always has full text.
 
 ## Hand over the page
 

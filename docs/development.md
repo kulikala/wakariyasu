@@ -28,7 +28,7 @@ dev/test-show-changes.py         Test to run after changing build.py and templat
 dev/test-show-changes-page.mjs   Test that opens the show-changes page in a browser and tries operating it
 dev/test-session-status.py       Test to run after changing build.py, template.html or a labels.json of session-status (dev/test runs it; --browser also opens the page in Chrome)
 dev/test-session-status-page.mjs Test that opens the session-status page in a browser and copies selected text
-dev/browser-cdp.mjs              Shared code that drives Chrome for the browser tests
+dev/browser-cdp.mjs              Shared code that drives Chrome through the DevTools protocol for the browser tests
 .github/workflows/test.yml       GitHub Actions configuration that runs dev/test on every push and pull request
 evals/                           Cases for claude plugin eval that measure whether skills are called
 docs/                            Development guides
@@ -40,7 +40,7 @@ The hooks, `check-terms` and `terms-table` run with only `sh` and standard comma
 
 `build.py`, which builds the page of the skill `show-changes`, runs on the Python 3 standard library. The test after changing `build.py` also uses node and Chrome. The steps for changing it are in [How to modify show-changes](show-changes.md).
 
-`build.py`, which builds the page of the skill `session-status`, and the scripts that print templates (`skeleton.py`, `asking-skeleton`) also run on the Python 3 standard library. After changing `build.py`, `template.html` or a `labels.json`, run `python3 dev/test-session-status.py` (`dev/test` runs it too). After changing `template.html`, also run it with `--browser`, which needs Chrome and a network connection.
+`build.py`, which builds the page of the skill `session-status`, and the scripts that print templates (`skeleton.py`, `asking-skeleton`) also run on the Python 3 standard library. After changing `build.py`, `template.html` or a `labels.json`, run `python3 dev/test-session-status.py` (`dev/test` runs it too). After changing `template.html`, also run it with `--browser`, which needs Chrome and a network connection (the page loads its scripts from jsDelivr).
 
 ## Changing the body
 

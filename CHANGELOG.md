@@ -7,20 +7,22 @@ A change to how the rules or skills are written that changes the agent's behavio
 
 ## [1.0.0] - 2026-11-27
 
+The first stable release.
+
 ### Added
 
 - The skill `compose-page`, which builds a page for people to read (a report, a proposal, a comparison) starting from what the reader wants to know.
 - The skill `extract-insights`, which turns meeting records and documents into insights others can use.
 - The `session-status` report can also be an HTML page on which the user answers the questions and copies the answers back into the session.
-- `show-changes` can show files in full, not only changes, for requests to show the whole of a skill or a document. Pages with full text can switch to the text after the change alone.
+- `show-changes` can show files in full, not only changes, for requests to show the whole of a skill or a document. Pages with full text can switch to the full text after the change, without the diff.
 - On the `show-changes` page, Enter in the search field jumps to the next match and Shift+Enter to the previous one.
-- Text selected on the `session-status` page, and on pages built from the `compose-page` template, can be copied with a button at the end of the selection.
+- Text selected on the `session-status` page, and on pages built from the `compose-page` template, can be copied with a button that appears next to the selected text.
 - Language packs: each reply and document follows the conventions of its own language, chosen by the language of what is written. Japanese and English are included.
 
 ### Changed
 
 - The agent asks for a decision only when the work cannot continue without it, and reports other findings as facts. It asks for the final conclusion, such as whether to publish or send, only when the work is finished and the request covers it.
-- `show-changes` pages are about a third of their former size: the data is packed with utfpack, whose decoder loads from jsDelivr (`--embed-decoder` puts it into the page).
+- `show-changes` pages are about a third of their former size, because their data is compressed. A page loads the decompressor from jsDelivr when it opens; `build.py --embed-decoder` puts it into the page instead.
 - Replies that explain a mechanism or a change state the whole first.
 - Instructions the agent writes, and the checks of `clarify-skill`, avoid sample data, sample output and quoted tool messages that the agent would copy.
 - READMEs the agent writes fold details into collapsible blocks, use the Markdown GitHub renders, and write each language version for its own readers rather than translating it.

@@ -31,7 +31,7 @@ Before making the page, settle who the readers are, what they do not know, and w
 
 - Make what readers need first, such as the conclusion, the overall situation and what is still undecided, readable on the first screen. Even on a page asked to cover every detail, a page of details alone does not let readers grasp the content.
 - Let readers check what they treat as evidence, such as sources and how numbers were obtained, near the figure or field that uses it.
-- Let readers copy what they select: readers carry parts of a page into their own notes and messages. The template in `references/single-file-page.md` shows a copy button at the end of a selection; a page built on other code gets the same.
+- Let readers copy what they select: readers carry parts of a page into their own notes and messages. The template in `references/single-file-page.md` shows a copy button next to the selected text; a page that does not start from the template gets a button that does the same.
 - Group information that differs by item so that readers can finish reading one item at a time. When you lay out items of the same kind, show the same information in the same place and form, so that readers can compare items. When an item has no content for some information, keep its slot and show that it is empty; dropping the slot shifts the places readers compare.
 
 ## Headings and words

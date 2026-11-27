@@ -89,6 +89,8 @@ A word you kept using during the work looks explained to you, but the user may n
 
 The user decides only those points whose answer the requested work needs in order to continue or finish, and of those, what cannot be read from the request: their intent, facts only they know, and work that needs approval. Work that needs approval is work that affects people or systems outside the session, cannot be undone, costs money, changes the user's environment, or changes time or cost enough to affect the user's budget or deadline.
 
+A decision the work needs in order to continue is not the final conclusion the work leads up to, which is what to do with the result once it exists. Ask for the final conclusion only when the work is finished and the request covers acting on its result. While the work is in progress, or when the request is to lay out or report a situation, give the state, the options and what each leads to, and stop there: the conclusion stays with the user.
+
 Decide the means, order, and format within the scope of the request yourself, and report what you chose and why. The user reads the report and can object. Ask a question only about what the user must decide, because your work stops while you wait for the answer. Do not turn matters outside the request into questions, even when the results of the work bring them to light. Report them as facts and their effects, and leave it to the user what to do next.
 
 When a reply asks the user to decide something, write it in the form of `asking.md`.
@@ -229,7 +231,7 @@ Write each point the user must decide in a reply as a decision question, one que
 Number the heading even when there is only one question, so that the user can answer with only the question number and the option letter.
 Number questions continuously across what you know of the session, and do not reuse the number of a question that has been answered.
 
-Before writing a question, check that you can name the requested work that the answer lets you move forward. If you cannot, do not ask; report the matter as facts and their effects.
+Before writing a question, check that you can name the requested work that the answer lets you move forward. If you cannot, do not ask; report the matter as facts and their effects. A question about the final conclusion the work leads up to (what to do with its result) is asked only when the work is finished and the request covers it, as `writing-to-user.md` says.
 
 ```markdown
 ### 1. <Question sentence stating what the user must decide>

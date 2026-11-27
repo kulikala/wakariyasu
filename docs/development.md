@@ -74,9 +74,9 @@ Headings, column names, state words and the words of the pages are not looked up
 
 - `build.py` of `session-status` and `show-changes` read `lang/<code>/labels.json` of their own skill, and `lang/en/labels.json` supplies the English words (`build.py` puts them into the template, which holds only an empty block).
 - `skeleton.py` (session-status) and `asking-skeleton` (writing-rules) print the filled template for a language.
-- For a language without a pack, `--init <code> -o <file>` writes the English words, the agent translates the values, and `--labels <file>` passes them to the same scripts. The scripts stop with a one-line message on an unknown key, a missing key and a dropped placeholder (`{n}`), and with "no labels for <code>; run `<script> --init <code> -o <file>`" when no file was given. With a language that has a pack, `--labels` changes single words.
+- For a language without a pack, `--init <code> -o <file>` writes the English words, the agent translates the values, and `--labels <file>` passes them to the same scripts. The scripts stop with a one-line message on an unknown key, a missing key and a dropped placeholder (`{n}`), and, when no file was given, with a message that names the `--init` command to run. With a language that has a pack, `--labels` changes single words.
 
-After changing a `labels.json`, run `dev/build` to rewrite the templates and the snippets, and `python3 dev/test-session-status.py` (and `dev/test-show-changes.py`, see [How to modify show-changes](show-changes.md)).
+After changing a `labels.json`, run `dev/build` to rewrite the templates and `AGENTS.snippet.md`, and `python3 dev/test-session-status.py` (and `dev/test-show-changes.py`, see [How to modify show-changes](show-changes.md)).
 
 ## Checking
 

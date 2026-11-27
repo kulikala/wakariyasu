@@ -4,8 +4,8 @@ Read this when you build or rebuild a page.
 
 ## Requirements
 
-- Python 3.9 or later. Only the standard library is used. When building a page (`-o`), `build.py` downloads utfpack's packer (a library that compresses data into a string a page can carry) from jsDelivr, so building a page needs network access to jsDelivr. The packer is cached under `wakariyasu/utfpack/<version>/` in the user cache folder (`XDG_CACHE_HOME` or `~/.cache`; `LOCALAPPDATA` on Windows). When the download fails, the newest cached version is used; with no cache, `build.py` stops with exit code 2. `--json-out` alone and `--init` need no network.
-- When the page opens, it loads its scripts from the CDN jsDelivr, including utfpack's decoder, which turns that string back into the data. The viewer needs a network connection, and the place that shows the page (a browser, or a host such as Claude artifacts) must allow jsDelivr. `--embed-decoder` puts the decoder into the page instead.
+- Python 3.9 or later. Only the standard library is used. When building a page (`-o`), `build.py` downloads the packer of utfpack (a library that compresses data into a string a page can carry) from jsDelivr and keeps a copy. Building a page therefore needs network access, except that a copy from an earlier build is used when the download fails; with neither, `build.py` stops and says so. `--json-out` alone and `--init` need no network.
+- When the page opens, it loads its scripts from the CDN jsDelivr, including utfpack's decoder, which turns that string back into the data. The viewer needs a network connection, and the place that shows the page (a browser, or a host such as Claude artifacts) must allow jsDelivr; where it cannot reach jsDelivr, build with `--embed-decoder`.
 - git is required to collect a git two-commit target (`--repo`). Other targets and `--data` work without git. When git is available, the diff of a two-folder target is also built with git, which is fast even for large files.
 
 ## Build a page
@@ -23,7 +23,7 @@ python3 -B scripts/build.py --files <name> <file or folder>... --data-version '<
 | `--repo NAME PATH BASE TARGET` | A target made of two git commits. `PATH` can be anywhere inside the repository. `BASE` is the before state and `TARGET` is the after state; pass each as a branch, commit or tag. |
 | `--dirs NAME BEFORE AFTER` | A target made of two ordinary folders or two files. It does not look inside `.git`, but it compares files that git ignores. It does not follow symbolic links and compares the link target paths. A change between a regular file and a symbolic link appears as a type change (T). |
 | `--diff NAME FILE` | A target made of an existing unified diff. The format can be the `git diff` form (including the `--no-prefix` form without prefixes) or the `diff -u` / `diff -ru` form with only `---` and `+++`. |
-| `--files NAME PATH...` | Files to show in full, not a change. Each path is a file or a folder; nothing is compared. The page holds the full text of each file and opens on the range "after", which shows the text without diff marks. With several paths, each file's path on the page starts with the last part of the path that was passed (the file or folder name). |
+| `--files NAME PATH...` | Files to show in full, not a change. Each path is a file or a folder, read from disk when the page is built; nothing is compared. The page holds the full text of each file and opens on the range "after", which shows the text without diff marks. With several paths, each file's path on the page starts with the last part of the path that was passed (the file or folder name). |
 | `--merge-base NAME` | Compare the target whose `--repo` name is `NAME` from the divergence point of `BASE` and `TARGET` to `TARGET` (the same range as `git diff BASE...TARGET`). |
 | `--data-version` | The data version, shown as is in the header. Any form. Required when collecting new data. |
 | `--title` | The page title. If omitted, the title is "Diff review" (or the `defaultTitle` word of the page's language). |
@@ -32,8 +32,8 @@ python3 -B scripts/build.py --files <name> <file or folder>... --data-version '<
 | `--lang CODE` | The language of the page you are producing. It sets the `lang` of the page and takes the page's words from `lang/CODE/labels.json` (see "The page language"). |
 | `--labels FILE` | A JSON file of the page's words (buttons, headings, tooltips, notices and dates). For a language that has no `lang/CODE/labels.json`, it holds every word; for a language that has one, it holds only the words to change. An unknown key, a missing key and a dropped word in braces stop the build. |
 | `--init CODE` | With `-o FILE`: write the English words as a JSON file to translate for the language `CODE`, then stop. |
-| `--artifact` | Build the page as parts of a document: it starts with `<title>`, has no DOCTYPE, html, head or body tags and no charset or viewport meta, and puts the `lang` on the element with the id `app`. Add it when handing the page to a destination that wraps pages in a document skeleton on publishing, as Claude artifacts do. Without it, the output is a complete HTML file that opens as is. |
-| `--embed-decoder` | Put the utfpack decoder into the page instead of loading it from jsDelivr. Add it when the page must open where jsDelivr cannot be reached. |
+| `--artifact` | Build the page for a destination that wraps what it publishes in its own document skeleton, as Claude artifacts do. Without it, the output is a complete HTML file that opens as is. |
+| `--embed-decoder` | Put the utfpack decoder into the page instead of loading it from jsDelivr (see "Requirements"). |
 | `-o` / `--output` | The HTML output path. `-` writes to standard output. |
 | `--json-out` | Write the diff data as JSON. `-` writes to standard output. Can be used together with `-o`. |
 | `--data <JSON>` | Build the page from a previously written JSON without collecting again. `-` reads standard input. |

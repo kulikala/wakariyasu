@@ -59,9 +59,9 @@ python3 -B scripts/build.py <report>.json -o <page>.html              # to hand 
 ```
 
 - Add `--labels <file>` to either command for a language without a pack (see "Words on the page").
-- Use `--artifact` when you publish the page on a host that adds its own document skeleton (the DOCTYPE, html, head and body tags) to what it publishes, as Claude artifacts do. The page is then built as parts of a document: it starts with `<title>` and has no skeleton tags and no charset or viewport meta. Leave it out when you hand over an HTML file, which then opens in a browser as is.
+- Use `--artifact` when you publish the page on a host that wraps what it publishes in its own document skeleton, as Claude artifacts do. Leave it out when you hand over an HTML file, which then opens in a browser as is.
 - Where you can publish the page, publish it and give the link. Otherwise save the HTML file and give its location.
-- The page loads its scripts and fonts from public CDNs when it opens, so the user needs a network connection, and a host must allow those CDNs.
+- The page loads its scripts from jsDelivr when it opens, so the user needs a network connection, and a host must allow jsDelivr.
 - Where the host refuses the clipboard, the page asks the user to select the text in the box under the decisions and copy it by hand.
 
 The page keeps the user's unsent answers in the user's browser, under the page's `title` and `asOf`. A rebuilt page with the same `title` and `asOf` shows those answers again; a page with a new `asOf` starts empty. Give each new report the time it was written as `asOf`, so that answers to an older report do not appear on a newer one. Nothing the user enters reaches you until the user pastes it into the session.

@@ -45,7 +45,7 @@ Vue is loaded from jsDelivr's `+esm` build of the bundler file, which includes t
 <body>
   <div id="app">
     <!-- Page content -->
-    <button v-if="selection.show" type="button" class="fixed z-50 rounded-md border p-1 shadow" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="selection.copied ? '{{word for copied, in the page language}}' : '{{word for copy, in the page language}}'" :title="selection.copied ? '{{word for copied, in the page language}}' : '{{word for copy, in the page language}}'" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
+    <button v-if="selection.show" type="button" class="fixed z-50 rounded-md border border-{{border role}} bg-{{background role}} p-1 text-{{text role}} shadow" :style="{ left: selection.x + 'px', top: selection.y + 'px' }" :aria-label="selection.copied ? '{{word for copied, in the page language}}' : '{{word for copy, in the page language}}'" :title="selection.copied ? '{{word for copied, in the page language}}' : '{{word for copy, in the page language}}'" @mousedown.prevent @click="copySelection"><check v-if="selection.copied" :size="14"></check><copy v-else :size="14"></copy></button>
   </div>
 
   <script type="module">
@@ -104,7 +104,7 @@ Vue is loaded from jsDelivr's `+esm` build of the bundler file, which includes t
 
 - Set `lang` to the language the page is written in. Browsers choose the default font from it, so a page with the wrong `lang` can show text in a typeface meant for another language.
 - The page specifies no font and uses the browser's default.
-- Keep the copy button, the `copyText` function and the selection code in `setup`. Readers take parts of a page into their own notes and messages, and a button next to the selection saves them from hunting for a copy command. Write the button's two words in the page's language and give it the page's color roles (described in the next item). Its icons, position and timing may be adjusted to the page; its behavior stays: it appears next to selected text outside input fields and copies that text.
+- Keep the copy button, the `copyText` function and the selection code in `setup`. Write the button's two words in the page's language, and fill its border, background and text classes with the page's color roles. Its icons, position and timing may be adjusted to the page; its behavior stays: it appears next to selected text outside input fields and copies that text.
 - Decide the color roles and their values from what the page shows and what its cues must tell apart. The roles include one for the page background and one for the body text. A role's name becomes part of Tailwind class names, so use a name that is valid there. Define each role once in `@theme` with its light value, and redefine it with its dark value under `prefers-color-scheme: dark`. Utilities built from a token (`bg-{{role}}`, `text-{{role}}`) then follow the device's setting without a `dark:` variant on every element. Give `body` its background and text color from the tokens.
 
 ## Writing Lucide icons in the template

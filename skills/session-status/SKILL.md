@@ -28,7 +28,7 @@ The skeleton has the sections in this order. Omit a section, including its headi
 
 Write the decisions in the form given in `asking.md` ("How to write a decision question") in the `writing-rules` skill; the skeleton has the question form with the words of the language. Decide what to ask by following the "Ask only what the user must decide, in a form they can answer without the history" section of `writing-to-user.md`.
 Put what you chose and went ahead with in the latest status, or in the background and notes of the tasks. Do not put it in the decisions.
-If the request is finished, say so in the latest status and stop. A report made while the work is in progress, or a report the user asked for only to lay out the situation, states the options and what each leads to, and does not ask the user to choose the final conclusion (what to do with the result of the work, as `writing-to-user.md` defines it). Write points of caution that the results of the work brought to light as sentences, not as questions.
+If the request is finished, say so in the latest status and stop. Whether the report asks what to do with the result of the work follows the same section of `writing-to-user.md`. Write points of caution that the results of the work brought to light as sentences, not as questions.
 
 If there is only one thing to decide and nothing else to report, such as task progress, the reply may consist of the decisions section alone.
 

@@ -27,7 +27,7 @@ The JSON format that `--json-out` writes and `--data` reads. `--data` checks the
 ```
 
 - `initial_scope` names the range switch's setting when the page opens: `diff` shows the diff with a few lines around each change, `full` shows the diff with every unchanged line of the file around it, and `after` shows the full text after the change without removed lines and diff marks. It is `full` or `after` only when `full_text` is true. `build.py` writes `after` for a page whose targets are all `files`, and `diff` otherwise.
-- `--data` reads only schema version 2; a JSON of an older version is rebuilt by collecting again.
+- `--data` reads what `--json-out` of the same `build.py` writes.
 - A page with a `files` target has `full_text` true (`build.py` sets it).
 - A `files` target has no before side: `base_ref`, `target_ref`, `base` and `target` are empty strings, `commits` is empty, and each file is an addition (`A`) with `full_body`.
 - Only targets whose `kind` is git have values in `commits`, `base`, `target` and `merge_base`. Targets of other kinds have `commits` as an empty array and have no `merge_base`.

@@ -21,8 +21,8 @@ A README is read on GitHub more than anywhere else, so write it with the Markdow
 - Mark a note, a tip or a warning the reader must not miss with GitHub's alert syntax (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]` or `> [!CAUTION]`, the keyword in capitals). GitHub shows it as a colored box, and other viewers show it as a quotation, which still reads. Keep alerts for what changes what the reader does; a page full of them hides the one that matters.
 - Give every code block its language, so that GitHub colors it and the reader sees at once whether to run it in a shell or type it into the tool.
 - When there are versions in several languages, link them to each other on the first lines, so that a reader who landed on the wrong one can switch.
-- Show a badge only when it answers a question the reader has before reading on, such as the current version or the license. A row of badges reads as noise.
-- Check the result with GitHub's own renderer before publishing (`gh api markdown -f mode=gfm -f context=<owner>/<repo> -F text=@README.md`, which returns the HTML GitHub shows): a block inside `<details>` or an alert that does not render appears in that HTML as its Markdown source rather than as HTML elements.
+- Show a badge only when it answers a question the reader has before reading on. A row of badges reads as noise.
+- Before publishing, check the HTML that GitHub's own Markdown renderer returns for the file (GitHub's Markdown API, in its `gfm` mode). A block inside `<details>` or an alert that does not render appears there as its Markdown source rather than as HTML elements.
 
 ## Sections
 

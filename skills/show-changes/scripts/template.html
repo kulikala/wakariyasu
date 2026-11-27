@@ -32,6 +32,7 @@
       --color-add-word: #a6e7b6;
       --color-del-word: #f7b9b9;
       --color-hunk: #eef2f6;
+      --color-del-mark: #d6453d;
     }
     @layer base {
       body { @apply bg-page text-ink; }
@@ -48,6 +49,14 @@
       .ws-cr::after { content: 'CR' }
       .ws-zwsp::after { content: 'ZWSP' }
       .ws-bom::after { content: 'BOM' }
+      /* The inline layout: a changed span or a deletion mark shows the earlier text when hovered or focused. The text sits in
+         data-old and is drawn by ::after, so selecting and copying never take it along. */
+      .inline-change[data-old], .inline-del, .inline-band-mark { position: relative; cursor: help }
+      .inline-change[data-old] { text-decoration: underline dotted var(--color-del-mark); text-underline-offset: 2px }
+      .inline-del { display: inline-block; width: 3px; height: 1.15em; margin: 0 1px; vertical-align: text-bottom; border-radius: 1px; background: var(--color-del-mark) }
+      .inline-band-mark { display: block; height: 4px; margin: 2px 0; border-radius: 2px; background: var(--color-del-mark) }
+      :is(.inline-change[data-old], .inline-del, .inline-band-mark):is(:hover, :focus)::after { content: attr(data-old); position: absolute; left: 0; top: 100%; z-index: 20; width: max-content; max-width: min(48ch, 80vw); margin-top: 2px; padding: 2px 6px; border: 1px solid var(--color-del-mark); border-radius: 4px; background: var(--color-panel); color: var(--color-ink); box-shadow: 0 2px 8px rgb(0 0 0 / .25); font-weight: normal; line-height: 1.5; text-decoration: none; white-space: pre-wrap; overflow-wrap: anywhere; user-select: none; pointer-events: none }
+      :is(.inline-change[data-old], .inline-del, .inline-band-mark):focus { outline: 2px solid #0d9488; outline-offset: 1px }
       /* The line or file heading the search has moved to. */
       .hit-current { outline: 2px solid #0d9488; outline-offset: -2px; background-image: linear-gradient(rgba(13, 148, 136, .22), rgba(13, 148, 136, .22)) }
     }
@@ -68,6 +77,7 @@
         --color-add-word: #2f7d48;
         --color-del-word: #a3403f;
         --color-hunk: #253142;
+        --color-del-mark: #f07a72;
         color-scheme: dark;
       }
     }
@@ -83,6 +93,7 @@
       --color-add-word: #2f7d48;
       --color-del-word: #a3403f;
       --color-hunk: #253142;
+      --color-del-mark: #f07a72;
       color-scheme: dark;
     }
   </style>
@@ -161,7 +172,7 @@
   <div id="loading" role="status" aria-live="polite" class="p-4 text-sm"></div>
   <script type="module">
     import { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
-    import { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck } from '@lucide/vue'
+    import { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck, Highlighter } from '@lucide/vue'
     // highlight.js is not in the page template; it is loaded the same way, through the import map
     import hljs from 'highlight.js/core'
     import javascript from 'highlight.js/languages/javascript'
@@ -198,7 +209,7 @@
     loading.remove()
     Object.assign(L, DEFAULT_LABELS, DATA.labels || {})
 
-    const icons = { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck }
+    const icons = { ArrowLeft, ChevronDown, ChevronRight, ChevronsUpDown, ChevronsDownUp, Rows2, Columns2, FileDiff, FileText, Sun, Moon, Eclipse, GitCommitHorizontal, ArrowRight, PanelLeftClose, PanelLeftOpen, Copy, Check, Pilcrow, EyeOff, ListFilter, X, ChevronUp, FileCheck, Highlighter }
 
     /** Copy text from a click handler; fall back to a hidden textarea where the Clipboard API is missing or refused. */
     function copyText (text) {
@@ -275,11 +286,14 @@
      * @param {[number, number] | null} [change] Changed character interval
      * @param {string} [kind] Row kind ('add' or 'del') that picks the changed-word color
      * @param {number} [lead] Length of leading whitespace that differs from the paired line
+     * @param {{changes: Array<[number, number, string]>, dels: Array<[number, string]>}} [inline] Inline layout: changed intervals with their earlier text, and deletion points
      * @returns {string} Escaped line markup
      */
-    function textHTML (text, path, query, change, kind, lead) {
+    function textHTML (text, path, query, change, kind, lead, inline) {
       const ranges = []
-      const add = (start, end, cls) => ranges.push([start, end, cls])
+      const add = (start, end, cls, attrs = '') => ranges.push([start, end, cls, attrs])
+      const oldAttrs = old => old ? ` data-old="${esc(old)}" tabindex="0"` : ''
+      const marks = new Map((inline?.dels || []).map(([at, old]) => [at, `<span class="inline-del"${oldAttrs(old || '↵')}></span>`]))
       const ext = path.split('.').pop().toLowerCase()
       if (['md', 'markdown', 'mdx'].includes(ext)) {
         if (/^#{1,6}\s/.test(text)) add(0, text.length, 'text-base font-bold')
@@ -289,8 +303,7 @@
       } else if (Object.hasOwn(languages, ext) && hljs.getLanguage(languages[ext])) {
         const fragment = document.createElement('template')
         fragment.innerHTML = hljs.highlight(text, { language: languages[ext], ignoreIllegals: true }).value
-        let offset = 0
-        const visit = (node, styles = '') => {
+          const visit = (node, styles = '') => {
           if (node.nodeType === 3) {
             add(offset, offset + node.textContent.length, styles)
             offset += node.textContent.length
@@ -300,6 +313,10 @@
           }
         }
         visit(fragment.content)
+      }
+      for (const [start, end, old] of inline?.changes || []) {
+        add(start, end, 'inline-change bg-add-word', oldAttrs(old))
+        add(start, end, 'ws-zone')
       }
       if (change) add(change[0], change[1], kind === 'add' ? 'bg-add-word' : 'bg-del-word')
       // Mark whitespace inside the changed interval and at the end of changed lines. A lone CR at
@@ -320,14 +337,15 @@
           start = hit + query.length
         }
       }
-      const cuts = [...new Set([0, text.length, ...ranges.flatMap(range => range.slice(0, 2))])].sort((a, b) => a - b)
+      const cuts = [...new Set([0, text.length, ...marks.keys(), ...ranges.flatMap(range => range.slice(0, 2))])].sort((a, b) => a - b)
       return cuts.slice(0, -1).map((start, i) => {
         const end = cuts[i + 1]
         const active = ranges.filter(([a, b]) => start >= a && end <= b)
         const cls = active.map(range => range[2]).join(' ')
         const part = active.some(range => range[2] === 'ws-zone') ? spaceHTML(text.slice(start, end)) : esc(text.slice(start, end))
-        return active.some(range => range[2].startsWith('search ')) ? `<mark class="${cls}">${part}</mark>` : `<span class="${cls}">${part}</span>`
-      }).join('')
+        const attrs = active.map(range => range[3]).join('')
+        return (marks.get(start) || '') + (active.some(range => range[2].startsWith('search ')) ? `<mark class="${cls}"${attrs}>${part}</mark>` : `<span class="${cls}"${attrs}>${part}</span>`)
+      }).join('') + (marks.get(text.length) || '')
     }
 
     const leading = text => /^[\s\u200b]*/.exec(text)[0]
@@ -342,6 +360,55 @@
       const ranges = start || end ? [[start, a.length - end], [start, b.length - end]] : [null, null]
       const [left, right] = [leading(a), leading(b)]
       return left === right ? ranges : [{ range: ranges[0], lead: left.length }, { range: ranges[1], lead: right.length }].map(({ range, lead }) => range ? [...range, lead] : [0, 0, lead])
+    }
+
+    const segmenter = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter(DATA.lang || undefined, { granularity: 'word' }) : null
+    const words = text => segmenter ? Array.from(segmenter.segment(text), part => part.segment) : text.match(/\s+|[A-Za-z0-9_]+|[^\sA-Za-z0-9_]/gu) || []
+
+    /**
+     * Compare two lines word by word. The result is in the new line's offsets: the intervals that were added or replaced
+     * (with the earlier text of a replacement) and the points where text was only removed.
+     */
+    function wordDiff (before, after) {
+      const a = words(before)
+      const b = words(after)
+      let start = 0
+      while (start < a.length && start < b.length && a[start] === b[start]) start++
+      let end = 0
+      while (end < a.length - start && end < b.length - start && a[a.length - 1 - end] === b[b.length - 1 - end]) end++
+      const n = a.length - start - end
+      const m = b.length - start - end
+      // Longest common subsequence of the words between the common ends; very long lines fall back to one interval.
+      const keep = []
+      if (n && m && n * m <= 250000) {
+        const table = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1))
+        for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) table[i][j] = a[start + i] === b[start + j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1])
+        for (let i = 0, j = 0; i < n && j < m;) {
+          if (a[start + i] === b[start + j]) keep.push([start + i++, start + j++])
+          else if (table[i + 1][j] >= table[i][j + 1]) i++
+          else j++
+        }
+      }
+      keep.unshift(...Array.from({ length: start }, (_, k) => [k, k]))
+      for (let k = 0; k < end; k++) keep.push([a.length - end + k, b.length - end + k])
+      keep.push([a.length, b.length])
+      const changes = []
+      const dels = []
+      let ai = 0
+      let bi = 0
+      let offset = 0
+      const offsets = [0]
+      for (const word of b) offsets.push(offsets[offsets.length - 1] + word.length)
+      for (const [x, y] of keep) {
+        const old = a.slice(ai, x).join('')
+        if (x > ai || y > bi) {
+          if (y > bi) changes.push([offsets[bi], offsets[y], old])
+          else dels.push([offsets[bi], old])
+        }
+        ai = x + 1
+        bi = y + 1
+      }
+      return { changes, dels }
     }
 
     const squash = text => text.replace(/[\s\u200b]+/g, '')
@@ -450,7 +517,11 @@
           while (rows[i]?.kind === 'del') removed.push(rows[i++])
           while (rows[i]?.kind === 'add') added.push(rows[i++])
           const pairs = Array.from({ length: Math.max(removed.length, added.length) }, (_, j) => removed[j] && added[j] ? pairRanges(removed[j].text, added[j].text) : [null, null])
-          if (layout === 'split') pairs.forEach(([a, b], j) => entries.push({ kind: 'split', a: removed[j], b: added[j], ra: a, rb: b }))
+          if (layout === 'inline') {
+            // Each removed line is compared with the added line at the same place; removed lines left over become one band.
+            added.forEach((line, j) => entries.push(removed[j] ? { kind: 'inline', row: line, old: removed[j].text } : { kind: 'line', row: line }))
+            if (removed.length > added.length) entries.push({ kind: 'band', old: removed.slice(added.length).map(row => row.text).join('\n') })
+          } else if (layout === 'split') pairs.forEach(([a, b], j) => entries.push({ kind: 'split', a: removed[j], b: added[j], ra: a, rb: b }))
           else {
             removed.forEach((line, j) => entries.push({ kind: 'line', row: line, range: pairs[j][0] }))
             added.forEach((line, j) => entries.push({ kind: 'line', row: line, range: pairs[j][1] }))
@@ -489,6 +560,17 @@
       const code = (row, range) => {
         const color = row?.kind === 'add' ? 'bg-add' : row?.kind === 'del' ? 'bg-del' : ''
         return `<td class="px-1 align-top whitespace-pre-wrap break-all ${color}">${row ? `<span class="inline-block w-3 text-muted select-none">${row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '}</span><span class="line-text">${textHTML(row.text, file.path, query, range && range[0] < range[1] ? range : null, row.kind, range?.[2])}</span>` : ''}</td>`
+      }
+      if (layout === 'inline') {
+        const inlineCell = (row, inline, whole) => `<td class="px-1 align-top whitespace-pre-wrap break-all ${whole ? 'bg-add' : ''}"><span class="line-text">${textHTML(row.text, file.path, query, null, whole ? 'add' : row.kind, undefined, inline)}</span></td>`
+        const lines = plan(rows, layout).map(entry => {
+          if (entry.kind === 'hunk') return `<tr><td colspan="2" class="hunk sticky top-[var(--head,0px)] z-[5] bg-hunk px-2 py-1 text-muted whitespace-pre-wrap break-all">${esc(entry.row.text)}</td></tr>`
+          if (entry.kind === 'band') return `<tr><td colspan="2" class="px-1 py-0"><div class="inline-band-mark" tabindex="0" data-old="${esc(entry.old || '↵')}"></div></td></tr>`
+          const row = entry.row
+          if (entry.kind === 'inline') return `<tr>${ln(row.current)}${inlineCell(row, wordDiff(entry.old, row.text), false)}</tr>`
+          return `<tr>${ln(row.current)}${inlineCell(row, null, entry.kind === 'line')}</tr>`
+        })
+        return lines.length ? `<table data-layout="inline" data-scope="${scope}" class="w-full table-fixed border-collapse font-mono text-xs leading-relaxed"><colgroup>${gutter('current')}<col></colgroup><tbody>${lines.join('')}</tbody></table>` : '<p class="p-3 text-muted">' + T('noTextRows') + '</p>'
       }
       const output = plan(rows, layout).map(entry => {
         if (entry.kind === 'hunk') return `<tr><td colspan="${layout === 'split' ? 4 : 3}" class="hunk sticky top-[var(--head,0px)] z-[5] bg-hunk px-2 py-1 text-muted whitespace-pre-wrap break-all">${esc(entry.row.text)}</td></tr>`
@@ -801,7 +883,7 @@
         const hasFull = records.some(item => typeof item.file.full_body === 'string')
         const controls = [
           { label: T('ctlFold'), items: [{ id: 'openAll', label: T('openAll'), title: T('openAllTitle'), icon: 'chevrons-up-down' }, { id: 'closeAll', label: T('closeAll'), title: T('closeAllTitle'), icon: 'chevrons-down-up' }] },
-          { label: T('ctlLayout'), items: [{ id: 'unified', label: T('layoutUnified'), title: T('layoutUnifiedTitle'), icon: 'rows-2', value: 'layout' }, { id: 'split', label: T('layoutSplit'), title: T('layoutSplitTitle'), icon: 'columns-2', value: 'layout' }] },
+          { label: T('ctlLayout'), items: [{ id: 'unified', label: T('layoutUnified'), title: T('layoutUnifiedTitle'), icon: 'rows-2', value: 'layout' }, { id: 'split', label: T('layoutSplit'), title: T('layoutSplitTitle'), icon: 'columns-2', value: 'layout' }, { id: 'inline', label: T('layoutInline'), title: T('layoutInlineTitle'), icon: 'highlighter', value: 'layout' }] },
           ...(hasFull ? [{ label: T('ctlScope'), items: [{ id: 'diff', label: T('scopeDiff'), title: T('scopeDiffTitle'), icon: 'file-diff', value: 'scope' }, { id: 'full', label: T('scopeFull'), title: T('scopeFullTitle'), icon: 'file-text', value: 'scope' }, { id: 'after', label: T('scopeAfter'), title: T('scopeAfterTitle'), icon: 'file-check', value: 'scope' }] }] : []),
           { label: T('ctlSpace'), items: [{ id: 'spaceShow', label: T('spaceShow'), title: T('spaceShowTitle'), icon: 'pilcrow', value: 'whitespace' }, { id: 'spaceIgnore', label: T('spaceIgnore'), title: T('spaceIgnoreTitle'), icon: 'eye-off', value: 'whitespace' }] },
           { label: T('ctlTheme'), items: [{ id: 'light', label: T('themeLight'), title: T('themeLightTitle'), icon: 'sun', value: 'theme' }, { id: 'dark', label: T('themeDark'), title: T('themeDarkTitle'), icon: 'moon', value: 'theme' }, { id: 'hybrid', label: T('themeHybrid'), title: T('themeHybridTitle'), icon: 'eclipse', value: 'theme' }] }

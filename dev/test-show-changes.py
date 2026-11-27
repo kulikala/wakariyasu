@@ -60,6 +60,7 @@ def check_page_structure(page, artifact=False):
     packed = page[start:end]
     assert '</script' not in packed and '<!--' not in packed
     assert page.count('<!--__PACKED__-->') == 0 and '/*__LABELS__*/' not in page
+    assert '"layoutInline"' in page and "id: 'inline'" in page and 'data-old' in page, 'the inline layout is in the page'
     parts = ['<title>', 'type="importmap"', decoder, 'globalThis.utfpackData=', '@tailwindcss/browser', 'type="text/tailwindcss"', 'prefers-color-scheme', '<div id="app" lang="', '<script type="module">']
     positions = [page.find(part) for part in parts]
     assert -1 not in positions and positions == sorted(positions), 'the page parts are out of order'

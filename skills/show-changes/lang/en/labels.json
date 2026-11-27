@@ -76,6 +76,8 @@
   "layoutUnifiedTitle": "Stack the before and after lines vertically",
   "layoutSplit": "Side by side",
   "layoutSplitTitle": "Show before and after side by side",
+  "layoutInline": "Inline",
+  "layoutInlineTitle": "Read the after text as one text, marking changed words; hover a mark to see the earlier text",
   "ctlScope": "Range",
   "scopeDiff": "Diff",
   "scopeDiffTitle": "Show only the changed lines and a few lines around them",

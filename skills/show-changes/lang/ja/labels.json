@@ -76,6 +76,8 @@
   "layoutUnifiedTitle": "変更前と変更後の行を上下に並べる",
   "layoutSplit": "左右",
   "layoutSplitTitle": "変更前と変更後を左右に並べる",
+  "layoutInline": "インライン",
+  "layoutInlineTitle": "変更後の文章を1つに並べ、変更された語に印を付ける。印に載せると以前の内容を表示",
   "ctlScope": "範囲",
   "scopeDiff": "差分",
   "scopeDiffTitle": "変わった行と、その前後の数行だけを表示する",

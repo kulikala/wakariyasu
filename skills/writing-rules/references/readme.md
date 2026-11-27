@@ -19,7 +19,7 @@ Readers first scan a README to decide whether to read on, and then look only for
 Choose the order and the sections to fit the tool. Readers often proceed in this order: learn what the tool is, check that it works in their environment, install it, and start using it. An order that follows that sequence is easy to scan. Do not add a section that does not apply to the tool. Move long details to a separate document and link to it from the relevant README section.
 
 Put in one section only the content that matches the section's purpose. Readers jump by section name and read only the section they jumped to. If content that belongs to another section is mixed in, they will not find it where they looked. They also cannot tell whether the section they read is complete.
-Suppose that, in a section for unsuitable uses, you want to write usage such as "with the … option, you can …". Write the usage in the usage section, and link from the unsuitable uses section to the usage section.
+When content belongs to another section, write it there and link to it.
 When you have written a sentence, check which section's purpose it matches.
 
 The purpose of each section is as follows.

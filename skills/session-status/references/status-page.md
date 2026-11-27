@@ -16,43 +16,27 @@ The page needs Python 3.9 or later to build. Where Python is not available, do n
 
 ## The JSON report
 
+The file has this structure; the table below says what each key holds.
+
 ```json
 {
-  "title": "Docs site migration",
-  "lang": "en",
-  "asOf": "2026-03-12 14:20",
-  "goal": "…",
-  "instruction": "…",
-  "tasks": [
-    { "task": "Export the wiki pages", "state": "done", "notes": "…" },
-    { "task": "Choose where old URLs go", "state": "waiting_decision", "decision": 1, "notes": "…" },
-    { "task": "Mirror the old forum", "state": { "emoji": "🧊", "label": "Frozen" }, "notes": "…" }
-  ],
-  "status": "…",
+  "title": "…", "lang": "…", "asOf": "…",
+  "goal": "…", "instruction": "…", "status": "…",
+  "tasks": [ { "task": "…", "state": "…", "decision": 0, "notes": "…" } ],
   "decisions": [
-    {
-      "number": 1,
-      "question": "Where should the old wiki URLs send readers?",
-      "context": "…",
-      "options": [
-        { "letter": "A", "label": "Page by page", "recommended": true, "text": "…" },
-        { "letter": "B", "label": "Home page", "text": "…" }
-      ]
-    },
-    { "number": 2, "question": "Is there a date the site must be live by?", "context": "…" }
+    { "number": 0, "question": "…", "context": "…",
+      "options": [ { "letter": "…", "label": "…", "recommended": true, "text": "…" } ] }
   ]
 }
 ```
 
-In this example, the second task waits for decision 1, so it has `"decision": 1`, and the page shows its state as a link to that decision.
-
 | Key | Content |
 |---|---|
-| `title` | Required. The page title, shown at the top of the page and in the browser tab. Name what the session works on, such as the project or the task. |
-| `lang` | The language code of the report, such as `en` or `ja`: the language of the page being produced. It marks the language of the page's text, and `build.py` takes the page's words from `lang/<code>/labels.json` (see "Words on the page"). |
+| `title` | Required. The page title, shown at the top of the page and in the browser tab. Name what the session works on. |
+| `lang` | The language code of the report: the language of the page being produced. It marks the language of the page's text, and `build.py` takes the page's words from `lang/<code>/labels.json` (see "Words on the page"). |
 | `asOf` | When the report was written, in the form the user reads dates. |
 | `goal`, `instruction`, `status` | The text of the goal, the latest instruction and the latest status sections. Leave out the key of a section that the report leaves out; the page then leaves out the section too. |
-| `tasks` | The rows of the task table, in order. `task` is required. `state` is one of `done`, `in_progress`, `waiting_process`, `waiting_decision`, `not_started`, `problem` and `cancelled`, which stand for the seven states in the state table of `SKILL.md`, from ✅ to ⛔ in table order. For a state you made up under the rules of `SKILL.md`, give `{ "emoji": …, "label": … }`. `decision` is the number of the decision the task waits for, and goes only with `waiting_decision`. |
+| `tasks` | The rows of the task table, in order. `task` is required. `state` is one of `done`, `in_progress`, `waiting_process`, `waiting_decision`, `not_started`, `problem` and `cancelled`, which stand for the seven states in the state table of `SKILL.md`, from ✅ to ⛔ in table order. For a state you made up under the rules of `SKILL.md`, give `{ "emoji": …, "label": … }`. `decision` is the number of the decision the task waits for, and goes only with `waiting_decision`; the page then shows the state as a link to that decision. |
 | `decisions` | The decision questions, in the order of the reply. `number` is the number of the question in the reply. `question` is the question sentence, and `context` is the paragraph under it. Each option has the answer `letter`, an optional short `label` that names the option, and `text`, which is the background-and-effects column of that row. Mark at most one option `recommended`. The reply already puts the recommended option in the first row with letter A, so keep the options in the order of the reply. For a question without options, leave out `options`; the page then shows a box for a written answer. |
 
 Text fields are plain text. A blank line starts a new paragraph, lines that start with `- ` make a list, text between backticks is shown as code, and an http or https URL becomes a link that opens in a new tab. Write the full URL of an artifact or page the user should open to decide. Any other markup is shown as written.
@@ -61,7 +45,7 @@ Text fields are plain text. A blank line starts a new paragraph, lines that star
 
 The page's fixed words (the section headings, the column names, the state words, the buttons, and the words of the copied text) come from `lang/<code>/labels.json` of this skill, where `<code>` is the report's `lang`. `lang/en/labels.json` holds the English words, and without `lang` the page is in English. Do not open `scripts/template.html` and do not fill in words yourself. The `build.py` command puts them into the page.
 
-For a language without `lang/<code>/labels.json`, `build.py` stops with a message such as "no labels for fr; run `build.py --init fr -o <file>`". Run that command. It writes the English words as a JSON file. Translate the values into the language of the report and keep the words in braces, such as `{answered}`, as they are; the page fills them in. Then pass the file with `--labels <file>`. The script stops on an unknown key, a missing key, or a dropped word in braces, and says which. The same file prints the matching reply skeleton (`scripts/skeleton.py --lang <code> --labels <file>`), so the reply and the page use the same words.
+For a language without `lang/<code>/labels.json`, `build.py` stops and names the `--init` command to run. That command writes the English words as a JSON file. Translate the values into the language of the report and keep the words in braces as they are; the page fills them in. Then pass the file with `--labels <file>`. The script stops on an unknown key, a missing key, or a dropped word in braces, and says which. The same file prints the matching reply skeleton (`scripts/skeleton.py --lang <code> --labels <file>`), so the reply and the page use the same words.
 
 With a language that has a pack, `--labels <file>` changes single words: the file holds only those keys.
 
@@ -84,4 +68,4 @@ The page keeps the user's unsent answers in the user's browser, under the page's
 
 ## When the answers arrive
 
-Treat each numbered answer as the answer to the question with that number, and a message as part of the answer it follows. A question marked with the no-answer word (the `copyNoAnswer` label, "(no answer)" in English) is still open. If an answer names a letter that is not an option of its question, or the text does not match the questions you asked, ask the user what they meant instead of guessing.
+Treat each numbered answer as the answer to the question with that number, and a message as part of the answer it follows. A question marked with the no-answer word (the `copyNoAnswer` label) is still open. If an answer names a letter that is not an option of its question, or the text does not match the questions you asked, ask the user what they meant instead of guessing.

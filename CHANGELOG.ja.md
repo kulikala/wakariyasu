@@ -5,6 +5,12 @@
 バージョンの番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に従います。
 規則やスキルの書き方が変わり、エージェントの振る舞いが変わる変更は、マイナーバージョンを上げます。
 
+## [1.0.3] - 2026-11-28
+
+### 修正
+
+- スキル `summarize-session` を、ふたたび読み込めるようにした。1.0.2 では説明文に「: 」が入っていて、YAML が引用符なしでは読めず、Claude のアプリがスキルを受け付けなかった。
+
 ## [1.0.2] - 2026-11-28
 
 ### 修正
@@ -192,6 +198,7 @@
 - スキル `session-status`・`explain-clearly`・`remove-meta-narrative`・`review-for-readers`。
 - セッションの始めに規則を読み込むフックと、ほかのエージェントに貼る `AGENTS.snippet.md`。
 
+[1.0.3]: https://github.com/kulikala/wakariyasu/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/kulikala/wakariyasu/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/kulikala/wakariyasu/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/kulikala/wakariyasu/compare/v0.11.0...v1.0.0

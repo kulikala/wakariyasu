@@ -32,6 +32,10 @@ for d in skills/*/; do
     # claude.ai stores at most 1024 characters of a description and warns about a longer one
     n="$(sed -n 's/^description: //p' "$s/SKILL.md" | tr -d '\n' | LC_ALL=en_US.UTF-8 wc -m | tr -d ' ')"
     [ "$n" -le 1024 ] || ng "the description in $s/SKILL.md has $n characters, over 1024"
+    # an unquoted YAML value cannot contain ": ", and a description with one fails to load
+    if sed -n 's/^description: //p' "$s/SKILL.md" | grep -q ': '; then
+      ng "the description in $s/SKILL.md contains \": \", which YAML cannot parse unquoted"
+    fi
 done
 
 # 5. The hook prints the rules and asking.md, and gives only the location of each language pack and how to choose one, not the content of the packs

@@ -6,6 +6,14 @@ If the repository has a document that defines how to write its README, read it f
 For section names and phrasing that the policy below does not cover, open several READMEs that people maintain in the document's language for tools in the same field, if you can read files or the web. Match the form those READMEs use.
 Use the README part of the document language's `documents.md` when it defines README section names and wording.
 
+## Versions in several languages
+
+When the README has versions in several languages (README.md and README.ja.md, for example), write each version for readers of its own language, not as a translation of another version. A translated README carries the source language's sentence order, headings and examples, and its readers find it harder to read than a README written in their language. Keep the facts the same in every version: what the tool does, the commands, the requirements and the steps. Choose the section names, the order inside a section, the examples and the wording as a README written in that language would. After changing one version, apply the same change of facts to the others, in each one's own wording.
+
+## Keeping it short to scan
+
+Readers first scan a README to decide whether to read on, and then look only for the part that applies to them. Keep visible what every reader needs: what the tool does, an example of its output, and which installation method to choose. Fold the details that only some readers need into a `<details>` block whose `<summary>` names what is inside: the steps of each installation method, notes on options, long tables, and background on how the tool works. GitHub shows only the summary until the reader opens it, so the README reads short while the details stay on the same page and can be searched. Leave a blank line after `<summary>…</summary>` so that GitHub renders the Markdown inside the block.
+
 ## Sections
 
 Choose the order and the sections to fit the tool. Readers often proceed in this order: learn what the tool is, check that it works in their environment, install it, and start using it. An order that follows that sequence is easy to scan. Do not add a section that does not apply to the tool. Move long details to a separate document and link to it from the relevant README section.

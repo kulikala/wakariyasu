@@ -2,15 +2,13 @@
 
 English | [日本語](README.ja.md)
 
-wakariyasu is a plugin for Claude Code and the Claude apps that adds rules and skills to an AI agent so that the Japanese it writes can be understood by someone who has not followed its work. This applies to the agent's reports and questions to the user, and to the documents the agent writes, such as READMEs, specs and commit messages.
+wakariyasu is a plugin for Claude Code and the Claude apps that makes an AI agent write for someone who hasn't followed its work. It covers the agent's reports and questions to you, and the documents it writes: READMEs, specs, commit messages and the like.
 
-When you hand an agent a long task, its reports and questions tend to be written in terms of names the agent coined along the way and assumptions it settled on midway. The person reading the report has to ask, "So what does that mean?" wakariyasu adds instructions that make the agent write in a form that a reader who does not know the history can follow.
+Give an agent a long task and its reports fill up with names it made up along the way and assumptions it settled on without telling you. You end up asking, "So what does that mean?" wakariyasu adds rules and skills that make the agent say what it did, in words you already know.
 
-## How the agent's writing changes
+## What changes
 
-Suppose a user asks an agent, "The product list screen is slow, please fix it," and steps away. When the user comes back, they read the agent's report and questions and the documents the agent wrote. Here they are as the agent writes them without wakariyasu and with it.
-
-### Progress report
+You ask an agent to fix a slow product list screen and step away. When you come back, this is the report waiting for you.
 
 **Without wakariyasu**
 
@@ -22,18 +20,10 @@ Suppose a user asks an agent, "The product list screen is slow, please fix it," 
 >
 > One issue remains: the screen layout breaks for products whose stock is 0.
 
-For each term in the report without wakariyasu, here is what the user thinks and how the report with wakariyasu writes it.
+"Plan B", "v2" and "the zero-stock problem" are gone, replaced by what was done and what is wrong, and "lighter" became a number.
 
-| Term in the report without wakariyasu | What the user thinks | How the report with wakariyasu writes it |
-|---|---|---|
-| Plan B | What is plan A, and what is plan B? | States what was done |
-| v2 | A name that came up during the work; no idea what it refers to | Drops the name and states the content |
-| Lighter | How much faster is it? | States the display time before and after, in numbers |
-| Zero-stock problem | What kind of problem is it? | States what the defect does |
-
-### Questions for a decision
-
-This is a moment before the report, partway through the work, when the agent needs the user to decide something.
+<details>
+<summary>Questions that need your decision</summary>
 
 **Without wakariyasu**
 
@@ -43,18 +33,21 @@ This is a moment before the report, partway through the work, when the agent nee
 
 > **1. Whether to keep product information on the server for 5 minutes or 1 hour**
 >
-> While speeding up the product list screen, a decision came up on how long to keep product information on the server. How long a stock count may lag on screen depends on how the shop operates, so I need you to decide.
+> While speeding up the product list screen, I need to decide how long to keep product information on the server. How long a stock count may lag on screen depends on how the shop operates, so this is your call.
 >
 > | Option | Background and what happens if chosen |
 > |---|---|
-> | A (recommended) | 5 minutes. Stock counts are shown up to 5 minutes late. The screen displays in 0.4 seconds. The reason for recommending it: a product that has sold out keeps showing as in stock for no more than 5 minutes. |
+> | A (recommended) | 5 minutes. Stock counts are shown up to 5 minutes late. The screen displays in 0.4 seconds. Recommended because a sold-out product shows as in stock for 5 minutes at most. |
 > | B | 1 hour. The screen displays in 0.3 seconds, but stock counts lag by up to 1 hour. |
 
-The question with wakariyasu states what is being decided, why the user is the one to decide, and what happens with each choice. The user can answer with only the question number (1) and the option letter in the table (A or B), such as "1 is A".
+You can answer with just the number and the letter: "1 is A".
 
-### Written documents
+</details>
 
-**Without wakariyasu** (a passage from a design document)
+<details>
+<summary>Documents the agent writes</summary>
+
+**Without wakariyasu** (from a design document)
 
 > Following the review comments, this chapter organizes the cache policy. Details below.
 
@@ -62,171 +55,164 @@ The question with wakariyasu states what is being decided, why the user is the o
 
 > Product information is kept in the server's memory for 5 minutes. Information older than 5 minutes is read again from the database the next time it is displayed.
 
-The sentence without wakariyasu cannot be understood without reading the exchange in which it was written (the review comments) and another place in the document (below). The sentence with wakariyasu states the policy on its own.
+The first version only makes sense to someone who saw the review and reads further down. The second states the policy on its own.
 
-## Rules and skills
+</details>
 
-wakariyasu is made of instructions to the agent, in two kinds.
+## What's included
 
-- A **rule** is an instruction that states a writing policy. In Claude Code, rules are loaded at the start of every session and applied to every reply and document. You do not need to ask for them.
-- A **skill** is an instruction that states a procedure for a particular situation. The agent chooses and uses a skill on its own when the user asks in words listed in the table in the "When each is used" section, or when the agent writes a report or finishes a document to hand over.
+wakariyasu is a set of instructions for the agent. **Rules** apply to every reply and document without being asked. **Skills** handle particular jobs; the agent picks one when you ask in words like the examples below, or when the job comes up.
 
-## When each is used
-
-| Situation | Example words | Instruction used | What it does |
+| When | Say, for example | Used | What the agent does |
 |---|---|---|---|
-| Ordinary replies | (applies without being asked) | Rule [`writing-to-user.md`](skills/writing-rules/rules/writing-to-user.md) | Has the agent write replies in words and a form that someone who has not followed the work can understand |
-| You want to know the status | "Where do things stand?" "What's left?" | Skill `session-status` | Has the agent report what it is aiming for and its tasks and their states in a fixed form, with a question attached if it needs you to decide something. The report can also be a page where you pick an option and copy your answers |
-| A reply is unclear | "Explain it plainly" "So what does it mean?" "What is X?" "What is the difference between X and Y?" | Skill `explain-clearly` | Has the agent restate its previous reply, or a term in the reply that was unclear. For "briefly" it shortens; for "so a child could understand" it adds the background |
-| Having the agent write a document | (applies without being asked) | Rule [`writing-documents.md`](skills/writing-rules/rules/writing-documents.md) | Has the agent write READMEs, specs, SKILL.md files, commit messages and the like so that they can be understood from the document alone |
-| Removing meta-narrative from a document | "Remove the meta-narrative" | Skill `remove-meta-narrative` | Has the agent find and fix meta-narrative (sentences in which a document talks about itself or how it was made, such as "this chapter covers..." or "following your comment...") and the agent's work-in-progress output ("X was not reached" "X was unknown"). In work logs and progress records, the record of the work stays |
-| Before handing a document to someone | "Check it before release" "Review it through a reader's eyes" | Skill `review-for-readers` | Has a separate agent (a subagent) that does not know the history read only the document, and has the agent fix the places where that reader got stuck. It starts a subagent, so it uses more time and tokens. An agent that cannot start subagents rereads the document itself and says so in its report |
-| Showing changes to a person | "Show me the diff" "Make the changes into a page" (applies without being asked after work that changes files) | Skill `show-changes` | Has the agent turn the before-and-after diff, across repositories and folders, into one HTML page. In Claude's environment the page is presented as an artifact; where artifacts are unavailable it is saved as an HTML file |
-| Making a page for people to read | "Make it a page" "Make it an artifact" "Make it easier to read" (applies without being asked when a page for people is made) | Skill `compose-page` | Has the agent build an HTML page that conveys content to people, such as a report or an organized set of material, so that a reader who does not know how it was made can read the conclusion, the state and the differences between items from the screen. It has the agent prepare both a light and a dark display |
-| Making a skill clearer | "Check this skill" "Rewrite the skill" (applies without being asked after a skill is written) | Skill `clarify-skill` | Has the agent check a skill (SKILL.md and the references it reads) for whether an agent reading it can decide from the purpose, and plan how to fix it. On request it rewrites the skill |
-| Leaving the session's content as a document | "Summarize this session" "Summarize what we found" "Extract the feedback" | Skill `summarize-session` | Has the agent turn what the session examined, found, was told and did into a document that someone who was not in the session can read and use. It has the agent infer from the request what the user wants and write in the applicable mode: structuring what was examined as a document, composing findings as insights, organizing feedback by intent and response, or keeping a work log. If several apply it splits the documents, and if none applies it builds a structure with the modes as a guide |
-| Extracting insights from text | "Extract insights from this transcript" "Summarize what the minutes tell us" | Skill `extract-insights` | Has the agent extract, from text such as a meeting or interview transcript, a record of remarks or an article, insights that someone who was not there can later use for decisions. Each insight is one sentence, with its kind (confirmed fact, claim or decision) and its background, supplement, certainty and source. It has the agent write what can be said from the remarks, not a collection of quotes or a summary. `summarize-session` handles summarizing what was found in the current session |
-| Checking Japanese phrasing | "Check the phrasing" (applies without being asked before handing over a Japanese document written to a file) | Skill `check-terms` | Has the agent search a document for phrases that Japanese does not use and for phrases where another word may read more naturally depending on context, and replace them with the alternative when they are used in the listed sense |
+| Every reply | (always) | Rule [`writing-to-user.md`](skills/writing-rules/rules/writing-to-user.md) | Writes replies someone who hasn't followed the work can understand |
+| Every document | (always) | Rule [`writing-documents.md`](skills/writing-rules/rules/writing-documents.md) | Writes documents that make sense on their own |
+| Before handing over text | (always) | Rule [`polishing.md`](skills/writing-rules/rules/polishing.md) | Polishes what it wrote |
+| You want the status | "Where do things stand?" | `session-status` | Reports the goal, the tasks and their state, and asks what it needs you to decide |
+| A reply is unclear | "So what does that mean?" | `explain-clearly` | Says it again in plainer words, shorter or with more background |
+| A document talks about itself | "Remove the meta-narrative" | `remove-meta-narrative` | Removes sentences about the document or how it was made |
+| Before you share a document | "Review it as a reader" | `review-for-readers` | Has a fresh agent read only the document, and fixes where it got stuck |
+| You want to see changes | "Show me the diff" | `show-changes` | Turns a diff, across repositories if needed, into one page |
+| You want a page to read | "Make it a page" | `compose-page` | Builds an HTML page around what the reader wants to know |
+| A skill needs checking | "Check this skill" | `clarify-skill` | Checks a skill as instructions for an agent, and rewrites it on request |
+| You want the session written up | "Summarize this session" | `summarize-session` | Writes what the session found, decided or was told, for people who weren't there |
+| You have a transcript | "Pull out the insights" | `extract-insights` | Turns meeting records and documents into insights others can use |
+| Checking phrasing | "Check the phrasing" | `check-terms` | Finds phrases to avoid from the lists for the document's language |
 
-`show-changes` and the status page of `session-status` need Python 3 to build their pages. For a language that has no language pack, the scripts that print the template of a decision question or of a status report (`asking-skeleton`, `skeleton.py`) also use it. The rules and the other skills do not use Python.
-
-There is one more rule, [`polishing.md`](skills/writing-rules/rules/polishing.md), which states how to polish a piece of writing before handing it over.
-
-Rules and skills state in English the content that applies to writing in any language. Content added only when writing in Japanese (the "Choosing notation" section below, how to check phrasing, what to give a skill that refines Japanese prose and so on) is kept in a folder for each language, [`skills/writing-rules/lang/ja/`](skills/writing-rules/lang/ja/). An English folder, [`skills/writing-rules/lang/en/`](skills/writing-rules/lang/en/), also exists. There is no setting for switching languages, and the language of the conversation does not choose a pack. The agent chooses a pack for each thing it writes, by the language of that thing: a user who instructs the agent in Japanese and asks for an English README gets a Japanese reply and an English README, and the agent reads the Japanese file for the reply and the English file for the README. Each folder has a file for replies (`reply.md`), a file for documents (`documents.md`) and a file for skills (`skills.md`), and the agent reads only the file for the kind of text it is about to write.
-
-Headings, column names and state words that a reply or a page carries are not looked up by the agent. Each language folder holds them in `labels.json`, and the tools fill them in: the page builders read it, and a script prints the decision question template and the status report skeleton with those words filled in. For a language without a folder, the agent starts a file of the English words with `--init`, translates the values, and passes the file with `--labels`; the tool stops on a missing key or a dropped placeholder.
-
-The lists of phrasing are in the folder of the skill `check-terms`. The agent writes with the lists in view, and checks a document written to a file with the script `check-terms`, which searches the document for phrases from the lists (run it with `sh skills/check-terms/scripts/check-terms <file>`).
-
-- [`terms.tsv`](skills/check-terms/lang/ja/terms.tsv): phrases Japanese does not use (translation-like words such as 「コマンドを打つ」「旗」「導入」, and words coined during the work), with the words to use instead. When `check-terms` finds one, the check fails (exit code 1).
-- [`terms-caution.tsv`](skills/check-terms/lang/ja/terms-caution.tsv): phrases that are not wrong but where another word may read more naturally depending on context, with candidate words. For example, there are places where 「規則を適用する」 reads more naturally than 「規則を当てる」, and places where naming a table by its content (「料金の表」) is clearer than by its position (「次の表」). `check-terms` prints these marked "(check in context)" but does not fail the check.
-
-The rules and references are in the folder of the skill `writing-rules`. The references cover how to write a question for a decision, how to write instructions (how to write documents that agents read, such as skills and rules), how to write a README (the sections of a public README) and how to write a changelog (what a public changelog states). In Claude Code and Cowork, the rules and the way to write a question for a decision are loaded once per session, together with the list of language folders. The file of each language folder that matches what the agent writes (including the notation tables and the handling of phrasing) and the guides for writing instructions, READMEs and changelogs are read by the agent when needed.
-
-## Choosing notation
-
-How kana and kanji are used, how numbers are written, noun-ending sentences, and the plain and polite styles vary with the kind of writing. wakariyasu does not fix notation uniformly; it has the agent choose in this order.
-
-1. The user's instructions (including instructions in CLAUDE.md or AGENTS.md)
-2. The way already used in the same document or the same repository
-3. The default wakariyasu sets for each kind of writing. For example, replies to the user are written in polite-style sentences, and the change lines of a commit or PR may end in a noun. The table for each kind is in [`documents.md`](skills/writing-rules/lang/ja/documents.md)
-
-For word choice too, the agent picks per document between standard notation and Sino-Japanese notation. Standard notation does not lean toward native Japanese words or Sino-Japanese words but picks the words that suit the context and the reader. Sino-Japanese notation centers on Sino-Japanese words as far as meaning and readability are not lost. If the user's instructions and the existing style do not decide it, the agent picks whichever conveys the meaning better from the document's purpose and reader.
-
-To fix a particular style, specify it in one line in CLAUDE.md. For example, specifying "Write numbers in Arabic numerals" or "Write the README in polite style" takes precedence over the defaults.
-
-## Combining with a skill that refines prose
-
-What wakariyasu's rules look at is words and content that someone who does not know the history can follow. A skill that refines prose finely corrects how sentences are written, such as unnatural metaphors and mismatched subjects and predicates. The agent first polishes what it writes with wakariyasu's rules. If a skill that refines prose in the document's language is installed, the agent passes a document for people, such as a README or a procedure, through that skill when it finishes the document, without being asked. The situations are in [`polishing.md`](skills/writing-rules/rules/polishing.md). Replies to the user are not passed through it. wakariyasu works without such a skill.
+Each reply and document follows the conventions of its own language, from the language packs in [`skills/writing-rules/lang/`](skills/writing-rules/lang/). Japanese and English are included.
 
 ## Installation
 
-In Claude Code, install with the method in "4. Claude Code plugin"; in claude.ai chat and Cowork, use "5. Claude apps and Cowork". For agents such as Codex, Cursor and GitHub Copilot, install the skills with one of methods 1 to 3, then paste the rules following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)". Methods 1 to 3 all install the same skills, so choose by the command you have at hand (1 and 3 use Node.js `npx`; 2 uses the GitHub CLI). The difference between rules and skills is in the "[Rules and skills](#rules-and-skills)" section.
+- **Claude Code:** use the Claude Code plugin.
+- **claude.ai chat and Cowork:** use the Claude apps.
+- **Codex, Cursor, GitHub Copilot and other agents:** install the skills with `npx skills add`, `gh skill install` or `npx openskills install`, then paste the rules into the agent's instruction file. All three install the same skills; use whichever command you have (`npx` comes with Node.js, `gh` is the GitHub CLI).
 
-### 1. `npx skills add`
+To check the installation, start a new session and ask "Where do things stand?". A report with headings such as "Current goal" and "Tasks" means it worked.
 
-Install the skills with the command of [skills](https://github.com/vercel-labs/skills).
+<details>
+<summary>1. Claude Code plugin</summary>
 
-```sh
-# New installation
-npx skills add kulikala/wakariyasu --skill '*' -g
-
-# Update to the latest version
-npx skills update -g
-```
-
-`--skill '*'` installs all of wakariyasu's skills. wakariyasu's skills read the rules from the folder of the skill `writing-rules`, so install all of them, not a subset. `-g` installs into the home directory so that the skills can be used in every folder. To choose the agents to install for, use the `-a` option.
-
-After installing, paste the rules following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)".
-
-### 2. `gh skill install`
-
-Install the skills with the `gh skill` command of the GitHub CLI (a preview feature).
-
-```sh
-# New installation
-gh skill install kulikala/wakariyasu --all --scope user
-
-# Update to the latest version
-gh skill update --all
-```
-
-`--all` installs all of wakariyasu's skills. `--scope user` installs into the home directory so that the skills can be used in every folder. To choose the agents to install for, use the `--agent` option.
-
-After installing, paste the rules following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)".
-
-### 3. `npx openskills install`
-
-With [OpenSkills](https://github.com/numman-ali/openskills), install the skills into the repository you are working in and write the list of skills into the repository's AGENTS.md.
-
-```sh
-# New installation and writing to AGENTS.md
-npx openskills install kulikala/wakariyasu -y
-npx openskills sync -y
-
-# Update to the latest version and write to AGENTS.md
-npx openskills update
-npx openskills sync -y
-```
-
-`-y` installs all of wakariyasu's skills without asking which skills to install. To install into the home directory, use the `--global` option.
-
-After installing, paste the rules into the AGENTS.md that `sync` wrote, following "[Paste the rules into an instruction file](#paste-the-rules-into-an-instruction-file)".
-
-### 4. Claude Code plugin
-
-In Claude Code, install with this method. Both the rules and the skills are installed, and the rules are loaded automatically at the start of every session.
-
-In Claude Code, run the following two commands. The first registers the wakariyasu repository as a place to get plugins from (a marketplace), and the second installs wakariyasu from it.
+Run these in Claude Code. The rules and the skills are both installed, and the rules load at the start of every session.
 
 ```text
 /plugin marketplace add kulikala/wakariyasu
 /plugin install wakariyasu@wakariyasu
 ```
 
-To check that the installation worked, ask "Where do things stand?" in a new session. This phrase is handled by the skill `session-status`, so if a report with headings such as "Current goal" and "Tasks" comes back, it is installed. You can check the same way after installing with methods 1 to 3.
-
-To update to the latest version, run the following two commands in a terminal and restart Claude Code.
+To update, run these in a terminal and restart Claude Code.
 
 ```sh
-# Refresh the marketplace information
 claude plugin marketplace update wakariyasu
-
-# Update the plugin to the latest version
 claude plugin update wakariyasu@wakariyasu
 ```
 
-### 5. Claude apps and Cowork
+</details>
 
-In claude.ai (web) or the desktop app, open **Customize > Plugins**, enter `kulikala/wakariyasu` under **Add > Add marketplace**, and install wakariyasu. The plugin is installed to your claude.ai account, so installing once in the web or desktop app makes it available in the phone app and in Cowork when you are signed in with the same account.
+<details>
+<summary>2. Claude apps and Cowork</summary>
 
-In Cowork, as in Claude Code, both the rules and the skills work.
+In claude.ai on the web or in the desktop app, open **Customize > Plugins**, enter `kulikala/wakariyasu` under **Add > Add marketplace**, and install wakariyasu. It is installed to your account, so it also works in the phone app and in Cowork.
 
-In chat, the skills in the table of the "[When each is used](#when-each-is-used)" section can be used. To check that the installation worked, ask "Where do things stand?" in chat and see whether a report with headings comes back.
+Cowork loads the rules like Claude Code. Chat does not: to apply them to every reply there, paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md) into **Settings > Your Claude > Instructions**, or into a project's instructions. If it does not fit, paste only its section "Write replies that someone who has not followed the session can understand", keeping the first and last comment lines around it.
 
-In chat, the rules are not loaded automatically. To make the rules apply to the "Ordinary replies" and "Having the agent write a document" situations in the table of the "When each is used" section, paste them as follows.
+</details>
 
-- Paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md) into "Your Claude" > "Instructions" in the web or desktop app's settings (your name at the bottom left > Settings), or into the instructions of a claude.ai project. The language packs are not pasted: the agent reads them from the folder of the skill `writing-rules` installed with the plugin.
-- If it does not fit in the instructions field, paste only the section with the heading "Write replies that someone who has not followed the session can understand" in `AGENTS.snippet.md` (the rules for how to write replies). The rules for writing replies alone work for the "Ordinary replies" situation.
-- When pasting only a section, also put the first and last lines of `AGENTS.snippet.md` (comments marking the pasted range) before and after the section. They show which range to replace when updating.
+<details>
+<summary>3. <code>npx skills add</code></summary>
 
-### Paste the rules into an instruction file
+Install the skills with [skills](https://github.com/vercel-labs/skills).
 
-Methods 1 to 3 install only the skills. A skill reads the rules from the folder of the skill `writing-rules` each time it runs, so the rules apply in situations where a skill is used. To make the rules apply also in the "Ordinary replies" and "Having the agent write a document" situations, where no skill is used, paste the rules into an instruction file.
+```sh
+# Install
+npx skills add kulikala/wakariyasu --skill '*' -g
 
-Paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md), the file that gathers wakariyasu's rules (it is at the top level of the wakariyasu repository on GitHub), into the instruction file the agent reads every time (AGENTS.md for Codex, custom instructions for other agents). The first line of the whole, `<!-- wakariyasu:AGENTS.snippet.md -->`, and the last line, `<!-- /wakariyasu:AGENTS.snippet.md -->`, are comments that mark the pasted range.
+# Update
+npx skills update -g
+```
 
-The language packs are not pasted. The agent reads them from `lang/<code>/` in the folder of the skill `writing-rules` installed by methods 1 to 3.
+`--skill '*'` installs every skill; install all of them, since they share the rules in `writing-rules`. `-g` installs into your home directory so that the skills work in every folder. `-a` chooses the agents to install for.
 
-The update commands of methods 1 to 3 do not update the pasted rules. After updating wakariyasu, replace the pasted range (the two comment lines and everything between them) with the whole of the latest `AGENTS.snippet.md` on GitHub.
+Then [paste the rules](#paste-the-rules).
 
-## For people who modify wakariyasu
+</details>
 
-The folder layout, the steps after changing a rule, the repository checks (`dev/test`), the tests that measure whether skills are called (eval) and how to raise the version are in the [development guide](docs/development.md). The changes for each version are in [CHANGELOG.md](CHANGELOG.md).
+<details>
+<summary>4. <code>gh skill install</code></summary>
+
+Install the skills with the GitHub CLI's `gh skill` (a preview feature).
+
+```sh
+# Install
+gh skill install kulikala/wakariyasu --all --scope user
+
+# Update
+gh skill update --all
+```
+
+`--all` installs every skill. `--scope user` installs into your home directory so that the skills work in every folder. `--agent` chooses the agents to install for.
+
+Then [paste the rules](#paste-the-rules).
+
+</details>
+
+<details>
+<summary>5. <code>npx openskills install</code></summary>
+
+Install the skills into the repository you work in with [OpenSkills](https://github.com/numman-ali/openskills), and list them in its AGENTS.md.
+
+```sh
+# Install
+npx openskills install kulikala/wakariyasu -y
+npx openskills sync -y
+
+# Update
+npx openskills update
+npx openskills sync -y
+```
+
+`-y` on `install` installs every skill without asking; on `sync` it writes them all to AGENTS.md without asking. `--global` installs into your home directory instead.
+
+Then [paste the rules](#paste-the-rules) into the AGENTS.md that `sync` wrote.
+
+</details>
+
+### Paste the rules
+
+Methods 3 to 5 install only the skills. Skills read the rules when they run, but for the rules to shape every reply and document, paste the whole of [`AGENTS.snippet.md`](AGENTS.snippet.md) into the instruction file the agent always reads (AGENTS.md for Codex, custom instructions elsewhere). The language packs are not pasted; the agent reads them from the installed `writing-rules` skill.
+
+Updating the skills does not update what you pasted. After an update, replace everything from `<!-- wakariyasu:AGENTS.snippet.md -->` to `<!-- /wakariyasu:AGENTS.snippet.md -->` with the latest `AGENTS.snippet.md`.
+
+## Requirements
+
+Python 3 is needed to build the pages of `show-changes` and `session-status`, and to print the templates for a language without a pack. The rules and the other skills need nothing else.
+
+## How it works
+
+<details>
+<summary>Language packs and fixed words</summary>
+
+The rules and skills are written in English and apply to writing in any language. What only one language needs lives in its pack, [`skills/writing-rules/lang/<code>/`](skills/writing-rules/lang/): `reply.md` for replies, `documents.md` for documents and `skills.md` for the skills. There is no language setting. The agent picks the pack for each thing it writes by that thing's language, so a request in Japanese for an English README gets a reply written with the Japanese pack and a README written with the English one.
+
+Headings, column names and state words are not typed by the agent. Each pack keeps them in `labels.json`, and the tools fill them in. For a language without a pack, the agent creates the list of words with `--init`, translates it, and passes it with `--labels`.
+
+The lists of phrases to avoid are in [`skills/check-terms/lang/`](skills/check-terms/lang/); `sh skills/check-terms/scripts/check-terms <file>` checks a document against them.
+
+</details>
+
+<details>
+<summary>Working with a prose-refining skill</summary>
+
+wakariyasu looks at whether a reader without the history can follow the words and content. A prose-refining skill fixes how sentences are written. If one for the document's language is installed, the agent runs documents for people through it after applying wakariyasu's rules. Replies are not. wakariyasu works without one.
+
+</details>
+
+## Contributing
+
+The folder layout, the checks (`dev/test`) and the release steps are in the [development guide](docs/development.md). Changes by version are in [CHANGELOG.md](CHANGELOG.md).
 
 ## Acknowledgments
 
-Some of wakariyasu's rules draw on the Japanese proofreading skill [yomiyasu](https://github.com/nanaism/yomiyasu) (nanaism/yomiyasu, MIT license).
+Some rules draw on the Japanese proofreading skill [yomiyasu](https://github.com/nanaism/yomiyasu) (nanaism/yomiyasu, MIT license).
 
 ## License
 

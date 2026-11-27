@@ -187,5 +187,11 @@ done
 # 11. No bin/ at the top level (claude.ai and Cowork reject a plugin that has one)
 [ ! -e bin ] || ng "bin/ exists at the top level (the plugin cannot be installed in claude.ai and Cowork)"
 
+# 12. The bodies of the rules, skills and hooks are in English; text for one language lives in lang/.
+# UTF-8 kana start with \343 and \201-\203; kanji start with \344-\351. CJK punctuation is allowed (scripts match it).
+kana_kanji="$(printf '\343[\201-\203]|[\344-\351]')"
+found="$(LC_ALL=C grep -rlE "$kana_kanji" skills hooks AGENTS.snippet.md | grep -v '/lang/')"
+[ -z "$found" ] || ng "Japanese text outside a lang/ folder: $found"
+
 [ "$fail" = 0 ] && echo "all checks passed"
 exit "$fail"
